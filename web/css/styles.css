@@ -1,0 +1,549 @@
+/* DeadlockForge — dark noir / steampunk theme (CSS gradients only, no images). */
+
+:root {
+  --ink: #0d0f12;
+  --panel: #14171c;
+  --panel2: #1a1e24;
+  --brass: #c9a227;
+  --brass-dim: #8a6d1a;
+  --weapon: #E8862B;
+  --vitality: #2BB86B;
+  --spirit: #8B4BE8;
+  --flex: #9aa3ad;
+}
+
+body {
+  background-color: transparent;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.008) 0 2px, transparent 2px 8px);
+  background-attachment: fixed;
+}
+
+/* латунная шестёрка-герб */
+.brass-gear {
+  border-radius: 50%;
+  background:
+    conic-gradient(from 0deg,
+      #c9a227 0deg 30deg, #7a5f14 30deg 60deg,
+      #c9a227 60deg 90deg, #7a5f14 90deg 120deg,
+      #c9a227 120deg 150deg, #7a5f14 150deg 180deg,
+      #c9a227 180deg 210deg, #7a5f14 210deg 240deg,
+      #c9a227 240deg 270deg, #7a5f14 270deg 300deg,
+      #c9a227 300deg 330deg, #7a5f14 330deg 360deg);
+  border: 2px solid #0d0f12;
+  box-shadow: 0 0 0 2px #8a6d1a, inset 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+/* панели: «фактурный» тёмный металл */
+.panel {
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.025), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.015) 0 1px, transparent 1px 5px);
+  border: 1px solid rgba(138, 109, 26, 0.45);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  position: relative;
+}
+.panel::before {
+  /* заклёпки по углам */
+  content: "";
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+  border-radius: 0.35rem;
+  background-image:
+    radial-gradient(circle 2px at 0 0, rgba(201, 162, 39, 0.55) 0 2px, transparent 2px),
+    radial-gradient(circle 2px at 100% 0, rgba(201, 162, 39, 0.55) 0 2px, transparent 2px),
+    radial-gradient(circle 2px at 0 100%, rgba(201, 162, 39, 0.55) 0 2px, transparent 2px),
+    radial-gradient(circle 2px at 100% 100%, rgba(201, 162, 39, 0.55) 0 2px, transparent 2px);
+}
+
+/* табы */
+.tab-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 0.4rem 0.4rem 0 0;
+  border: 1px solid transparent;
+  font-family: 'Oswald', 'Bebas Neue', 'Arial Narrow', system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  font-size: 0.9rem;
+  color: #9aa3ad;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+}
+.tab-btn:hover { color: #e5e7eb; }
+.tab-btn.tab-active {
+  color: var(--brass);
+  border-color: var(--brass-dim);
+  border-bottom-color: transparent;
+  background-color: var(--panel2);
+}
+
+/* формы */
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #9aa3ad;
+  margin-bottom: 0.3rem;
+}
+.input-select, .search-input {
+  width: 100%;
+  background-color: var(--panel2);
+  border: 1px solid rgba(138, 109, 26, 0.5);
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  color: #e5e7eb;
+  outline: none;
+}
+.input-select:focus {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.35);
+}
+
+/* латунная кнопка */
+.btn-brass {
+  display: inline-block;
+  padding: 0.5rem 1.3rem;
+  border-radius: 0.4rem;
+  border: 1px solid #8a6d1a;
+  color: #0d0f12;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background-image: linear-gradient(180deg, #e2c25a 0%, #c9a227 45%, #8a6d1a 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.btn-brass:hover { filter: brightness(1.1); }
+.btn-brass:active { filter: brightness(0.95); }
+
+/* слоты билда */
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.6rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.4rem;
+  border: 1px dashed rgba(154, 163, 173, 0.4);
+  background-color: rgba(26, 30, 36, 0.6);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.slot:hover { border-color: var(--brass); background-color: rgba(26, 30, 36, 0.95); }
+.slot.filled {
+  border-style: solid;
+  background-color: var(--panel2);
+}
+.slot .slot-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slot .slot-cost { color: var(--brass); font-size: 0.75rem; }
+.slot .slot-x {
+  color: #6b7280;
+  font-weight: 700;
+  padding: 0 0.2rem;
+}
+.slot.filled:hover .slot-x { color: #f87171; }
+
+/* цвета категорий */
+.cat-legend {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.2rem;
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+}
+.cat-weapon   { color: var(--weapon);   border-color: var(--weapon); }
+.cat-vitality { color: var(--vitality); border-color: var(--vitality); }
+.cat-spirit   { color: var(--spirit);   border-color: var(--spirit); }
+.cat-flex     { color: var(--flex);     border-color: var(--flex); }
+
+.cat-border-weapon   { border-color: var(--weapon) !important; }
+.cat-border-vitality { border-color: var(--vitality) !important; }
+.cat-border-spirit   { border-color: var(--spirit) !important; }
+.cat-border-flex     { border-color: var(--flex) !important; }
+
+.cat-bg-weapon   { background-color: rgba(232, 134, 43, 0.15); }
+.cat-bg-vitality { background-color: rgba(43, 184, 107, 0.15); }
+.cat-bg-spirit   { background-color: rgba(139, 75, 232, 0.15); }
+.cat-bg-flex     { background-color: rgba(154, 163, 173, 0.12); }
+
+/* карточка предмета в каталоге */
+.item-card {
+  border: 1px solid rgba(138, 109, 26, 0.4);
+  border-left-width: 3px;
+  border-radius: 0.4rem;
+  background-color: var(--panel2);
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+  position: relative;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 74px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.item-card:hover {
+  border-color: var(--brass);
+  transform: translateY(-1px);
+}
+.item-card .item-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  line-height: 1.15;
+}
+.item-card .item-cost { color: var(--brass); font-size: 0.78rem; }
+.item-card .tier-badge {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(201, 162, 39, 0.5);
+  color: var(--brass);
+}
+
+/* тултип */
+.tooltip {
+  position: fixed;
+  z-index: 60;
+  max-width: 300px;
+  background-color: #0a0c0f;
+  border: 1px solid var(--brass-dim);
+  border-radius: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  color: #d1d5db;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  display: none;
+}
+.tooltip .tt-name { color: #e5e7eb; font-weight: 600; margin-bottom: 0.2rem; }
+.tooltip .tt-sep { color: var(--brass); font-weight: 600; }
+
+/* панель статов */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.3rem;
+  background-color: rgba(26, 30, 36, 0.5);
+  border: 1px solid rgba(138, 109, 26, 0.25);
+}
+.stat-row dt { color: #9aa3ad; }
+.stat-row dd { font-weight: 600; color: #e5e7eb; }
+.stat-row.hl dd { color: var(--brass); }
+.stat-delta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.3rem;
+  border-radius: 0.25rem;
+}
+.stat-delta.stat-up   { color: #34d399; background-color: rgba(43, 184, 107, 0.12); }
+.stat-delta.stat-down { color: #f87171; background-color: rgba(26, 30, 36, 0.85); border: 1px solid rgba(239, 68, 68, 0.35); }
+
+/* тумблер «зеркальная дуэль» */
+.switch {
+  position: relative;
+  width: 3rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--brass-dim);
+  background-color: var(--panel2);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.switch .switch-knob {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background-image: linear-gradient(180deg, #e2c25a, #8a6d1a);
+  transition: transform 0.2s;
+}
+.switch.switch-on {
+  border-color: var(--brass);
+  background-color: rgba(201, 162, 39, 0.2);
+}
+.switch.switch-on .switch-knob { transform: translateX(1.4rem); }
+.switch:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+/* сетка героев матчапа */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.hero-card {
+  position: relative;
+  text-align: left;
+  border: 1px solid rgba(138, 109, 26, 0.4);
+  border-radius: 0.4rem;
+  background-color: var(--panel2);
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.hero-card:hover { border-color: var(--brass); transform: translateY(-1px); }
+.hero-card:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.hero-card .hero-card-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+.hero-card .hero-card-roles {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brass);
+  margin-top: 0.1rem;
+}
+.hero-card .hero-card-sig {
+  font-size: 0.7rem;
+  color: #9aa3ad;
+  margin-top: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hero-card.hero-selected {
+  border-color: var(--brass);
+  background-color: rgba(201, 162, 39, 0.12);
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.4), 0 0 12px rgba(201, 162, 39, 0.2);
+}
+.hero-card .hero-pick-no {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--brass);
+  border: 1px solid rgba(201, 162, 39, 0.5);
+  border-radius: 999px;
+  padding: 0 0.35rem;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* синергии врага */
+.synergy-card {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-left: 4px solid #ef4444;
+  border-radius: 0.5rem;
+  background-color: var(--panel2);
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.synergy-card .synergy-tags {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f87171;
+  font-weight: 700;
+}
+.synergy-card p { color: #e5e7eb; }
+
+/* менеджер билдов */
+.build-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(138, 109, 26, 0.3);
+  background-color: var(--panel2);
+}
+.build-row .build-row-name {
+  font-weight: 600;
+  color: #e5e7eb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-danger {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  color: #f87171;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background-color: var(--panel2);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.btn-danger:hover {
+  background-color: #b91c1c;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* интерактивная карта: подсветка линий */
+.map-diagram [data-lane] { transition: opacity 0.2s; }
+.map-diagram.lane-focus [data-lane]:not(.lane-active) { opacity: 0.35; }
+.map-diagram [data-lane].lane-active polygon {
+  stroke: var(--brass);
+  stroke-width: 2;
+}
+.map-diagram [data-lane].lane-active line {
+  stroke-width: 5;
+  filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.8));
+}
+.lane-card { cursor: pointer; }
+.lane-card:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.lane-card.lane-card-active {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.4), 0 0 16px rgba(201, 162, 39, 0.25);
+}
+
+/* таймлайн: кликабельные фазы */
+.timeline-phase { cursor: pointer; border-radius: 0.3rem; }
+.timeline-phase:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.timeline-phase.phase-active { padding: 0.5rem; background-color: rgba(201, 162, 39, 0.08); }
+.timeline-phase.phase-dim { opacity: 0.45; }
+.timeline-phase.phase-dim > p { display: none; } /* свёрнутые фазы — только заголовок */
+.timeline-phase .phase-tip {
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.3rem;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  background-color: rgba(0, 0, 0, 0.35);
+  font-size: 0.8rem;
+  color: #e5e7eb;
+}
+.timeline-phase .phase-tip-label { color: var(--brass); font-weight: 700; }
+
+/* карточки угроз / рекомендаций */
+.threat-card {
+  border: 1px solid rgba(138, 109, 26, 0.4);
+  border-radius: 0.5rem;
+  background-color: var(--panel2);
+  padding: 0.75rem;
+}
+.threat-card.threat-key {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.35), 0 0 14px rgba(201, 162, 39, 0.15);
+}
+.threat-card .threat-score {
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--brass);
+}
+.reco-card {
+  border: 1px solid rgba(138, 109, 26, 0.4);
+  border-left-width: 3px;
+  border-radius: 0.5rem;
+  background-color: var(--panel2);
+  padding: 0.75rem;
+}
+
+/* карточка линии */
+.lane-card {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background-color: var(--panel);
+  border: 1px solid rgba(138, 109, 26, 0.45);
+  border-top: 3px solid var(--lane, var(--brass));
+}
+.lane-card .lane-title {
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--lane, var(--brass));
+  letter-spacing: 0.06em;
+}
+.district-chip {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.5rem;
+  margin: 0.15rem 0.15rem 0 0;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  color: #d1d5db;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* вертикальный таймлайн */
+.timeline {
+  border-left: 2px solid var(--brass-dim);
+  margin-left: 0.5rem;
+  padding-left: 1.5rem;
+  list-style: none;
+  position: relative;
+  background-image: repeating-linear-gradient(0deg, transparent 0 28px, rgba(201, 162, 39, 0.08) 28px 29px);
+}
+
+/* диаграмма карты */
+.map-diagram {
+  background-color: rgba(10, 12, 15, 0.6);
+  border-radius: 0.4rem;
+  border: 1px solid rgba(138, 109, 26, 0.35);
+}
+.map-diagram text {
+  font-family: var(--font-body, 'Oswald', 'Barlow', sans-serif);
+}
+.timeline li { position: relative; margin-bottom: 1.6rem; }
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: calc(-1.5rem - 7px);
+  top: 0.25rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-image: radial-gradient(circle at 35% 35%, #e2c25a, #8a6d1a);
+  box-shadow: 0 0 6px rgba(201, 162, 39, 0.6);
+}
+.time-badge {
+  display: inline-block;
+  font-family: var(--font-display, 'Oswald', 'Bebas Neue', sans-serif);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--brass);
+  border: 1px solid var(--brass-dim);
+  border-radius: 0.25rem;
+  padding: 0.05rem 0.45rem;
+  margin-bottom: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* тост */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(2rem);
+  background-color: #161d2c;
+  color: #d6dae3;
+  border: 1px solid rgba(229, 169, 60, 0.35);
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  z-index: 70;
+  max-width: 90vw;
+}
+.toast.danger {
+  border-color: #ef4444;
+  border-left: 4px solid #ef4444;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

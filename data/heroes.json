@@ -1,0 +1,1292 @@
+[
+  {
+    "id": "infernus",
+    "name": "Инфернус",
+    "name_en": "Infernus",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 830,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.7
+    },
+    "threat_tags": [
+      "heal",
+      "spirit_caster",
+      "mobility"
+    ],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/infernus.webp",
+    "winrate": 0.4906,
+    "pickrate": 0.0368,
+    "in_development": false,
+    "api_id": 1,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "seven",
+    "name": "Семь",
+    "name_en": "Seven",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 730,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.7
+    },
+    "threat_tags": [
+      "uninterruptible_ult",
+      "bullet_dps"
+    ],
+    "signature": "",
+    "difficulty": 3,
+    "portrait": "assets/heroes/seven.webp",
+    "winrate": 0.5512,
+    "pickrate": 0.0291,
+    "in_development": false,
+    "api_id": 2,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "vindicta",
+    "name": "Виндикта",
+    "name_en": "Vindicta",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 755,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.9
+    },
+    "threat_tags": [
+      "bullet_dps",
+      "burst",
+      "mobility"
+    ],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/vindicta.webp",
+    "winrate": 0.5039,
+    "pickrate": 0.0267,
+    "in_development": false,
+    "api_id": 3,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "lady-geist",
+    "name": "Леди Гайст",
+    "name_en": "Lady Geist",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 880,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.3
+    },
+    "threat_tags": [
+      "spirit_caster",
+      "burst",
+      "heal"
+    ],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/lady-geist.webp",
+    "winrate": 0.5108,
+    "pickrate": 0.0236,
+    "in_development": false,
+    "api_id": 4,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "abrams",
+    "name": "Абрамс",
+    "name_en": "Abrams",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 800,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.4
+    },
+    "threat_tags": [
+      "heal",
+      "tank",
+      "cc_chain"
+    ],
+    "signature": "Танковый боец ближнего боя: цепочка контроля и рывок с последующим вампиризмом. Игнорирует урон за счёт отхила, поэтому без анти-хила сбить его крайне сложно.",
+    "difficulty": 2,
+    "portrait": "assets/heroes/abrams.webp",
+    "winrate": 0.5135,
+    "pickrate": 0.0263,
+    "in_development": false,
+    "api_id": 6,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "wraith",
+    "name": "Тень",
+    "roles": [
+      "carry",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 610,
+      "bullet_shield": 4,
+      "spirit_shield": 2,
+      "weapon_damage": 30,
+      "fire_rate": 2.6,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.6
+    },
+    "threat_tags": [
+      "bullet_dps",
+      "spirit_caster",
+      "mobility"
+    ],
+    "signature": "Универсальный стрелок: карты нанесения урона духом плюс стабильный пулевой DPS. На дистанции разменивается выгоднее почти всех.",
+    "difficulty": 2,
+    "name_en": "Wraith",
+    "portrait": "assets/heroes/wraith.webp",
+    "winrate": 0.5009,
+    "pickrate": 0.0281,
+    "in_development": false,
+    "api_id": 7,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "mcginnis",
+    "name": "Макгиннис",
+    "name_en": "McGinnis",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.7
+    },
+    "threat_tags": [
+      "uninterruptible_ult",
+      "tank"
+    ],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/mcginnis.webp",
+    "winrate": 0.4866,
+    "pickrate": 0.0129,
+    "in_development": false,
+    "api_id": 8,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "paradox",
+    "name": "Парадокс",
+    "name_en": "Paradox",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 730,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.7
+    },
+    "threat_tags": [
+      "burst",
+      "spirit_caster",
+      "mobility"
+    ],
+    "signature": "",
+    "difficulty": 3,
+    "portrait": "assets/heroes/paradox.webp",
+    "winrate": 0.4596,
+    "pickrate": 0.0271,
+    "in_development": false,
+    "api_id": 10,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "dynamo",
+    "name": "Динамо",
+    "roles": [
+      "support",
+      "controller"
+    ],
+    "stats": {
+      "hp": 640,
+      "bullet_shield": 4,
+      "spirit_shield": 5,
+      "weapon_damage": 30,
+      "fire_rate": 1.6,
+      "spirit_power": 13,
+      "stamina": 2,
+      "move_speed": 6.2
+    },
+    "threat_tags": [
+      "tank",
+      "heal",
+      "cc_chain"
+    ],
+    "signature": "Тяжёлый саппорт-исполнитель: силовые поля, поглощение урона и мощный отхил союзников. Его аура лечения перевешивает затяжные драки.",
+    "difficulty": 2,
+    "name_en": "Dynamo",
+    "portrait": "assets/heroes/dynamo.webp",
+    "winrate": 0.5248,
+    "pickrate": 0.0246,
+    "in_development": false,
+    "api_id": 11,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "kelvin",
+    "name": "Кельвин",
+    "roles": [
+      "support",
+      "initiator"
+    ],
+    "stats": {
+      "hp": 660,
+      "bullet_shield": 5,
+      "spirit_shield": 6,
+      "weapon_damage": 29,
+      "fire_rate": 2.0,
+      "spirit_power": 12,
+      "stamina": 3,
+      "move_speed": 6.7
+    },
+    "threat_tags": [
+      "heal",
+      "tank",
+      "cc_chain"
+    ],
+    "signature": "Ледяной монах: заморозка, ледяная купель для союзников и постоянный командный отхил. Держит команду на ногах в затяжных драках.",
+    "difficulty": 2,
+    "name_en": "Kelvin",
+    "portrait": "assets/heroes/kelvin.webp",
+    "winrate": 0.5388,
+    "pickrate": 0.0152,
+    "in_development": false,
+    "api_id": 12,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "haze",
+    "name": "Хейз",
+    "roles": [
+      "carry"
+    ],
+    "stats": {
+      "hp": 600,
+      "bullet_shield": 3,
+      "spirit_shield": 0,
+      "weapon_damage": 28,
+      "fire_rate": 3.2,
+      "spirit_power": 5,
+      "stamina": 3,
+      "move_speed": 7.0
+    },
+    "threat_tags": [
+      "bullet_dps",
+      "stealth",
+      "burst"
+    ],
+    "signature": "Скорострельный стрелок с максимальной DPS-отдачей по одиночной цели. За секунды расплавляет цели без пулевого щита и брони.",
+    "difficulty": 2,
+    "name_en": "Haze",
+    "portrait": "assets/heroes/haze.webp",
+    "winrate": 0.5345,
+    "pickrate": 0.0427,
+    "in_development": false,
+    "api_id": 13,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "astro",
+    "name": "Холлидей",
+    "name_en": "Holliday",
+    "roles": [
+      "carry"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 8.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/astro.webp",
+    "winrate": 0.4768,
+    "pickrate": 0.0183,
+    "in_development": false,
+    "api_id": 14,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "bebop",
+    "name": "Бебоп",
+    "roles": [
+      "controller",
+      "initiator"
+    ],
+    "stats": {
+      "hp": 600,
+      "bullet_shield": 3,
+      "spirit_shield": 3,
+      "weapon_damage": 35,
+      "fire_rate": 1.5,
+      "spirit_power": 11,
+      "stamina": 3,
+      "move_speed": 6.5
+    },
+    "threat_tags": [
+      "spirit_caster",
+      "cc_chain",
+      "burst"
+    ],
+    "signature": "Бомбардир с крюком: цепляет, притягивает и вешает бомбы. Взрыв связки бомб снимает половину HP за одно касание.",
+    "difficulty": 3,
+    "name_en": "Bebop",
+    "portrait": "assets/heroes/bebop.webp",
+    "winrate": 0.4711,
+    "pickrate": 0.0375,
+    "in_development": false,
+    "api_id": 15,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "nano",
+    "name": "Калико",
+    "name_en": "Calico",
+    "roles": [
+      "carry",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 730,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.8
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/nano.webp",
+    "winrate": 0.5039,
+    "pickrate": 0.0205,
+    "in_development": false,
+    "api_id": 16,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "grey-talon",
+    "name": "Серый Коготь",
+    "name_en": "Grey Talon",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.3
+    },
+    "threat_tags": [
+      "spirit_caster",
+      "burst",
+      "mobility"
+    ],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/grey-talon.webp",
+    "winrate": 0.4742,
+    "pickrate": 0.0141,
+    "in_development": false,
+    "api_id": 17,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "mo-and-krill",
+    "name": "Мо и Мелкий",
+    "name_en": "Mo & Krill",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 930,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 8.0
+    },
+    "threat_tags": [
+      "tank",
+      "cc_chain",
+      "burst"
+    ],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/mo-and-krill.webp",
+    "winrate": 0.5181,
+    "pickrate": 0.0255,
+    "in_development": false,
+    "api_id": 18,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "shiv",
+    "name": "Шив",
+    "roles": [
+      "duelist",
+      "initiator"
+    ],
+    "stats": {
+      "hp": 620,
+      "bullet_shield": 3,
+      "spirit_shield": 2,
+      "weapon_damage": 31,
+      "fire_rate": 2.1,
+      "spirit_power": 9,
+      "stamina": 4,
+      "move_speed": 6.9
+    },
+    "threat_tags": [
+      "burst",
+      "mobility",
+      "cc_chain"
+    ],
+    "signature": "Быстрый дуэлянт с рывками, ядом и решающим добиванием по размену HP. Прыгает в спину и уходит раньше, чем прилетает ответка.",
+    "difficulty": 2,
+    "name_en": "Shiv",
+    "portrait": "assets/heroes/shiv.webp",
+    "winrate": 0.4557,
+    "pickrate": 0.0285,
+    "in_development": false,
+    "api_id": 19,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "ivy",
+    "name": "Айви",
+    "name_en": "Ivy",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 755,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [
+      "heal",
+      "mobility",
+      "heal"
+    ],
+    "signature": "",
+    "difficulty": 3,
+    "portrait": "assets/heroes/ivy.webp",
+    "winrate": 0.5303,
+    "pickrate": 0.0232,
+    "in_development": false,
+    "api_id": 20,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "warden",
+    "name": "Дозорный",
+    "roles": [
+      "initiator",
+      "support"
+    ],
+    "stats": {
+      "hp": 720,
+      "bullet_shield": 8,
+      "spirit_shield": 2,
+      "weapon_damage": 27,
+      "fire_rate": 1.9,
+      "spirit_power": 9,
+      "stamina": 2,
+      "move_speed": 6.1
+    },
+    "threat_tags": [
+      "tank",
+      "cc_chain",
+      "heal"
+    ],
+    "signature": "Тюремщик: кайдзю-прыжок, цепи и клетка, запирающая группу врагов. Мясной щит команды и мастер длинного контроля.",
+    "difficulty": 2,
+    "name_en": "Warden",
+    "portrait": "assets/heroes/warden.webp",
+    "winrate": 0.4974,
+    "pickrate": 0.0177,
+    "in_development": false,
+    "api_id": 25,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "yamato",
+    "name": "Ямато",
+    "roles": [
+      "duelist",
+      "carry"
+    ],
+    "stats": {
+      "hp": 630,
+      "bullet_shield": 4,
+      "spirit_shield": 2,
+      "weapon_damage": 34,
+      "fire_rate": 2.3,
+      "spirit_power": 10,
+      "stamina": 3,
+      "move_speed": 6.8
+    },
+    "threat_tags": [
+      "spirit_caster",
+      "burst",
+      "mobility"
+    ],
+    "signature": "Клинок-душитель: прыжки, дух-меч и ульта-бесмертие с уроном по области. Врывается, наносит огромный дух-урон и выходит неуязвимой.",
+    "difficulty": 3,
+    "name_en": "Yamato",
+    "portrait": "assets/heroes/yamato.webp",
+    "winrate": 0.4874,
+    "pickrate": 0.0226,
+    "in_development": false,
+    "api_id": 27,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "lash",
+    "name": "Хлыст",
+    "roles": [
+      "initiator",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 610,
+      "bullet_shield": 3,
+      "spirit_shield": 2,
+      "weapon_damage": 33,
+      "fire_rate": 2.5,
+      "spirit_power": 9,
+      "stamina": 4,
+      "move_speed": 7.3
+    },
+    "threat_tags": [
+      "mobility",
+      "cc_chain",
+      "burst"
+    ],
+    "signature": "Киножрец-стрелок: хлыст-притягивание, батуты и ульта-стягивание всей вражеской команды в кучу. Самый быстрый инициатор карты.",
+    "difficulty": 3,
+    "name_en": "Lash",
+    "portrait": "assets/heroes/lash.webp",
+    "winrate": 0.5112,
+    "pickrate": 0.037,
+    "in_development": false,
+    "api_id": 31,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "viscous",
+    "name": "Вязкус",
+    "roles": [
+      "controller",
+      "initiator"
+    ],
+    "stats": {
+      "hp": 650,
+      "bullet_shield": 7,
+      "spirit_shield": 4,
+      "weapon_damage": 28,
+      "fire_rate": 2.1,
+      "spirit_power": 10,
+      "stamina": 3,
+      "move_speed": 6.5
+    },
+    "threat_tags": [
+      "tank",
+      "cc_chain",
+      "cc_chain"
+    ],
+    "signature": "Слизистый тактик: куб-щит, лужи замедления и ульта-слизень, который сгребает врагов. Зонит драки и держит урон вместо команды.",
+    "difficulty": 3,
+    "name_en": "Viscous",
+    "portrait": "assets/heroes/viscous.webp",
+    "winrate": 0.4646,
+    "pickrate": 0.0159,
+    "in_development": false,
+    "api_id": 35,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "pocket",
+    "name": "Карман",
+    "name_en": "Pocket",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [
+      "spirit_caster",
+      "burst",
+      "mobility"
+    ],
+    "signature": "",
+    "difficulty": 3,
+    "portrait": "assets/heroes/pocket.webp",
+    "winrate": 0.4563,
+    "pickrate": 0.0207,
+    "in_development": false,
+    "api_id": 50,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "mirage",
+    "name": "Мираж",
+    "roles": [
+      "duelist",
+      "carry"
+    ],
+    "stats": {
+      "hp": 610,
+      "bullet_shield": 3,
+      "spirit_shield": 4,
+      "weapon_damage": 32,
+      "fire_rate": 2.2,
+      "spirit_power": 11,
+      "stamina": 3,
+      "move_speed": 7.0
+    },
+    "threat_tags": [
+      "mobility",
+      "spirit_caster",
+      "cc_chain"
+    ],
+    "signature": "Пустынный танцор: жуки-скарабеи, рывки сквозь песок и молния-прыжок. Манёвренный боец с дистанционным дух-уроном.",
+    "difficulty": 3,
+    "name_en": "Mirage",
+    "portrait": "assets/heroes/mirage.webp",
+    "winrate": 0.4421,
+    "pickrate": 0.013,
+    "in_development": false,
+    "api_id": 52,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "viper",
+    "name": "Гадюка",
+    "name_en": "Vyper",
+    "roles": [
+      "carry",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.9
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/viper.webp",
+    "winrate": 0.4912,
+    "pickrate": 0.0154,
+    "in_development": false,
+    "api_id": 58,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "magician",
+    "name": "Синклер",
+    "name_en": "Sinclair",
+    "roles": [
+      "controller",
+      "support"
+    ],
+    "stats": {
+      "hp": 730,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/magician.webp",
+    "winrate": 0.4571,
+    "pickrate": 0.0156,
+    "in_development": false,
+    "api_id": 60,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "vampirebat",
+    "name": "Мина",
+    "name_en": "Mina",
+    "roles": [
+      "support"
+    ],
+    "stats": {
+      "hp": 660,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.5
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/vampirebat.webp",
+    "winrate": 0.4621,
+    "pickrate": 0.0346,
+    "in_development": false,
+    "api_id": 63,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "drifter",
+    "name": "Скиталец",
+    "name_en": "Drifter",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 755,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.9
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/drifter.webp",
+    "winrate": 0.5029,
+    "pickrate": 0.0372,
+    "in_development": false,
+    "api_id": 64,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "priest",
+    "name": "Венатор",
+    "name_en": "Venator",
+    "roles": [
+      "support",
+      "controller"
+    ],
+    "stats": {
+      "hp": 820,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.4
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/priest.webp",
+    "winrate": 0.4625,
+    "pickrate": 0.0368,
+    "in_development": false,
+    "api_id": 65,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "frank",
+    "name": "Виктор",
+    "name_en": "Victor",
+    "roles": [
+      "initiator",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 800,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.3
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/frank.webp",
+    "winrate": 0.5527,
+    "pickrate": 0.0267,
+    "in_development": false,
+    "api_id": 66,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "bookworm",
+    "name": "Пейдж",
+    "name_en": "Paige",
+    "roles": [
+      "support"
+    ],
+    "stats": {
+      "hp": 680,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.9
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/bookworm.webp",
+    "winrate": 0.5594,
+    "pickrate": 0.0318,
+    "in_development": false,
+    "api_id": 67,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "doorman",
+    "name": "Швейцар",
+    "name_en": "The Doorman",
+    "roles": [
+      "initiator"
+    ],
+    "stats": {
+      "hp": 755,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.9
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/doorman.webp",
+    "winrate": 0.4567,
+    "pickrate": 0.0166,
+    "in_development": false,
+    "api_id": 69,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "punkgoat",
+    "name": "Билли",
+    "name_en": "Billy",
+    "roles": [
+      "initiator",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 820,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.0
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/punkgoat.webp",
+    "winrate": 0.4813,
+    "pickrate": 0.0276,
+    "in_development": false,
+    "api_id": 72,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "necro",
+    "name": "Грейвс",
+    "name_en": "Graves",
+    "roles": [
+      "controller"
+    ],
+    "stats": {
+      "hp": 730,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.0
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/necro.webp",
+    "winrate": 0.5652,
+    "pickrate": 0.0344,
+    "in_development": false,
+    "api_id": 76,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "fencer",
+    "name": "Аполлон",
+    "name_en": "Apollo",
+    "roles": [
+      "carry"
+    ],
+    "stats": {
+      "hp": 770,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/fencer.webp",
+    "winrate": 0.5036,
+    "pickrate": 0.0229,
+    "in_development": false,
+    "api_id": 77,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "deadpack",
+    "name": "Дэнни Мертвец",
+    "name_en": "Deadman Danny",
+    "roles": [
+      "duelist"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/deadpack.webp",
+    "winrate": null,
+    "pickrate": null,
+    "in_development": true,
+    "api_id": 78
+  },
+  {
+    "id": "familiar",
+    "name": "Дрём",
+    "name_en": "Rem",
+    "roles": [
+      "support"
+    ],
+    "stats": {
+      "hp": 680,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/familiar.webp",
+    "winrate": 0.4709,
+    "pickrate": 0.034,
+    "in_development": false,
+    "api_id": 79,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "werewolf",
+    "name": "Сильвер",
+    "name_en": "Silver",
+    "roles": [
+      "duelist",
+      "initiator"
+    ],
+    "stats": {
+      "hp": 830,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.7
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/werewolf.webp",
+    "winrate": 0.4599,
+    "pickrate": 0.0246,
+    "in_development": false,
+    "api_id": 80,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "unicorn",
+    "name": "Селеста",
+    "name_en": "Celeste",
+    "roles": [
+      "support",
+      "controller"
+    ],
+    "stats": {
+      "hp": 690,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/unicorn.webp",
+    "winrate": 0.4979,
+    "pickrate": 0.0262,
+    "in_development": false,
+    "api_id": 81,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "ratking",
+    "name": "Крысиный король",
+    "name_en": "Rat King",
+    "roles": [
+      "initiator"
+    ],
+    "stats": {
+      "hp": 800,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.8
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/ratking.webp",
+    "winrate": 0.5899,
+    "pickrate": 0.022,
+    "in_development": false,
+    "api_id": 84,
+    "meta_updated_at": "2026-10-09"
+  },
+  {
+    "id": "chessmaster",
+    "name": "Соломон",
+    "name_en": "Solomon",
+    "roles": [
+      "controller"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/chessmaster.webp",
+    "winrate": null,
+    "pickrate": null,
+    "in_development": true,
+    "api_id": 85
+  },
+  {
+    "id": "artist",
+    "name": "Вайолет",
+    "name_en": "Violet",
+    "roles": [
+      "carry",
+      "duelist"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/artist.webp",
+    "winrate": null,
+    "pickrate": null,
+    "in_development": true,
+    "api_id": 86
+  },
+  {
+    "id": "nurse",
+    "name": "Медсестра Хэрроу",
+    "name_en": "Nurse Harrow",
+    "roles": [
+      "support"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 7.2
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/nurse.webp",
+    "winrate": null,
+    "pickrate": null,
+    "in_development": true,
+    "api_id": 87
+  },
+  {
+    "id": "baba",
+    "name": "Буся",
+    "name_en": "Baba",
+    "roles": [
+      "controller",
+      "support"
+    ],
+    "stats": {
+      "hp": 780,
+      "bullet_shield": 2,
+      "spirit_shield": 2,
+      "weapon_damage": 32,
+      "fire_rate": 2.0,
+      "spirit_power": 8,
+      "stamina": 3,
+      "move_speed": 6.5
+    },
+    "threat_tags": [],
+    "signature": "",
+    "difficulty": 2,
+    "portrait": "assets/heroes/baba.webp",
+    "winrate": 0.4629,
+    "pickrate": 0.0065,
+    "in_development": false,
+    "api_id": 88,
+    "meta_updated_at": "2026-10-09"
+  }
+]

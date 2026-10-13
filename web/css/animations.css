@@ -1,0 +1,504 @@
+/* ==========================================================================
+   DEADLOCKFORGE — ПРЕМИАЛЬНЫЕ АНИМАЦИИ И МИКРО-ИНТЕРАКЦИИ (60 FPS GPU-ONLY)
+   Стилистика: Оккультный арт-деко / стимпанк (Valve Deadlock, Statlocker.gg)
+   ========================================================================== */
+
+:root {
+  /* Физические кривые движения */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);       /* Резкий старт, плавное торможение для UI */
+  --ease-smooth:   cubic-bezier(0.23, 1, 0.32, 1);       /* Интеракции, меню, карточки */
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);     /* Пружинный овершут (штампы, бейджи) */
+  --ease-bounce:   cubic-bezier(0.68, -0.6, 0.32, 1.6);  /* Экипировка, сокеты */
+
+  /* Тайминги */
+  --dur-tactile: 120ms;
+  --dur-popover: 180ms;
+  --dur-card:    260ms;
+  --dur-modal:   340ms;
+}
+
+/* --------------------------------------------------------------------------
+   1. КАРТОЧКИ ГЕРОЕВ, БИЛДОВ И ПРЕДМЕТОВ (3D Tilt, Sheen & Magnetic Glow)
+   -------------------------------------------------------------------------- */
+
+.hero-card,
+.item-card,
+.hub-card,
+.build-item,
+.tier-row {
+  transform: perspective(800px) translate3d(0, 0, 0);
+  transition: transform var(--dur-card) var(--ease-smooth),
+              box-shadow var(--dur-card) var(--ease-smooth),
+              border-color var(--dur-card) var(--ease-smooth),
+              background-color var(--dur-card) var(--ease-smooth);
+}
+
+.hero-card:hover,
+.item-card:hover,
+.hub-card:hover {
+  will-change: transform, opacity;
+  transform: perspective(800px) translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(229, 169, 60, 0.32) !important;
+}
+
+.hero-card:active,
+.item-card:active,
+.hub-card:active {
+  transform: perspective(800px) translate3d(0, -1px, 0) scale3d(0.98, 0.98, 1) !important;
+  transition-duration: var(--dur-tactile);
+}
+
+/* Специфические акцентные тени категорий предметов */
+.item-card.weapon:hover {
+  border-color: rgba(229, 138, 0, 0.85);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 22px rgba(229, 138, 0, 0.45) !important;
+}
+
+.item-card.vitality:hover {
+  border-color: rgba(76, 175, 80, 0.85);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 22px rgba(0, 247, 148, 0.4) !important;
+}
+
+.item-card.spirit:hover {
+  border-color: rgba(138, 85, 179, 0.85);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 22px rgba(206, 144, 255, 0.45) !important;
+}
+
+/* Sheen блик (бегущий градиент под углом 45°) */
+.hero-card::after,
+.item-card::after,
+.hub-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 30%,
+    rgba(255, 237, 121, 0.4) 50%,
+    rgba(255, 255, 255, 0.08) 65%,
+    transparent 100%
+  );
+  transform: rotate(25deg) translate3d(0, 0, 0);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+}
+
+.hero-card:hover::after,
+.item-card:hover::after,
+.hub-card:hover::after {
+  opacity: 1;
+  animation: card-sheen-sweep 420ms var(--ease-out-expo) forwards;
+}
+
+@keyframes card-sheen-sweep {
+  0% {
+    left: -120%;
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    left: 200%;
+    opacity: 0;
+  }
+}
+
+/* Тактильные нажатия кнопок */
+.btn-amber,
+.btn-ghost,
+.hud-tab,
+.tier-goto,
+.tier-tab {
+  transition: transform var(--dur-tactile) var(--ease-out-expo),
+              filter var(--dur-tactile) var(--ease-out-expo),
+              background-color var(--dur-tactile) var(--ease-out-expo),
+              border-color var(--dur-tactile) var(--ease-out-expo),
+              box-shadow var(--dur-tactile) var(--ease-out-expo);
+}
+
+.btn-amber:hover,
+.btn-ghost:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+.btn-amber:active,
+.btn-ghost:active,
+.hud-tab:active,
+.tier-goto:active {
+  transform: translate3d(0, 1px, 0) scale3d(0.97, 0.97, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (Staggered Cascade Fade-Up)
+   -------------------------------------------------------------------------- */
+
+@keyframes cardFadeUp {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.tab-panel:not(.hidden) {
+  animation: panel-fade-in 240ms var(--ease-out-expo) both;
+}
+
+@keyframes panel-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.tab-panel:not(.hidden) .cascade-item {
+  animation: cardFadeUp 260ms var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--index, 0) * 35ms);
+}
+
+/* --------------------------------------------------------------------------
+   3. БИЛД-ЛАБ: СОКЕТЫ И ЭКИПИРОВКА (Socket Equip & Upgrade FX)
+   -------------------------------------------------------------------------- */
+
+/* Пустые слоты: оккультное дыхание границы с низкой частотой (3s) */
+.slot:not(.filled) {
+  animation: slot-occult-breathe 3s ease-in-out infinite;
+  transition: border-color var(--dur-card) var(--ease-smooth),
+              background-color var(--dur-card) var(--ease-smooth),
+              transform var(--dur-tactile) var(--ease-out-expo);
+}
+
+@keyframes slot-occult-breathe {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 0 rgba(229, 169, 60, 0);
+  }
+  50% {
+    border-color: rgba(229, 169, 60, 0.32);
+    box-shadow: inset 0 0 8px rgba(229, 169, 60, 0.12), 0 0 6px rgba(229, 169, 60, 0.15);
+  }
+}
+
+/* Кольцевые вспышки границы слота при установке предмета */
+.slot.filled {
+  animation: slot-flash-ring 480ms var(--ease-out-expo) both;
+}
+
+.slot.filled.weapon {
+  animation-name: slot-flash-weapon;
+}
+
+.slot.filled.vitality {
+  animation-name: slot-flash-vitality;
+}
+
+.slot.filled.spirit {
+  animation-name: slot-flash-spirit;
+}
+
+@keyframes slot-flash-weapon {
+  0% {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9), 0 0 24px 8px rgba(229, 138, 0, 0.95);
+    filter: brightness(1.7);
+  }
+  45% {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 3px rgba(229, 138, 0, 0.5), 0 0 16px 4px rgba(229, 138, 0, 0.7);
+  }
+  100% {
+    border-color: rgba(229, 138, 0, 0.55);
+    box-shadow: 0 0 0 0 rgba(229, 138, 0, 0);
+    filter: brightness(1);
+  }
+}
+
+@keyframes slot-flash-vitality {
+  0% {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9), 0 0 24px 8px rgba(0, 247, 148, 0.95);
+    filter: brightness(1.7);
+  }
+  45% {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.5), 0 0 16px 4px rgba(76, 175, 80, 0.7);
+  }
+  100% {
+    border-color: rgba(76, 175, 80, 0.55);
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    filter: brightness(1);
+  }
+}
+
+@keyframes slot-flash-spirit {
+  0% {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9), 0 0 24px 8px rgba(206, 144, 255, 0.95);
+    filter: brightness(1.7);
+  }
+  45% {
+    border-color: #ab47bc;
+    box-shadow: 0 0 0 3px rgba(138, 85, 179, 0.5), 0 0 16px 4px rgba(138, 85, 179, 0.7);
+  }
+  100% {
+    border-color: rgba(138, 85, 179, 0.55);
+    box-shadow: 0 0 0 0 rgba(138, 85, 179, 0);
+    filter: brightness(1);
+  }
+}
+
+/* Микро-толчок иконки внутри экипированного слота */
+.slot.filled .slot-icon {
+  animation: slot-icon-pop 320ms var(--ease-spring) both;
+}
+
+@keyframes slot-icon-pop {
+  0% {
+    transform: scale3d(1.28, 1.28, 1);
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+/* Эффект прокачки / апгрейда предмета (золотая искра по периметру слота) */
+.slot.upgrade-spark {
+  animation: slot-upgrade-spark 600ms var(--ease-spring) both;
+}
+
+@keyframes slot-upgrade-spark {
+  0% {
+    box-shadow: 0 0 0 0 #ffed79, 0 0 25px 6px rgba(255, 237, 121, 0.95);
+    border-color: #ffffff;
+    transform: scale3d(1.06, 1.06, 1);
+  }
+  50% {
+    box-shadow: 0 0 0 4px #e5a93c, 0 0 18px 4px rgba(229, 169, 60, 0.8);
+    border-color: #ffed79;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. DEEP MATCH: АНАЛИЗ И ШТАМП РАНГА (Rank Stamp & Radar Scanner)
+   -------------------------------------------------------------------------- */
+
+/* Живой радар-сканер вокруг анализируемого контейнера / аватара */
+.radar-scanning {
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-scanning::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 280deg,
+    rgba(229, 169, 60, 0.5) 320deg,
+    #ffed79 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: radar-sweep 1.8s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Оценка матча: эффект физического удара штампа ранга */
+.grade-badge.stamp-active {
+  animation: rank-stamp-impact 340ms var(--ease-spring) both !important;
+}
+
+@keyframes rank-stamp-impact {
+  0% {
+    transform: scale3d(2.5, 2.5, 1);
+    filter: blur(4px);
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(229, 169, 60, 0.9);
+  }
+  65% {
+    transform: scale3d(0.96, 0.96, 1);
+    filter: blur(0);
+    opacity: 1;
+    box-shadow: 0 0 45px 8px var(--gold-color, #ffed79);
+  }
+  82% {
+    transform: scale3d(1.04, 1.04, 1);
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+    filter: blur(0);
+    opacity: 1;
+    box-shadow: 0 0 24px rgba(229, 169, 60, 0.55);
+  }
+}
+
+/* Ударная волна свечения штампа */
+.stamp-shockwave {
+  position: absolute;
+  inset: -12px;
+  border-radius: 14px;
+  border: 2px solid var(--gold-color, #ffed79);
+  pointer-events: none;
+  animation: shockwave-expand 420ms var(--ease-out-expo) forwards;
+}
+
+@keyframes shockwave-expand {
+  0% {
+    transform: scale3d(0.9, 0.9, 1);
+    opacity: 1;
+    box-shadow: 0 0 35px var(--gold-color, #ffed79);
+  }
+  100% {
+    transform: scale3d(1.4, 1.4, 1);
+    opacity: 0;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. ТУЛТИПЫ И ПОПОВЕРЫ ПРЕДМЕТОВ / СПОСОБНОСТЕЙ
+   -------------------------------------------------------------------------- */
+
+.statlocker-tooltip {
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: tooltip-fade-pop var(--dur-popover) var(--ease-out-expo) both;
+  border: 1px solid rgba(229, 169, 60, 0.28) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(229, 169, 60, 0.16) !important;
+}
+
+@keyframes tooltip-fade-pop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0) scale3d(0.97, 0.97, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  }
+}
+
+/* Бейджи «Пассивное» и «Активное» с мерцанием */
+.st-effect-type {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.st-effect-type::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: badge-shimmer 2.2s var(--ease-smooth) infinite;
+}
+
+@keyframes badge-shimmer {
+  0% { left: -100%; }
+  35%, 100% { left: 180%; }
+}
+
+/* --------------------------------------------------------------------------
+   6. ТОСТЫ И УВЕДОМЛЕНИЯ (Physical Push-Up)
+   -------------------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translate3d(-50%, 100%, 0) scale3d(0.9, 0.9, 1);
+  opacity: 0;
+  background: rgba(22, 29, 44, 0.96);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 18px rgba(229, 169, 60, 0.2);
+  pointer-events: none;
+  overflow: hidden;
+  transition: transform 220ms var(--ease-spring),
+              opacity 180ms var(--ease-smooth);
+}
+
+.toast.show {
+  transform: translate3d(-50%, 0, 0) scale3d(1, 1, 1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toast.danger {
+  border-color: rgba(239, 68, 68, 0.65);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Прогресс-бар затухания тоста */
+.toast-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange), var(--amber), #ffed79);
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+
+.toast.show .toast-timer-bar {
+  animation: toast-timer-drain var(--toast-duration, 2600ms) linear forwards;
+}
+
+.toast.danger .toast-timer-bar {
+  background: linear-gradient(90deg, #f87171, #ef4444);
+}
+
+@keyframes toast-timer-drain {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+/* --------------------------------------------------------------------------
+   7. PREFERS-REDUCED-MOTION
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hero-card:hover, .item-card:hover, .hub-card:hover {
+    transform: none !important;
+  }
+}

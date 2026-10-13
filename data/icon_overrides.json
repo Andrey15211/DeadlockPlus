@@ -1,0 +1,1072 @@
+{
+  "basic-magazine": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_clip_size",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/basic_magazine.webp"
+  },
+  "monster-rounds": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_non_player_bonus",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/monster_rounds.webp"
+  },
+  "close-quarters": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_close_range",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/close_quarters.webp"
+  },
+  "sprint-boots": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_sprint_booster",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/sprint_boots.webp"
+  },
+  "point-blank": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_close_quarter_combat",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/point_blank.webp"
+  },
+  "toxic-bullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_toxic_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/toxic_bullets.webp"
+  },
+  "berserker": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_berserker",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/berserker.webp"
+  },
+  "life-strike": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_lifestrike_gauntlets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/melee_lifesteal.webp"
+  },
+  "leech": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_damage_recycler",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/leech.webp"
+  },
+  "healbane": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_healbane",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healbane.webp"
+  },
+  "knockdown": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_target_stun",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/knockdown.webp"
+  },
+  "return-fire": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_return_fire",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/return_fire.webp"
+  },
+  "fleetfoot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_fleetfoot_boots",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/fleetfoot.webp"
+  },
+  "tempest-scope": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_sharpshooter",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/sharp_shooter.webp"
+  },
+  "executioners-edge": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_glass_cannon",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/glass_cannon.webp"
+  },
+  "bloodletter": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_toxic_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/toxic_bullets.webp"
+  },
+  "extra-health": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_health",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_health.webp"
+  },
+  "extra-stamina": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_improved_stamina",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_stamina.webp"
+  },
+  "bullet-armor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_bullet_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/bullet_resilience.webp"
+  },
+  "regeneration-booster": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_healing_booster",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_booster.webp"
+  },
+  "improved-bullet-armor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_improved_bullet_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/bullet_resilience.webp"
+  },
+  "spirit-armor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spirit_resilience.webp"
+  },
+  "pool-of-restoration": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_restorative_locket",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/restorative_locket.webp"
+  },
+  "battle-hardened": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_regenerating_bullet_shield",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/battle_vest.webp"
+  },
+  "metal-skin": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_metal_skin",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/metal_skin.webp"
+  },
+  "thornskin": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_return_fire",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/return_fire.webp"
+  },
+  "fortress-guard": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_shield",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/enchanters_emblem.webp"
+  },
+  "heavy-magic-resist": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spirit_resilience.webp"
+  },
+  "unstoppable": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_unstoppable",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/unstoppable.webp"
+  },
+  "siphon": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_siphon_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/siphon_bullets.webp"
+  },
+  "heavy-bullet-armor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_bullet_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/bullet_resilience.webp"
+  },
+  "unyielding-heart": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_unstoppable",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/unstoppable.webp"
+  },
+  "guardian-aura": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rescue_beam",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/rescue_beam.webp"
+  },
+  "mystic-shot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_crackshot",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/mystic_shot.webp"
+  },
+  "fortune-hand": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_improved_spirit",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/extra_spirit.webp"
+  },
+  "arcane-focus": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_acolytes_glove",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/spirit_strike.webp"
+  },
+  "apprentice-tome": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_vulnerability",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_vulnerability.webp"
+  },
+  "improved-cooldown": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_tempo",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/improved_cooldown.webp"
+  },
+  "duration-extender": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_arcane_extension",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/duration_extender.webp"
+  },
+  "mystic-reach": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_reach",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_reach.webp"
+  },
+  "torment-pulse": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_damage_pulse",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/torment_pulse.webp"
+  },
+  "ritualist": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_damage_pulse",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/torment_pulse.webp"
+  },
+  "ward-of-revelation": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_diviners_kevlar",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/diviners_kevlar.webp"
+  },
+  "curse": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_glitch",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/curse.webp"
+  },
+  "spellbreaker": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_spellbreaker",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spellbreaker.webp"
+  },
+  "inhibitor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_inhibitor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/inhibitor.webp"
+  },
+  "echo-shard": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_ability_power_shard",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/echo_shard.webp"
+  },
+  "advanced-cooldown": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cooldown_reduction",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/superior_cooldown.webp"
+  },
+  "hunter-s-mark": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_bullet_armor_reduction_aura",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/hunters_aura.webp"
+  },
+  "silence-glyph": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_targeted_silence",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/silence_glyph.webp"
+  },
+  "suppressor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_suppressor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/suppressor.webp"
+  },
+  "boundless-spirit": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_boundless_spirit",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/boundless_spirit.webp"
+  },
+  "clip-size": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_clip_size",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/basic_magazine.webp"
+  },
+  "non-player-bonus": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_non_player_bonus",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/monster_rounds.webp"
+  },
+  "non-player-bonus-sacrifice": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_non_player_bonus_sacrifice",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/cultist_sacrifice.webp"
+  },
+  "chain-lightning": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_chain_lightning",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/tesla_bullets.webp"
+  },
+  "capacitor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_capacitor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/capacitor.webp"
+  },
+  "hollow-point-rounds": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_hollow_point_rounds",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/hollow_point.webp"
+  },
+  "pristine-emblem": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_pristine_emblem",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/opening_rounds.webp"
+  },
+  "high-velocity-mag": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_high_velocity_mag",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/high_velocity_rounds.webp"
+  },
+  "lifestrike-gauntlets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_lifestrike_gauntlets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/melee_lifesteal.webp"
+  },
+  "melee-rebuttal": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_melee_rebuttal",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/rebuttal.webp"
+  },
+  "counterspell": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_counterspell",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/counterspell.webp"
+  },
+  "weighted-shots": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_weighted_shots",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/weighted_shots.webp"
+  },
+  "close-range": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_close_range",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/close_quarters.webp"
+  },
+  "long-range": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_long_range",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/long_range.webp"
+  },
+  "slowing-bullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_slowing_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/slowing_bullets.webp"
+  },
+  "tech-defense-shredders": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_defense_shredders",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/spirit_shredder_bullets.webp"
+  },
+  "dps-aura": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_dps_aura",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/heroic_aura.webp"
+  },
+  "targeted-silence": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_targeted_silence",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/silence_glyph.webp"
+  },
+  "proc-silence": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_proc_silence",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/silencer.webp"
+  },
+  "fervor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_fervor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/frenzy.webp"
+  },
+  "siphon-bullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_siphon_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/siphon_bullets.webp"
+  },
+  "headshot-booster": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_headshot_booster",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/headshot_booster.webp"
+  },
+  "headshot-booster2": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_headshot_booster2",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/weakening_headshot.webp"
+  },
+  "sharpshooter": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_sharpshooter",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/sharp_shooter.webp"
+  },
+  "headhunter": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_headhunter",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/headhunter.webp"
+  },
+  "spellslinger-headshots": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_spellslinger_headshots",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/spellslinger_headshots.webp"
+  },
+  "banshee-slugs": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_banshee_slugs",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/crippling_headshot.webp"
+  },
+  "crackshot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_crackshot",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/mystic_shot.webp"
+  },
+  "critshot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_critshot",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/lucky_shot.webp"
+  },
+  "close-quarter-combat": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_close_quarter_combat",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/point_blank.webp"
+  },
+  "ricochet": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_ricochet",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/ricochet.webp"
+  },
+  "health": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_health",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_health.webp"
+  },
+  "vampire": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_vampire",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/bullet_lifesteal.webp"
+  },
+  "debuff-reducer": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_debuff_reducer",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/debuff_reducer.webp"
+  },
+  "reduce-debuff-duration": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_reduce_debuff_duration",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/debuff_remover.webp"
+  },
+  "tech-purge": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_purge",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spirit_resilience.webp"
+  },
+  "healing-booster": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_healing_booster",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_booster.webp"
+  },
+  "chonky": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_chonky",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/fortitude.webp"
+  },
+  "damage-recycler": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_damage_recycler",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/leech.webp"
+  },
+  "sprint-booster": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_sprint_booster",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/sprint_boots.webp"
+  },
+  "trophy-collector": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_trophy_collector",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/trophy_collector.webp"
+  },
+  "cardio-calibrator": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cardio_calibrator",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/enduring_speed.webp"
+  },
+  "superior-stamina": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_superior_stamina",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/stamina_mastery.webp"
+  },
+  "rapid-rounds": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rapid_rounds",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/rapid_rounds.webp"
+  },
+  "improved-stamina": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_improved_stamina",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_stamina.webp"
+  },
+  "bullet-armor-reduction-aura": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_bullet_armor_reduction_aura",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/hunters_aura.webp"
+  },
+  "grit": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_grit",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/grit.webp"
+  },
+  "weapon-shielding": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_weapon_shielding",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/weapon_shielding.webp"
+  },
+  "spirit-bubble": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_spirit_bubble",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spirit_shielding.webp"
+  },
+  "regenerating-bullet-shield": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_regenerating_bullet_shield",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/battle_vest.webp"
+  },
+  "magic-shield": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_shield",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/enchanters_emblem.webp"
+  },
+  "improved-spirit": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_improved_spirit",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/extra_spirit.webp"
+  },
+  "mystic-regeneration": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_mystic_regeneration",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_regen.webp"
+  },
+  "soaring-spirit": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_soaring_spirit",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/improved_spirit.webp"
+  },
+  "tech-overflow": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_overflow",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/spiritual_overflow.webp"
+  },
+  "tech-range": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_range",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/greater_expansion.webp"
+  },
+  "magic-reach": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_reach",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_reach.webp"
+  },
+  "extra-charge": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_extra_charge",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/extra_charge.webp"
+  },
+  "health-stealing-magic": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_health_stealing_magic",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/spirit_lifesteal.webp"
+  },
+  "bullet-resist-shredder": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_bullet_resist_shredder",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/bullet_resist_shredder.webp"
+  },
+  "mystic-reverb": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_mystic_reverb",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_reverb.webp"
+  },
+  "magic-burst": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_burst",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_burst.webp"
+  },
+  "magic-shock": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_shock",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/tankbuster.webp"
+  },
+  "magic-vulnerability": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_vulnerability",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_vulnerability.webp"
+  },
+  "magic-slow": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_slow",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_slow.webp"
+  },
+  "escalating-exposure": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_escalating_exposure",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/escalating_exposure.webp"
+  },
+  "rapid-recharge": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rapid_recharge",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/rapid_recharge.webp"
+  },
+  "omnicharge-pendant": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_omnicharge_pendant",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/omnicharge_pendant.webp"
+  },
+  "magic-tempo": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_tempo",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/improved_cooldown.webp"
+  },
+  "cooldown-reduction": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cooldown_reduction",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/superior_cooldown.webp"
+  },
+  "transcendent-cooldown": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_transcendent_cooldown",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/transcendent_cooldown.webp"
+  },
+  "containment": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_containment",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/slowing_hex.webp"
+  },
+  "spirit-sap": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_spirit_sap",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/spirit_sap.webp"
+  },
+  "focus-lens": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_focus_lens",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/focus_lens.webp"
+  },
+  "withering-whip": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_withering_whip",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/rusted_barrel.webp"
+  },
+  "greater-withering-whip": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_greater_withering_whip",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/disarming_hex.webp"
+  },
+  "rescue-beam": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rescue_beam",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/rescue_beam.webp"
+  },
+  "rupture": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rupture",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/decay.webp"
+  },
+  "discord": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_discord",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/scourge.webp"
+  },
+  "target-stun": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_target_stun",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/knockdown.webp"
+  },
+  "phantom-strike": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_phantom_strike",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/phantom_strike.webp"
+  },
+  "warp-stone": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_warp_stone",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/warp_stone.webp"
+  },
+  "aoe-root": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_aoe_root",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/vortex_web.webp"
+  },
+  "ability-refresher": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_ability_refresher",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/refresher.webp"
+  },
+  "ability-power-shard": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_ability_power_shard",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/echo_shard.webp"
+  },
+  "tech-damage-pulse": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_tech_damage_pulse",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/torment_pulse.webp"
+  },
+  "cheat-death": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cheat_death",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/cheat_death.webp"
+  },
+  "cloaking-device-active": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cloaking_device_active",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/shadow_weave.webp"
+  },
+  "rocket-booster": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rocket_booster",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/majestic_leap.webp"
+  },
+  "health-nova": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_health_nova",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_nova.webp"
+  },
+  "restorative-locket": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_restorative_locket",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/restorative_locket.webp"
+  },
+  "health-stimpak": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_health_stimpak",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_rite.webp"
+  },
+  "shrink-ray": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_shrink_ray",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/shrink_ray.webp"
+  },
+  "infuser": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_infuser",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/infuser.webp"
+  },
+  "guardian-ward": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_guardian_ward",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/guardian_ward.webp"
+  },
+  "divine-barrier": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_divine_barrier",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/divine_barrier.webp"
+  },
+  "thermal-detonator": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_thermal_detonator",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/alchemical_fire.webp"
+  },
+  "blood-tribute": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_blood_tribute",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/blood_tribute.webp"
+  },
+  "fleetfoot-boots": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_fleetfoot_boots",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/fleetfoot.webp"
+  },
+  "kinetic-sash": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_kinetic_sash",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/kinetic_dash.webp"
+  },
+  "arcane-surge": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_arcane_surge",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/arcane_surge.webp"
+  },
+  "colossus": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_colossus",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/colossus.webp"
+  },
+  "cold-front": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cold_front",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/cold_front.webp"
+  },
+  "arctic-blast": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_arctic_blast",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/arctic_blast.webp"
+  },
+  "self-bubble": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_self_bubble",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/ethereal_shift.webp"
+  },
+  "glitch": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_glitch",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/curse.webp"
+  },
+  "arcane-extension": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_arcane_extension",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/duration_extender.webp"
+  },
+  "imbued-duration-extender": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_imbued_duration_extender",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/superior_duration.webp"
+  },
+  "glass-cannon": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_glass_cannon",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/glass_cannon.webp"
+  },
+  "fury-trance": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_fury_trance",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/fury_trance.webp"
+  },
+  "surging-power": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_surging_power",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/vampiric_burst.webp"
+  },
+  "boxing-glove": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_boxing_glove",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/lifestrike.webp"
+  },
+  "acolytes-glove": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_acolytes_glove",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/spirit_strike.webp"
+  },
+  "spirit-snatch": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_spirit_snatch",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/spirit_snatch.webp"
+  },
+  "melee-charge": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_melee_charge",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/melee_charge.webp"
+  },
+  "crushing-fists": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_crushing_fists",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/crushing_fists.webp"
+  },
+  "diviners-kevlar": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_diviners_kevlar",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/diviners_kevlar.webp"
+  },
+  "resonant-healing": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_resonant_healing",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/radiant_regeneration.webp"
+  },
+  "burst-fire": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_burst_fire",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/burst_fire.webp"
+  },
+  "endurance": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_endurance",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_regen.webp"
+  },
+  "magic-storm": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_storm",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/surge_of_power.webp"
+  },
+  "quick-silver": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_quick_silver",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/quicksilver_reload.webp"
+  },
+  "ethereal-bullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_ethereal_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mercurial_magnum.webp"
+  },
+  "intensifying-clip": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_intensifying_clip",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/intensifying_magazine.webp"
+  },
+  "reinforcing-casings": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_reinforcing_casings",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/escalating_resilience.webp"
+  },
+  "blitz-bullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_blitz_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/swift_striker.webp"
+  },
+  "veil-walker": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_veil_walker",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/veil_walker.webp"
+  },
+  "vex-barrier": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_vex_barrier",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/reactive_barrier.webp"
+  },
+  "auto-cleanse": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_auto_cleanse",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/indomitable.webp"
+  },
+  "medic-bullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_medic_bullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/restorative_shot.webp"
+  },
+  "titan-round": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_titan_round",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/titanic_magazine.webp"
+  },
+  "split-shot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_split_shot",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/split_shot.webp"
+  },
+  "active-reload": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_active_reload",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/active_reload.webp"
+  },
+  "magic-carpet": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_magic_carpet",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/magic_carpet.webp"
+  },
+  "spirit-burn": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_spirit_burn",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/spirit_burn.webp"
+  },
+  "ultimate-burst": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_ultimate_burst",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/lightning_scroll.webp"
+  },
+  "absorbing-armor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_absorbing_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/witchmail.webp"
+  },
+  "healbuff": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_healbuff",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_tempo.webp"
+  },
+  "aprounds": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_aprounds",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/armor_piercing_rounds.webp"
+  },
+  "infinite-rounds": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_infinite_rounds",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/infinite_rounds.webp"
+  },
+  "deflecting-armor": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_deflecting_armor",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/plated_armor.webp"
+  },
+  "juggernaut": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_juggernaut",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/juggernaut.webp"
+  },
+  "enchanted-holsters": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_enchanted_holsters",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/spell_slinger.webp"
+  },
+  "weapon-backstabber": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_weapon_backstabber",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/backstabber.webp"
+  },
+  "express-shot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_express_shot",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/express_shot.webp"
+  },
+  "icarus-wings": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_icarus_wings",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/icarus_wings.webp"
+  },
+  "mystical-piano": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_mystical_piano",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/mystical_piano.webp"
+  },
+  "nullification-aura": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_nullification_aura",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/nullification_aura.webp"
+  },
+  "celestial-guidance": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_celestial_guidance",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/celestial_guidance.webp"
+  },
+  "eternal-gift": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_eternal_gift",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/eternal_gift.webp"
+  },
+  "patrons-blessing": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_patrons_blessing",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/patrons_blessing.webp"
+  },
+  "eldritch-shot": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_eldritch_shot",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/eldritch_shot.webp"
+  },
+  "cloak-of-opportunity": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_cloak_of_opportunity",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/cloak_of_opportunity.webp"
+  },
+  "runed-gauntlets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_runed_gauntlets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/runed_gauntlets.webp"
+  },
+  "electric-slippers": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_electric_slippers",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/electric_slippers.webp"
+  },
+  "prism-blast": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_prism_blast",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/prism_blast.webp"
+  },
+  "unstable-concoction": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_unstable_concoction",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/unstable_concoction.webp"
+  },
+  "shivas-bracelet": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_shivas_bracelet",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/frostbite.webp"
+  },
+  "shadow-strike": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_shadow_strike",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/shadow_strike.webp"
+  },
+  "bulletshredimbue": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_bulletshredimbue",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/alchemical_seal.webp"
+  },
+  "rechargingbullets": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_rechargingbullets",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/recharging_rounds.webp"
+  },
+  "goose-egg": {
+    "source": "valve_shop_image_webp",
+    "class_name": "upgrade_goose_egg",
+    "url": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/goose_egg.webp"
+  }
+}

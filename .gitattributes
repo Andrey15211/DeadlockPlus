@@ -1,0 +1,21 @@
+# Нормализация переводов строк: в репозитории всегда LF, на диске — как принято в ОС.
+* text=auto eol=lf
+
+# Бинарные форматы: git не должен трогать их содержимое.
+*.png  binary
+*.webp binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.mp4  binary
+*.db   binary
+
+# Скрипты Windows обязаны сохранять CRLF.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Языковая статистика: документация и данные не искажают счётчик кода.
+*.md   linguist-documentation
+data/*.json linguist-documentation
+web/assets/** linguist-vendored

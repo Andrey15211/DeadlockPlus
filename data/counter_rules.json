@@ -1,0 +1,263 @@
+[
+  {
+    "tag": "heal",
+    "entries": [
+      {
+        "item_id": "healbane",
+        "priority": 1,
+        "explanation": "Попадания накладывают запрет лечения (−60%), подавляя вампиризм и пассивный отхил Абрамса, Кельвина и Инфернуса.",
+        "timing": "15-22 мин, Tier 3"
+      },
+      {
+        "item_id": "toxic-bullets",
+        "priority": 2,
+        "explanation": "Пули отравляют цель и снижают входящее лечение на 35%. Доступный ранний анти-хил.",
+        "timing": "8-12 мин, Tier 2"
+      },
+      {
+        "item_id": "inhibitor",
+        "priority": 3,
+        "explanation": "Снижает урон цели на 25% и входящее лечение на 35% при стрельбе — эффективный поздний анти-хил.",
+        "timing": "22+ мин, Tier 4"
+      }
+    ]
+  },
+  {
+    "tag": "uninterruptible_ult",
+    "entries": [
+      {
+        "item_id": "knockdown",
+        "priority": 1,
+        "explanation": "Сбивает врагов с ног и принудительно прерывает даже непрерываемые ультимейты (Гроза Севена, стена Макгиннис).",
+        "timing": "12-18 мин, Tier 3"
+      },
+      {
+        "item_id": "curse",
+        "priority": 2,
+        "explanation": "Запрещает применение способностей и срезает урон на 60% даже сквозь защитные фазы ультов.",
+        "timing": "15-20 мин, Tier 3"
+      },
+      {
+        "item_id": "silence-glyph",
+        "priority": 3,
+        "explanation": "Глиф областного безмолвия: блокирует инициацию ключевых ультимейтов до начала тимфайта.",
+        "timing": "22+ мин, Tier 4"
+      }
+    ]
+  },
+  {
+    "tag": "bullet_dps",
+    "entries": [
+      {
+        "item_id": "metal-skin",
+        "priority": 1,
+        "explanation": "Отражает 30% пулевого урона и даёт +25 к пулевому щиту. Скорострельные стрелки наносят урон сами себе.",
+        "timing": "14-20 мин, Tier 3"
+      },
+      {
+        "item_id": "return-fire",
+        "priority": 2,
+        "explanation": "Отражает 50% входящего пулевого урона в атакующего. Наказывает концентрированный огонь Хейз и Рейт.",
+        "timing": "12-16 мин, Tier 3"
+      },
+      {
+        "item_id": "improved-bullet-armor",
+        "priority": 3,
+        "explanation": "Усиленный пулевой щит (+16) и здоровье против давящих стрелков в середине игры.",
+        "timing": "8-15 мин, Tier 2"
+      },
+      {
+        "item_id": "bullet-armor",
+        "priority": 4,
+        "explanation": "Базовый пулевой щит +10 для выживания на линии против раннего прессинга.",
+        "timing": "0-8 мин, Tier 1"
+      },
+      {
+        "item_id": "colossus",
+        "priority": 5,
+        "explanation": "Колосс: +600 HP, +20% к сопротивлению пулям и замедление врагов вокруг в поздней игре.",
+        "timing": "22+ мин, Tier 4"
+      }
+    ]
+  },
+  {
+    "tag": "spirit_caster",
+    "entries": [
+      {
+        "item_id": "silence-glyph",
+        "priority": 1,
+        "explanation": "Областное безмолвие и стан на 4 секунды: полностью выключает заклинателей духа и их комбо.",
+        "timing": "22+ мин, Tier 4"
+      },
+      {
+        "item_id": "spellbreaker",
+        "priority": 2,
+        "explanation": "Снижает силу духа цели на 15% и обеспечивает +12 к дух-щиту при каждом размене.",
+        "timing": "12-18 мин, Tier 3"
+      },
+      {
+        "item_id": "spirit-armor",
+        "priority": 3,
+        "explanation": "Ранний дух-щит +14 и здоровье для защиты от способностей магов.",
+        "timing": "8-12 мин, Tier 2"
+      },
+      {
+        "item_id": "heavy-magic-resist",
+        "priority": 4,
+        "explanation": "Усиленный щит духа (+22) для выживания против взрывных дух-прокастов.",
+        "timing": "14-20 мин, Tier 3"
+      },
+      {
+        "item_id": "curse",
+        "priority": 5,
+        "explanation": "Запрет способностей на 5 секунд: заклинатель на это время становится рядовым стрелком.",
+        "timing": "15-20 мин, Tier 3"
+      }
+    ]
+  },
+  {
+    "tag": "burst",
+    "entries": [
+      {
+        "item_id": "unstoppable",
+        "priority": 1,
+        "explanation": "Снимает все эффекты контроля и дарует неуязвимость к CC и взрывному урону комбо.",
+        "timing": "22+ мин, Tier 4"
+      },
+      {
+        "item_id": "fortress-guard",
+        "priority": 2,
+        "explanation": "Двойной щит и +320 HP для безопасного поглощения моментального урона комбо.",
+        "timing": "12-18 мин, Tier 3"
+      },
+      {
+        "item_id": "extra-health",
+        "priority": 3,
+        "explanation": "Дешёвый ранний запас здоровья (+175 HP), спасающий от ганков на линии.",
+        "timing": "0-8 мин, Tier 1"
+      },
+      {
+        "item_id": "pool-of-restoration",
+        "priority": 4,
+        "explanation": "Регенерация в бою 2% HP в секунду: на длинном размене возвращает значимую часть взрывного урона.",
+        "timing": "8-15 мин, Tier 2"
+      },
+      {
+        "item_id": "suppressor",
+        "priority": 5,
+        "explanation": "Подавление на 6 секунд снижает урон цели на 40%: окно взрывного убийцы закрывается до старта.",
+        "timing": "22+ мин, Tier 4"
+      }
+    ]
+  },
+  {
+    "tag": "mobility",
+    "entries": [
+      {
+        "item_id": "knockdown",
+        "priority": 1,
+        "explanation": "Сбивание с ног на 2 секунды — мобильный герой (Шив, Виндикта, Мираж) замирает и умирает под фокусом.",
+        "timing": "12-18 мин, Tier 3"
+      },
+      {
+        "item_id": "inhibitor",
+        "priority": 2,
+        "explanation": "Связывает подвижную цель на 1.5 секунды, отключая перемещение и рывки.",
+        "timing": "14-18 мин, Tier 3"
+      },
+      {
+        "item_id": "hunter-s-mark",
+        "priority": 3,
+        "explanation": "Клеймит цель меткой: манёвры не спасают, а ваш урон по метке +12%.",
+        "timing": "12-18 мин, Tier 3"
+      },
+      {
+        "item_id": "fleetfoot",
+        "priority": 4,
+        "explanation": "Скорость и +1 заряд выносливости для погони за быстрыми целями и разрыва дистанции.",
+        "timing": "12-16 мин, Tier 3"
+      },
+      {
+        "item_id": "sprint-boots",
+        "priority": 5,
+        "explanation": "Активный спринт для преодоления дистанции или выхода из контакта.",
+        "timing": "0-8 мин, Tier 1"
+      }
+    ]
+  },
+  {
+    "tag": "stealth",
+    "entries": [
+      {
+        "item_id": "ward-of-revelation",
+        "priority": 1,
+        "explanation": "Раскрывает скрытых и невидимых врагов в радиусе 18 метров на 6 секунд.",
+        "timing": "8-14 мин, Tier 2"
+      },
+      {
+        "item_id": "hunter-s-mark",
+        "priority": 2,
+        "explanation": "Клеймит цель меткой: запрещает маскировку и усиливает входящий по ней урон на 12%.",
+        "timing": "12-18 мин, Tier 3"
+      }
+    ]
+  },
+  {
+    "tag": "tank",
+    "entries": [
+      {
+        "item_id": "torment-pulse",
+        "priority": 1,
+        "explanation": "Периодический урон от духа по области эффективно расплавляет толстые полоски HP танков.",
+        "timing": "8-14 мин, Tier 2"
+      },
+      {
+        "item_id": "executioners-edge",
+        "priority": 2,
+        "explanation": "Чистый бонус-урон по целям ниже 25% HP помогает добивать живучих защитников.",
+        "timing": "22+ мин, Tier 4"
+      },
+      {
+        "item_id": "siphon",
+        "priority": 3,
+        "explanation": "Высасывает здоровье у скопления врагов на передовой, обращая их жир в вашу выживаемость.",
+        "timing": "20+ мин, Tier 4"
+      },
+      {
+        "item_id": "return-fire",
+        "priority": 4,
+        "explanation": "Отражает входящий урон в ближнем бою: давящий в упор танк наказывается за каждый удар.",
+        "timing": "14-20 мин, Tier 3"
+      }
+    ]
+  },
+  {
+    "tag": "cc_chain",
+    "entries": [
+      {
+        "item_id": "unstoppable",
+        "priority": 1,
+        "explanation": "Снимает все эффекты контроля и дарует 3.5 секунды полной невосприимчивости к CC.",
+        "timing": "14-20 мин, Tier 3"
+      },
+      {
+        "item_id": "extra-stamina",
+        "priority": 2,
+        "explanation": "Дополнительный заряд выносливости для разрыва цепочки контроля через деш.",
+        "timing": "0-8 мин, Tier 1"
+      },
+      {
+        "item_id": "duration-extender",
+        "priority": 3,
+        "explanation": "Увеличивает длительность собственных эффектов контроля для встречной инициации.",
+        "timing": "8-14 мин, Tier 2"
+      },
+      {
+        "item_id": "inhibitor",
+        "priority": 4,
+        "explanation": "Связывание на 1.5 секунды: враг, начинающий цепочку контроля, сам связывается на входе.",
+        "timing": "14-18 мин, Tier 3"
+      }
+    ]
+  }
+]

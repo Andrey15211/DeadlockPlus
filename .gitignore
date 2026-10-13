@@ -1,0 +1,42 @@
+# --- DeadlockForge: служебные артефакты вне контроля версий ---
+
+# Секреты: локальный ключ LLM никогда не попадает в репозиторий.
+# Рабочие точки входа подхвата: env DEADLOCKFORGE_AI_KEY или файл рядом с exe.
+src/deadlockforge/ai/api.txt
+ai/api.txt
+**/api.txt
+
+# PyInstaller / сборки
+build/
+dist/
+*.spec.bak
+DeadlockForge.exe
+
+# Базы данных рантайма (SQLite): история профиля, билды, кэш матчей.
+# Схема создаётся кодом (storage/db.py), данные пользователя не версионируются.
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Рабочий мусор и одноразовые пробы
+.scratch/
+tmp/
+*.log
+
+# OS / IDE
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/

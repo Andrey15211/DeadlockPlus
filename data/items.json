@@ -1,0 +1,4400 @@
+[
+  {
+    "id": "basic-magazine",
+    "name": "Увеличенный магазин",
+    "name_en": "Extended Magazine",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "weapon_damage": 8
+    },
+    "active": null,
+    "passive": "+8 к урону оружия. Дешёвый первый закуп: стабильный ласт-хит и уверенный размен на линии.",
+    "counters": [],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "reinforcing-casings",
+      "titan-round"
+    ],
+    "upgrade_to": [
+      "reinforcing-casings",
+      "titan-round"
+    ],
+    "shop_image": "/assets/items/basic-magazine.webp"
+  },
+  {
+    "id": "monster-rounds",
+    "name": "Чудовищные патроны",
+    "name_en": "Monster Rounds",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "weapon_damage": 4,
+      "base_hp": 65,
+      "bullet_shield": 2
+    },
+    "active": null,
+    "passive": "+4 к урону оружия, +65 к максимальному здоровью и +2 к пулевому щиту. Универсальный старт: немного урона и выживаемости одновременно.",
+    "counters": [],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "non-player-bonus-sacrifice"
+    ],
+    "upgrade_to": [
+      "non-player-bonus-sacrifice"
+    ],
+    "shop_image": "/assets/items/monster-rounds.webp"
+  },
+  {
+    "id": "close-quarters",
+    "name": "Ближняя дистанция",
+    "name_en": "Close Quarters",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "weapon_damage": 6,
+      "fire_rate_pct": 0.06
+    },
+    "active": null,
+    "passive": "Когда цель выстрелов находится на малой дальности, вы наносите больше урона оружием.",
+    "counters": [],
+    "description": "Когда цель выстрелов находится на малой дальности, вы наносите больше урона оружием.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "point-blank"
+    ],
+    "upgrade_to": [
+      "point-blank"
+    ],
+    "shop_image": "/assets/items/close-quarters.webp"
+  },
+  {
+    "id": "sprint-boots",
+    "name": "Беговые ботинки",
+    "name_en": "Sprint Boots",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "move_speed": 2.0
+    },
+    "active": "Спринт: +4 м/с на 3 секунды с плавным замедлением. Перезарядка 12 секунд.",
+    "passive": "+2 к базовой скорости передвижения.",
+    "counters": [
+      "mobility"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "trophy-collector",
+      "cardio-calibrator",
+      "cloaking-device-active"
+    ],
+    "upgrade_to": [
+      "trophy-collector",
+      "cardio-calibrator",
+      "cloaking-device-active"
+    ],
+    "shop_image": "/assets/items/sprint-boots.webp"
+  },
+  {
+    "id": "point-blank",
+    "name": "Стрельба в упор",
+    "name_en": "Point Blank",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 18.0,
+      "base_hp": 150.0
+    },
+    "active": null,
+    "passive": "Когда цель выстрелов находится на малой дальности, вы замедляете её передвижение выстрелами и наносите больше урона оружием.",
+    "counters": [],
+    "description": "Когда цель выстрелов находится на малой дальности, вы замедляете её передвижение выстрелами и наносите больше урона оружием.",
+    "cooldown": 0.0,
+    "components": [
+      "close-quarters"
+    ],
+    "upgrade_from": "close-quarters",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/point-blank.webp"
+  },
+  {
+    "id": "toxic-bullets",
+    "name": "Токсичные пули",
+    "name_en": "Toxic Bullets",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 10,
+      "fire_rate_pct": 0.06
+    },
+    "active": null,
+    "passive": "Пули отравляют цель: −35% к получаемому лечению на 6 секунд и лёгкий урон ядом. Базовый анти-хил уже к середине ранней игры.",
+    "counters": [
+      "heal"
+    ],
+    "description": "От ваших пуль у врагов накапливается эффект кровотечения, который наносит им постепенный урон в процентах от их макс. здоровья, а также снижает им получаемое лечение.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/toxic-bullets.webp"
+  },
+  {
+    "id": "berserker",
+    "name": "Берсерк",
+    "name_en": "Berserker",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 22,
+      "fire_rate_pct": 0.08,
+      "base_hp": -75,
+      "bullet_shield": 8.0
+    },
+    "active": null,
+    "passive": "+22 к урону оружия и +8% к скорости стрельбы ценой −75 к максимальному здоровью. Стеклянная пушка для тех, кто уверен в позиционировании.",
+    "counters": [],
+    "description": "Повышает наносимый урон от оружия, когда вы получаете урон на протяжении долгого времени.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/berserker.webp"
+  },
+  {
+    "id": "life-strike",
+    "name": "Ударная кража здоровья",
+    "name_en": "Melee Lifesteal",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "weapon_damage": 14,
+      "base_hp": 100
+    },
+    "active": "Следующая атака лечит вас на 30% от нанесённого урона. Перезарядка 18 секунд.",
+    "passive": "Ваша следующая атака ближнего боя лечит вас. Лечение от существ, не являющихся героями, эффективно на 30%. Множитель времени перезарядки составляет 1.5 при нанесении лёгких ударов ближнего боя.",
+    "counters": [],
+    "description": "Ваша следующая атака ближнего боя лечит вас. Лечение от существ, не являющихся героями, эффективно на 30%. Множитель времени перезарядки составляет 1.5 при нанесении лёгких ударов ближнего боя.",
+    "cooldown": 8.0,
+    "components": [],
+    "upgrades_to": [
+      "boxing-glove"
+    ],
+    "upgrade_to": [
+      "boxing-glove"
+    ],
+    "shop_image": "/assets/items/life-strike.webp"
+  },
+  {
+    "id": "leech",
+    "name": "Кровопийца",
+    "name_en": "Leech",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "weapon_damage": 15.0,
+      "base_hp": 175.0,
+      "spirit_power": 12.0
+    },
+    "active": null,
+    "passive": "+15 к урону оружия; 22% пулевого урона возвращается как здоровье. Стабильный вампиризм для затяжных разменов.",
+    "counters": [],
+    "description": "Ослабляет накладываемое на вас врагами снижения лечения.",
+    "cooldown": 0.0,
+    "components": [
+      "vampire",
+      "health-stealing-magic"
+    ],
+    "upgrade_from": "vampire",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/leech.webp"
+  },
+  {
+    "id": "healbane",
+    "name": "Гроза целителей",
+    "name_en": "Healbane",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3100,
+    "stats": {
+      "weapon_damage": 25,
+      "fire_rate_pct": 0.04,
+      "spirit_power": 7.0
+    },
+    "active": null,
+    "passive": "Наносимый вами спиритический урон снижает врагу получаемое лечение. Если вражеский герой умирает, находясь под действием этого эффекта, вы значительно восстанавливаете здоровье.",
+    "counters": [
+      "heal"
+    ],
+    "description": "Наносимый вами спиритический урон снижает врагу получаемое лечение. Если вражеский герой умирает, находясь под действием этого эффекта, вы значительно восстанавливаете здоровье.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/healbane.webp"
+  },
+  {
+    "id": "knockdown",
+    "name": "Нокдаун",
+    "name_en": "Knockdown",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 20.0,
+      "fire_rate_pct": 0.03,
+      "base_hp": 75.0
+    },
+    "active": "Вы накладываете оглушение после задержки в 2 сек. Оглушение действует дольше на цели, находящиеся в воздухе.Во время действия оглушения гравитация цели увеличивается.",
+    "passive": "+20 к урону оружия.",
+    "counters": [
+      "uninterruptible_ult",
+      "mobility"
+    ],
+    "description": "Вы накладываете оглушение после задержки в 2 сек. Оглушение действует дольше на цели, находящиеся в воздухе.Во время действия оглушения гравитация цели увеличивается.",
+    "cooldown": 35.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/knockdown.webp"
+  },
+  {
+    "id": "return-fire",
+    "name": "Обратный огонь",
+    "name_en": "Return Fire",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 17.0,
+      "bullet_shield": 18.0,
+      "base_hp": 200.0
+    },
+    "active": "Автоматически выстреливает в любого врага, который наносит вам урон умением или оружием.",
+    "passive": "50% входящего пулевого урона отражается в атакующего. Хейз и Рейт буквально убивают себя об вашу ауру.",
+    "counters": [
+      "bullet_dps"
+    ],
+    "description": "Автоматически выстреливает в любого врага, который наносит вам урон умением или оружием.",
+    "cooldown": 23.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/return-fire.webp"
+  },
+  {
+    "id": "fleetfoot",
+    "name": "Проворная поступь",
+    "name_en": "Fleetfoot",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 16,
+      "move_speed": 1.5,
+      "stamina": 1,
+      "bullet_shield": 6.0
+    },
+    "active": "Даёт бонус к скорости передвижения и сопротивляемости замедлению.",
+    "passive": "Убирает снижение скорости передвижения во время стрельбы.",
+    "counters": [
+      "mobility"
+    ],
+    "cooldown": 16.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/fleetfoot.webp"
+  },
+  {
+    "id": "tempest-scope",
+    "name": "Прицельная стрельба",
+    "name_en": "Sharpshooter",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 45,
+      "fire_rate_pct": 0.15,
+      "move_speed": -0.7
+    },
+    "active": null,
+    "passive": "Вы наносите больше урона оружием, когда цель находится за пределами минимальной дальности.",
+    "counters": [],
+    "description": "Вы наносите больше урона оружием, когда цель находится за пределами минимальной дальности.",
+    "cooldown": 0.0,
+    "components": [
+      "long-range",
+      "high-velocity-mag"
+    ],
+    "upgrade_from": "long-range",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/tempest-scope.webp"
+  },
+  {
+    "id": "executioners-edge",
+    "name": "Стеклянная пушка",
+    "name_en": "Glass Cannon",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "weapon_damage": 50,
+      "fire_rate_pct": 0.07
+    },
+    "active": null,
+    "passive": "Каждое убийство героя даёт постоянный бонус к скорострельности (максимум — 8 раз). При смерти владельца теряется один бонус.",
+    "counters": [
+      "tank"
+    ],
+    "description": "Каждое убийство героя даёт постоянный бонус к скорострельности (максимум — 8 раз). При смерти владельца теряется один бонус.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/executioners-edge.webp"
+  },
+  {
+    "id": "extra-health",
+    "name": "Добавочное здоровье",
+    "name_en": "Extra Health",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "base_hp": 175
+    },
+    "active": null,
+    "passive": "+175 к максимальному здоровью. Самый простой способ пережить внезапный размен в ранней игре.",
+    "counters": [
+      "burst"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "chonky",
+      "colossus"
+    ],
+    "upgrade_to": [
+      "chonky",
+      "colossus"
+    ],
+    "shop_image": "/assets/items/extra-health.webp"
+  },
+  {
+    "id": "extra-stamina",
+    "name": "Добавочная выносливость",
+    "name_en": "Extra Stamina",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "stamina": 1
+    },
+    "active": null,
+    "passive": "+1 заряд выносливости. Дополнительный рывок — это и погоня за мобильной целью, и побег от ганка.",
+    "counters": [
+      "mobility",
+      "cc_chain"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "superior-stamina",
+      "kinetic-sash",
+      "arcane-surge"
+    ],
+    "upgrade_to": [
+      "superior-stamina",
+      "kinetic-sash",
+      "arcane-surge"
+    ],
+    "shop_image": "/assets/items/extra-stamina.webp"
+  },
+  {
+    "id": "bullet-armor",
+    "name": "Пулевая броня",
+    "name_en": "Bullet Armor",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "bullet_shield": 35,
+      "base_hp": 300
+    },
+    "active": null,
+    "passive": "+10 к пулевому щиту. Снижает урон стрелков уже с первых драк.",
+    "counters": [
+      "bullet_dps"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/bullet-armor.webp"
+  },
+  {
+    "id": "regeneration-booster",
+    "name": "Усилитель лечения",
+    "name_en": "Healing Booster",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 60,
+      "spirit_shield": 3
+    },
+    "active": null,
+    "passive": "Повышает эффективность вашего лечения.",
+    "counters": [],
+    "description": "Повышает эффективность вашего лечения.",
+    "cooldown": 0.0,
+    "components": [
+      "endurance"
+    ],
+    "upgrade_from": "endurance",
+    "upgrades_to": [
+      "healbuff"
+    ],
+    "upgrade_to": [
+      "healbuff"
+    ],
+    "shop_image": "/assets/items/regeneration-booster.webp"
+  },
+  {
+    "id": "improved-bullet-armor",
+    "name": "Пулевая стойкость",
+    "name_en": "Bullet Resilience",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "bullet_shield": 16,
+      "base_hp": 120
+    },
+    "active": null,
+    "passive": "Если у вас менее 50% здоровья, вы получаете дополнительную сопротивляемость пулям.",
+    "counters": [
+      "bullet_dps"
+    ],
+    "description": "Если у вас менее 50% здоровья, вы получаете дополнительную сопротивляемость пулям.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/improved-bullet-armor.webp"
+  },
+  {
+    "id": "spirit-armor",
+    "name": "Спиритическая броня",
+    "name_en": "Spirit Armor",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_shield": 14,
+      "base_hp": 90
+    },
+    "active": null,
+    "passive": "+14 к дух-щиту и +90 к здоровью. Ранний барьер против заклинателей духа.",
+    "counters": [
+      "spirit_caster"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/spirit-armor.webp"
+  },
+  {
+    "id": "pool-of-restoration",
+    "name": "Живительный медальон",
+    "name_en": "Restorative Locket",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 180,
+      "spirit_shield": 8
+    },
+    "active": "Если враг применяет умение в радиусе 32m м от вас, вы получаете единицу эффекта восстановления. Поглотите все накопленные единицы, чтобы полечить себя и восстановить до 3 ед. выносливости в зависимости от числа накопленных единиц.",
+    "passive": "+180 к здоровью; в бою восстанавливает 2% максимального HP в секунду. Держит вас в затяжных драках без отступления.",
+    "counters": [
+      "burst"
+    ],
+    "cooldown": 20.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/pool-of-restoration.webp"
+  },
+  {
+    "id": "battle-hardened",
+    "name": "Закалённый в боях",
+    "name_en": "Battle-Hardened",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1900,
+    "stats": {
+      "base_hp": 150,
+      "bullet_shield": 8,
+      "spirit_shield": 8
+    },
+    "active": null,
+    "passive": "+150 к здоровью и сбалансированные щиты против обоих типов урона. Универсальная середина для фронтлайна.",
+    "counters": [
+      "burst"
+    ],
+    "shop_image": "/assets/items/battle-hardened.webp"
+  },
+  {
+    "id": "metal-skin",
+    "name": "Металлическая кожа",
+    "name_en": "Metal Skin",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3800,
+    "stats": {
+      "bullet_shield": 25.0,
+      "base_hp": 150,
+      "move_speed": -1.5
+    },
+    "active": "Металлическая кожа: на 3.5 секунды даёт полную неуязвимость к пулям и атакам ближнего боя. Перезарядка 21 секунда.",
+    "passive": "+25 к пулевому щиту. Отражает 30% входящего пулевого урона обратно в стрелков.",
+    "counters": [
+      "bullet_dps"
+    ],
+    "description": "Отражает 30% пулевого урона и даёт +25 к пулевому щиту.",
+    "cooldown": 21.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/metal-skin.webp"
+  },
+  {
+    "id": "fortress-guard",
+    "name": "Страж крепости",
+    "name_en": "Fortress Guard",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 320,
+      "bullet_shield": 14,
+      "spirit_shield": 14
+    },
+    "active": null,
+    "passive": "+320 к здоровью и двойной щит. Универсальная стойкость: переживаете внезапные комбо и ульты.",
+    "counters": [
+      "burst"
+    ],
+    "shop_image": "/assets/items/fortress-guard.webp"
+  },
+  {
+    "id": "heavy-magic-resist",
+    "name": "Усиленное сопротивление духу",
+    "name_en": "Heavy Magic Resist",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3500,
+    "stats": {
+      "spirit_shield": 22,
+      "base_hp": 150
+    },
+    "active": null,
+    "passive": "+22 к дух-щиту и +150 к здоровью. Модуль выживания против Покета, Ямато и Грей Тэлона.",
+    "counters": [
+      "spirit_caster",
+      "burst"
+    ],
+    "shop_image": "/assets/items/heavy-magic-resist.webp"
+  },
+  {
+    "id": "unstoppable",
+    "name": "Неудержимость",
+    "name_en": "Unstoppable",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 450.0,
+      "move_speed": 1.0,
+      "bullet_shield": 18.0,
+      "spirit_shield": 18.0
+    },
+    "active": "Временно подавляет отрицательные эффекты и даёт вам невосприимчивость к оглушению, безмолвию, сну, оцепенению и обезоруживанию.Нельзя использовать во время оглушения или сна.",
+    "passive": "+250 к здоровью и +1 к скорости.",
+    "counters": [
+      "cc_chain"
+    ],
+    "description": "Временно подавляет отрицательные эффекты и даёт вам невосприимчивость к оглушению, безмолвию, сну, оцепенению и обезоруживанию.Нельзя использовать во время оглушения или сна.",
+    "cooldown": 60.0,
+    "components": [
+      "debuff-reducer"
+    ],
+    "upgrade_from": "debuff-reducer",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/unstoppable.webp"
+  },
+  {
+    "id": "siphon",
+    "name": "Вытягивающие пули",
+    "name_en": "Siphon Bullets",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 500,
+      "spirit_shield": 15,
+      "bullet_shield": 15,
+      "weapon_damage": 15.0
+    },
+    "active": "Высасывает 350 здоровья у ближайших врагов и передаёт вам. Перезарядка 45 секунд.",
+    "passive": "Ваши выстрелы на время крадут долю от максимального здоровья жертв. Украденное здоровье возвращается врагам по окончании действия эффекта.",
+    "counters": [
+      "tank"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/siphon.webp"
+  },
+  {
+    "id": "guardian-aura",
+    "name": "Спасательный луч",
+    "name_en": "Rescue Beam",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 280,
+      "bullet_shield": 12,
+      "spirit_shield": 12,
+      "stamina": 1,
+      "move_speed": 0.75
+    },
+    "active": "Лечит вас и выбранного союзного героя в зависимости от максимального здоровья. Один раз за время лечения вы можете притянуть цель к себе. Можно применить на себя.",
+    "passive": "Вы и союзники рядом получаете +12% сопротивления урону. Командный модуль фронтлайна для поздних драк 5х5.",
+    "counters": [
+      "burst",
+      "tank"
+    ],
+    "description": "Лечит вас и выбранного союзного героя в зависимости от максимального здоровья. Один раз за время лечения вы можете притянуть цель к себе. Можно применить на себя.",
+    "cooldown": 60.0,
+    "components": [
+      "health-stimpak"
+    ],
+    "upgrade_from": "health-stimpak",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/guardian-aura.webp"
+  },
+  {
+    "id": "mystic-shot",
+    "name": "Мистический выстрел",
+    "name_en": "Mystic Shot",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 8
+    },
+    "active": null,
+    "passive": "+8 к силе духа. Дешёвый стартовый модуль для заклинателей.",
+    "counters": [],
+    "description": "Ваша следующая пуля нанесёт дополнительный спиритический урон.",
+    "cooldown": 8.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/mystic-shot.webp"
+  },
+  {
+    "id": "fortune-hand",
+    "name": "Длань фортуны",
+    "name_en": "Fortune's Hand",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 500,
+    "stats": {
+      "spirit_power": 6,
+      "move_speed": 1.0
+    },
+    "active": null,
+    "passive": "+6 к силе духа и +1 к скорости передвижения. Экономичный ранний закуп на подвижность и урон способностей.",
+    "counters": [],
+    "shop_image": "/assets/items/fortune-hand.webp"
+  },
+  {
+    "id": "arcane-focus",
+    "name": "Тайный фокус",
+    "name_en": "Arcane Focus",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 700,
+    "stats": {
+      "spirit_power": 5,
+      "cooldown_reduction_pct": 0.04
+    },
+    "active": null,
+    "passive": "+5 к силе духа и +4% к снижению перезарядок. Первый шаг к частому циклу способностей.",
+    "counters": [],
+    "shop_image": "/assets/items/arcane-focus.webp"
+  },
+  {
+    "id": "apprentice-tome",
+    "name": "Мистическая уязвимость",
+    "name_en": "Mystic Vulnerability",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 7,
+      "spirit_shield": 5
+    },
+    "active": null,
+    "passive": "Когда враг получает спиритический урон, у него снижается сопротивляемость спиритизму.",
+    "counters": [
+      "spirit_caster"
+    ],
+    "description": "Когда враг получает спиритический урон, у него снижается сопротивляемость спиритизму.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "escalating-exposure"
+    ],
+    "upgrade_to": [
+      "escalating-exposure"
+    ],
+    "shop_image": "/assets/items/apprentice-tome.webp"
+  },
+  {
+    "id": "improved-cooldown",
+    "name": "Сжатая перезарядка умения",
+    "name_en": "Compress Cooldown",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "cooldown_reduction_pct": 0.14,
+      "spirit_power": 6
+    },
+    "active": null,
+    "passive": "Сокращает время перезарядки выбранного умения.",
+    "counters": [],
+    "description": "Сокращает время перезарядки выбранного умения.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "cooldown-reduction"
+    ],
+    "upgrade_to": [
+      "cooldown-reduction"
+    ],
+    "shop_image": "/assets/items/improved-cooldown.webp"
+  },
+  {
+    "id": "duration-extender",
+    "name": "Удлинитель эффектов",
+    "name_en": "Duration Extender",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 8,
+      "cooldown_reduction_pct": 0.06
+    },
+    "active": null,
+    "passive": "+8 к силе духа; +22% к длительности ваших эффектов контроля и яда. Усиливает цепочки контроля.",
+    "counters": [
+      "cc_chain"
+    ],
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/duration-extender.webp"
+  },
+  {
+    "id": "mystic-reach",
+    "name": "Мистическое расширение",
+    "name_en": "Mystic Expansion",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "spirit_power": 10,
+      "cooldown_reduction_pct": 0.04
+    },
+    "active": null,
+    "passive": "Увеличивает дальность выбранного умения и радиус его эффекта.",
+    "counters": [],
+    "description": "Увеличивает дальность выбранного умения и радиус его эффекта.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "tech-range",
+      "bulletshredimbue"
+    ],
+    "upgrade_to": [
+      "tech-range",
+      "bulletshredimbue"
+    ],
+    "shop_image": "/assets/items/mystic-reach.webp"
+  },
+  {
+    "id": "torment-pulse",
+    "name": "Терзающий пульс",
+    "name_en": "Torment Pulse",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_power": 16.0,
+      "cooldown_reduction_pct": 0.04,
+      "spirit_shield": 8.0,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "Периодически наносит спиритический урон двум ближайшим врагам неподалёку.",
+    "counters": [
+      "tank"
+    ],
+    "description": "Периодически наносит спиритический урон двум ближайшим врагам неподалёку.",
+    "cooldown": 1.4,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/torment-pulse.webp"
+  },
+  {
+    "id": "ward-of-revelation",
+    "name": "Доспех прорицателя",
+    "name_en": "Diviner's Kevlar",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 8,
+      "spirit_shield": 6,
+      "bullet_shield": 1000.0
+    },
+    "active": "Вспышка: невидимые враги в радиусе 18 м становятся видимы на 6 секунд. Перезарядка 45 секунд.",
+    "passive": "Применив ульт, вы получаете барьер и временный бонус к спиритической мощи.",
+    "counters": [
+      "stealth"
+    ],
+    "description": "Применив ульт, вы получаете барьер и временный бонус к спиритической мощи.",
+    "cooldown": 40.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/ward-of-revelation.webp"
+  },
+  {
+    "id": "curse",
+    "name": "Проклятая реликвия",
+    "name_en": "Cursed Relic",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 15,
+      "cooldown_reduction_pct": 0.06
+    },
+    "active": "Проклинает врага: прерывает его действия, накладывает безмолвие и обезоруживание и запрещает использовать предметы. Снимает все положительные эффекты, кроме наложенных ультами.Наносимый вами урон снижен на время действия проклятия.",
+    "passive": "+15 к силе духа.",
+    "counters": [
+      "uninterruptible_ult",
+      "spirit_caster"
+    ],
+    "description": "Проклинает врага: прерывает его действия, накладывает безмолвие и обезоруживание и запрещает использовать предметы. Снимает все положительные эффекты, кроме наложенных ультами.Наносимый вами урон снижен на время действия проклятия.",
+    "cooldown": 55.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/curse.webp"
+  },
+  {
+    "id": "spellbreaker",
+    "name": "Разрушитель чар",
+    "name_en": "Spellbreaker",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 18,
+      "spirit_shield": 12,
+      "move_speed": 1.0,
+      "base_hp": 90.0
+    },
+    "active": null,
+    "passive": "При следующем получении большого спиритического урона он будет существенно снижен.",
+    "counters": [
+      "spirit_caster"
+    ],
+    "description": "При следующем получении большого спиритического урона он будет существенно снижен.",
+    "cooldown": 9.0,
+    "components": [
+      "debuff-reducer"
+    ],
+    "upgrade_from": "debuff-reducer",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/spellbreaker.webp"
+  },
+  {
+    "id": "inhibitor",
+    "name": "Ограничитель",
+    "name_en": "Inhibitor",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 20,
+      "cooldown_reduction_pct": 0.08,
+      "base_hp": 150.0,
+      "weapon_damage": 10.0
+    },
+    "active": "Связывает цель на 1.5 секунды: ни двигаться, ни применять способности. Перезарядка 30 секунд.",
+    "passive": "Ваши пули накладывают на цель накапливаемый эффект, который снижает наносимый ею урон и её лечение.",
+    "counters": [
+      "mobility",
+      "cc_chain"
+    ],
+    "description": "Ваши пули накладывают на цель накапливаемый эффект, который снижает наносимый ею урон и её лечение.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/inhibitor.webp"
+  },
+  {
+    "id": "echo-shard",
+    "name": "Осколок эха",
+    "name_en": "Echo Shard",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 16,
+      "cooldown_reduction_pct": 0.1,
+      "spirit_shield": 5.0,
+      "bullet_shield": 5.0
+    },
+    "active": "Сбрасывает перезарядку усиленного умения (кроме ультов).Перезарядка этого предмета увеличивается в зависимости от перезарядки усиленного умения.",
+    "passive": "+16 к силе духа и +10% к снижению перезарядок.",
+    "counters": [],
+    "cooldown": 30.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/echo-shard.webp"
+  },
+  {
+    "id": "advanced-cooldown",
+    "name": "Продвинутое ускорение",
+    "name_en": "Advanced Cooldown",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3400,
+    "stats": {
+      "cooldown_reduction_pct": 0.2,
+      "spirit_power": 12
+    },
+    "active": null,
+    "passive": "+20% к снижению перезарядок и +12 к силе духа. Комбо-циклы идут почти без пауз.",
+    "counters": [],
+    "shop_image": "/assets/items/advanced-cooldown.webp"
+  },
+  {
+    "id": "hunter-s-mark",
+    "name": "Метка охотника",
+    "name_en": "Hunter's Mark",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3300,
+    "stats": {
+      "spirit_power": 15,
+      "move_speed": 1.0
+    },
+    "active": "Клеймит цель: невидимость не скрывает её, а ваш урон по метке +12%. Перезарядка 35 секунд.",
+    "passive": "+15 к силе духа.",
+    "counters": [
+      "stealth",
+      "mobility"
+    ],
+    "shop_image": "/assets/items/hunter-s-mark.webp"
+  },
+  {
+    "id": "silence-glyph",
+    "name": "Волна безмолвия",
+    "name_en": "Silence Glyph",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6200,
+    "stats": {
+      "spirit_power": 28.0,
+      "cooldown_reduction_pct": 0.08,
+      "base_hp": 75.0
+    },
+    "active": "Вы выпускаете расширяющийся снаряд, который ненадолго накладывает на врагов безмолвие и наносит урон при попадании. Безмолвие не прерывает подготавливаемые умения.",
+    "passive": "+28 к силе духа.",
+    "counters": [
+      "spirit_caster",
+      "uninterruptible_ult"
+    ],
+    "description": "Вы выпускаете расширяющийся снаряд, который ненадолго накладывает на врагов безмолвие и наносит урон при попадании. Безмолвие не прерывает подготавливаемые умения.",
+    "cooldown": 42.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/silence-glyph.webp"
+  },
+  {
+    "id": "suppressor",
+    "name": "Подавитель",
+    "name_en": "Suppressor",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 32,
+      "cooldown_reduction_pct": 0.12,
+      "bullet_shield": 8.0
+    },
+    "active": "Подавление: цель получает −40% к урону и замедление 25% на 6 секунд. Перезарядка 55 секунд.",
+    "passive": "Нанося спиритический урон врагам, вы также снижаете их скорострельность.",
+    "counters": [
+      "spirit_caster",
+      "burst"
+    ],
+    "description": "Нанося спиритический урон врагам, вы также снижаете их скорострельность.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/suppressor.webp"
+  },
+  {
+    "id": "boundless-spirit",
+    "name": "Безграничный спиритизм",
+    "name_en": "Boundless Spirit",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 38,
+      "cooldown_reduction_pct": 0.14,
+      "stamina": 1,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "+38 к силе духа, +14% к снижению перезарядок и +1 заряд выносливости. Абсолютный финальный модуль мага.",
+    "counters": [],
+    "cooldown": 0.0,
+    "components": [
+      "soaring-spirit"
+    ],
+    "upgrade_from": "soaring-spirit",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/boundless-spirit.webp"
+  },
+  {
+    "id": "non-player-bonus-sacrifice",
+    "name": "Жертвенный ритуал",
+    "name_en": "Cultist Sacrifice",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 300.0,
+      "weapon_damage": 10.0
+    },
+    "active": "Вы поглощаете выбранное существо, не являющееся героем, получая бонусные души в размере 170% и мощный долгосрочный положительный эффект.",
+    "passive": "Вы поглощаете выбранное существо, не являющееся героем, получая бонусные души в размере 170% и мощный долгосрочный положительный эффект.",
+    "counters": [],
+    "image": "assets/items/non-player-bonus-sacrifice.png",
+    "description": "Вы поглощаете выбранное существо, не являющееся героем, получая бонусные души в размере 170% и мощный долгосрочный положительный эффект.",
+    "cooldown": 270.0,
+    "components": [
+      "monster-rounds"
+    ],
+    "upgrade_from": "monster-rounds",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/non-player-bonus-sacrifice.webp"
+  },
+  {
+    "id": "chain-lightning",
+    "name": "Тесла-пули",
+    "name_en": "Tesla Bullets",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 15.0,
+      "fire_rate_pct": 0.12
+    },
+    "active": null,
+    "passive": "У ваших выстрелов есть шанс поразить цель электричеством. Электрический заряд также отскочит на ближайшего к цели врага.",
+    "counters": [],
+    "image": "assets/items/chain-lightning.png",
+    "description": "У ваших выстрелов есть шанс поразить цель электричеством. Электрический заряд также отскочит на ближайшего к цели врага.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "capacitor"
+    ],
+    "upgrade_to": [
+      "capacitor"
+    ],
+    "shop_image": "/assets/items/chain-lightning.webp"
+  },
+  {
+    "id": "capacitor",
+    "name": "Конденсатор",
+    "name_en": "Capacitor",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 15.0
+    },
+    "active": "Вы выпускаете снаряд, наносящий урон и накладывающий сильное замедление, которое постепенно развеивается. Цель также не может использовать выносливость, а на её предметы и умения, связанные с движением, накладывается безмолвие.",
+    "passive": "У ваших выстрелов есть шанс поразить цель электричеством. Электрический заряд также отскочит на ближайшего к цели врага.",
+    "counters": [],
+    "image": "assets/items/capacitor.png",
+    "description": "Вы выпускаете снаряд, наносящий урон и накладывающий сильное замедление, которое постепенно развеивается. Цель также не может использовать выносливость, а на её предметы и умения, связанные с движением, накладывается безмолвие.",
+    "cooldown": 40.0,
+    "components": [
+      "chain-lightning"
+    ],
+    "upgrade_from": "chain-lightning",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/capacitor.webp"
+  },
+  {
+    "id": "hollow-point-rounds",
+    "name": "Разрывник",
+    "name_en": "Hollow Point",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 150.0,
+      "weapon_damage": 35.0
+    },
+    "active": null,
+    "passive": "Когда у вас более 65% здоровья, вы наносите дополнительный урон от оружия, а ваши пули снижают сопротивляемость пулям у врагов.",
+    "counters": [],
+    "image": "assets/items/hollow-point-rounds.png",
+    "description": "Когда у вас более 65% здоровья, вы наносите дополнительный урон от оружия, а ваши пули снижают сопротивляемость пулям у врагов.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/hollow-point-rounds.webp"
+  },
+  {
+    "id": "pristine-emblem",
+    "name": "Вскрывающие патроны",
+    "name_en": "Opening Rounds",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 7.0,
+      "weapon_damage": 8.0
+    },
+    "active": null,
+    "passive": "Повышает урон от оружия, наносимый врагам, у которых больше 50% здоровья.",
+    "counters": [],
+    "image": "assets/items/pristine-emblem.png",
+    "description": "Повышает урон от оружия, наносимый врагам, у которых больше 50% здоровья.",
+    "cooldown": 0.0,
+    "components": [
+      "high-velocity-mag"
+    ],
+    "upgrade_from": "high-velocity-mag",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/pristine-emblem.webp"
+  },
+  {
+    "id": "high-velocity-mag",
+    "name": "Скоростные патроны",
+    "name_en": "High-Velocity Rounds",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "weapon_damage": 14.0
+    },
+    "active": null,
+    "passive": "+14% к урону оружия, +30% к скорости пуль.",
+    "counters": [],
+    "image": "assets/items/high-velocity-mag.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "pristine-emblem",
+      "tempest-scope",
+      "aprounds",
+      "express-shot"
+    ],
+    "upgrade_to": [
+      "pristine-emblem",
+      "tempest-scope",
+      "aprounds",
+      "express-shot"
+    ],
+    "shop_image": "/assets/items/high-velocity-mag.webp",
+    "description": "Увеличивает начальную скорость пуль и урон оружия."
+  },
+  {
+    "id": "melee-rebuttal",
+    "name": "Отпор",
+    "name_en": "Rebuttal",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "base_hp": 150.0
+    },
+    "active": null,
+    "passive": "В случае успешного парирования атаки вражеского героя вы лечите себя на объём, соответствующий парированному урону, отражаете этот урон на цель и получаете временный бонус к наносимому урону.",
+    "counters": [],
+    "image": "assets/items/melee-rebuttal.png",
+    "description": "В случае успешного парирования атаки вражеского героя вы лечите себя на объём, соответствующий парированному урону, отражаете этот урон на цель и получаете временный бонус к наносимому урону.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/melee-rebuttal.webp"
+  },
+  {
+    "id": "counterspell",
+    "name": "Контрчары",
+    "name_en": "Counterspell",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 150.0,
+      "spirit_power": 20.0,
+      "move_speed": 1.75
+    },
+    "active": null,
+    "passive": "Ваше следующее парирование защитит вас от урона и эффектов вражеских умений и предметов. При успешном парировании умения вы получите лечение и бонусы к скорости передвижения и спиритической мощи.",
+    "counters": [],
+    "image": "assets/items/counterspell.png",
+    "description": "Ваше следующее парирование защитит вас от урона и эффектов вражеских умений и предметов. При успешном парировании умения вы получите лечение и бонусы к скорости передвижения и спиритической мощи.",
+    "cooldown": 23.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/counterspell.webp"
+  },
+  {
+    "id": "weighted-shots",
+    "name": "Утяжелённые выстрелы",
+    "name_en": "Weighted Shots",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 30.0,
+      "move_speed": -0.5
+    },
+    "active": null,
+    "passive": "Ваши пули накладывают на врагов накапливаемое снижение скорости передвижения.",
+    "counters": [],
+    "image": "assets/items/weighted-shots.png",
+    "description": "Ваши пули накладывают на врагов накапливаемое снижение скорости передвижения.",
+    "cooldown": 0.0,
+    "components": [
+      "slowing-bullets"
+    ],
+    "upgrade_from": "slowing-bullets",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/weighted-shots.webp"
+  },
+  {
+    "id": "long-range",
+    "name": "Дальняя дистанция",
+    "name_en": "Long Range",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "move_speed": 0.75
+    },
+    "active": null,
+    "passive": "Вы наносите больше урона оружием, когда цель находится за пределами минимальной дальности.",
+    "counters": [],
+    "image": "assets/items/long-range.png",
+    "description": "Вы наносите больше урона оружием, когда цель находится за пределами минимальной дальности.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "tempest-scope"
+    ],
+    "upgrade_to": [
+      "tempest-scope"
+    ],
+    "shop_image": "/assets/items/long-range.webp"
+  },
+  {
+    "id": "slowing-bullets",
+    "name": "Замедляющие пули",
+    "name_en": "Slowing Bullets",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 16.0
+    },
+    "active": null,
+    "passive": "Ваши пули накладывают на врагов накапливаемое снижение скорости передвижения.",
+    "counters": [],
+    "image": "assets/items/slowing-bullets.png",
+    "description": "Ваши пули накладывают на врагов накапливаемое снижение скорости передвижения.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "weighted-shots"
+    ],
+    "upgrade_to": [
+      "weighted-shots"
+    ],
+    "shop_image": "/assets/items/slowing-bullets.webp"
+  },
+  {
+    "id": "tech-defense-shredders",
+    "name": "Душегубные пули",
+    "name_en": "Spirit Shredder",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 10.0,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "Ваши пули накладывают на цель эффект, снижающий её сопротивляемость спиритизму и дающий вам и вашим союзникам кражу здоровья жертвы спиритизмом.",
+    "counters": [],
+    "image": "assets/items/tech-defense-shredders.png",
+    "description": "Ваши пули накладывают на цель эффект, снижающий её сопротивляемость спиритизму и дающий вам и вашим союзникам кражу здоровья жертвы спиритизмом.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "spellslinger-headshots"
+    ],
+    "upgrade_to": [
+      "spellslinger-headshots"
+    ],
+    "shop_image": "/assets/items/tech-defense-shredders.webp"
+  },
+  {
+    "id": "dps-aura",
+    "name": "Героическая аура",
+    "name_en": "Heroic Aura",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "fire_rate_pct": 34.0,
+      "move_speed": 2.25,
+      "bullet_shield": 17.0
+    },
+    "active": "Повышает скорость передвижения и скорострельность у вас и союзников поблизости. У солдатов эффект удваивается.",
+    "passive": "Даёт сопротивляемость пулям союзникам поблизости.",
+    "counters": [],
+    "image": "assets/items/dps-aura.png",
+    "description": "Даёт сопротивляемость пулям союзникам поблизости.",
+    "cooldown": 22.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/dps-aura.webp"
+  },
+  {
+    "id": "proc-silence",
+    "name": "Глушитель",
+    "name_en": "Silencer",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_shield": 12.0
+    },
+    "active": null,
+    "passive": "Ваши пули снижают наносимый целью спиритический урон.",
+    "counters": [],
+    "image": "assets/items/proc-silence.png",
+    "description": "Ваши пули накладывают накапливаемое безмолвие. Жертвы становятся невосприимчивы к накапливанию через 10 сек. после истечения действия безмолвия.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/proc-silence.webp"
+  },
+  {
+    "id": "fervor",
+    "name": "Ярость",
+    "name_en": "Frenzy",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 125.0,
+      "fire_rate_pct": 0.15,
+      "move_speed": 4.0
+    },
+    "active": null,
+    "passive": "Когда у вас меньше 50% здоровья, вы на указанный период получаете бонусы к характеристикам, а наложенные на вас отрицательные эффекты ослабляются.",
+    "counters": [],
+    "image": "assets/items/fervor.png",
+    "cooldown": 16.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/fervor.webp"
+  },
+  {
+    "id": "headshot-booster",
+    "name": "Усилитель выстрелов в голову",
+    "name_en": "Headshot Booster",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "base_hp": 30.0
+    },
+    "active": null,
+    "passive": "Ваше следующее попадание в голову вражескому герою нанесёт ему доп. урон от оружия.",
+    "counters": [],
+    "image": "assets/items/headshot-booster.png",
+    "description": "Ваше следующее попадание в голову вражескому герою нанесёт ему доп. урон от оружия.",
+    "cooldown": 9.0,
+    "components": [],
+    "upgrades_to": [
+      "headhunter"
+    ],
+    "upgrade_to": [
+      "headhunter"
+    ],
+    "shop_image": "/assets/items/headshot-booster.webp"
+  },
+  {
+    "id": "headshot-booster2",
+    "name": "Ослабляющий выстрел в голову",
+    "name_en": "Weakening Headshot",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 125.0
+    },
+    "active": null,
+    "passive": "Попадание в голову снижает сопротивляемость пулям у жертвы.",
+    "counters": [],
+    "image": "assets/items/headshot-booster2.png",
+    "description": "Попадание в голову снижает сопротивляемость пулям у жертвы.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "banshee-slugs"
+    ],
+    "upgrade_to": [
+      "banshee-slugs"
+    ],
+    "shop_image": "/assets/items/headshot-booster2.webp"
+  },
+  {
+    "id": "headhunter",
+    "name": "Охотник за головами",
+    "name_en": "Headhunter",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 5.0,
+      "base_hp": 50.0,
+      "move_speed": 1.75
+    },
+    "active": null,
+    "passive": "Ваше следующее попадание в голову вражескому герою нанесёт ему доп. урон от оружия. Вы также получите лечение, а ваша скорость передвижения ненадолго повысится.",
+    "counters": [],
+    "image": "assets/items/headhunter.png",
+    "description": "Ваше следующее попадание в голову вражескому герою нанесёт ему доп. урон от оружия. Вы также получите лечение, а ваша скорость передвижения ненадолго повысится.",
+    "cooldown": 8.0,
+    "components": [
+      "headshot-booster"
+    ],
+    "upgrade_from": "headshot-booster",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/headhunter.webp"
+  },
+  {
+    "id": "spellslinger-headshots",
+    "name": "Спиритический разрыв",
+    "name_en": "Spirit Rend",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "Попадания в голову ещё больше снижают сопротивляемость спиритизму у жертвы.",
+    "counters": [],
+    "image": "assets/items/spellslinger-headshots.png",
+    "cooldown": 0.0,
+    "components": [
+      "tech-defense-shredders"
+    ],
+    "upgrade_from": "tech-defense-shredders",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/spellslinger-headshots.webp"
+  },
+  {
+    "id": "banshee-slugs",
+    "name": "Калечащий выстрел в голову",
+    "name_en": "Crippling Headshot",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 150.0
+    },
+    "active": null,
+    "passive": "Попадание в голову уменьшает жертве сопротивляемость пулям и спиритизму, а также получаемое лечение.",
+    "counters": [],
+    "image": "assets/items/banshee-slugs.png",
+    "description": "Попадание в голову уменьшает жертве сопротивляемость пулям и спиритизму, а также получаемое лечение.",
+    "cooldown": 0.0,
+    "components": [
+      "headshot-booster2"
+    ],
+    "upgrade_from": "headshot-booster2",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/banshee-slugs.webp"
+  },
+  {
+    "id": "critshot",
+    "name": "Удачный выстрел",
+    "name_en": "Lucky Shot",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "weapon_damage": 25.0
+    },
+    "active": null,
+    "passive": "Ваши пули имеют 25% шанс стать критическими и нанести +100% дополнительного урона. +30% к размеру магазина.",
+    "counters": [],
+    "image": "assets/items/critshot.png",
+    "description": "Ваши пули могут стать усиленными и нанести дополнительный урон при попадании.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/critshot.webp"
+  },
+  {
+    "id": "ricochet",
+    "name": "Рикошет",
+    "name_en": "Ricochet",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 0.12
+    },
+    "active": null,
+    "passive": "+12% к скорострельности. Ваши пули рикошетят в ближайших врагов рядом с целью, накладывая эффекты попадания.",
+    "counters": [],
+    "image": "assets/items/ricochet.png",
+    "description": "Ваши пули рикошетят во врагов рядом с целью, накладывая эффекты выстрелов и нанося урон.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "apex-combat"
+    ],
+    "upgrade_to": [
+      "apex-combat"
+    ],
+    "shop_image": "/assets/items/ricochet.webp"
+  },
+  {
+    "id": "vampire",
+    "name": "Пулевая кража здоровья",
+    "name_en": "Bullet Lifesteal",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 90.0,
+      "weapon_damage": 6.0
+    },
+    "active": null,
+    "passive": "+28% к пулевому вампиризму, +90 к максимальному здоровью, +6% к урону оружия.",
+    "counters": [],
+    "image": "assets/items/vampire.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "leech",
+      "fury-trance",
+      "surging-power"
+    ],
+    "upgrade_to": [
+      "leech",
+      "fury-trance",
+      "surging-power"
+    ],
+    "shop_image": "/assets/items/vampire.webp",
+    "description": "Возвращает часть нанесённого пулями урона в виде здоровья."
+  },
+  {
+    "id": "debuff-reducer",
+    "name": "Уменьшитель эффектов",
+    "name_en": "Debuff Reducer",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 90.0
+    },
+    "active": null,
+    "passive": "Снижает длительность всех накладываемых на вас отрицательных эффектов.",
+    "counters": [],
+    "image": "assets/items/debuff-reducer.png",
+    "description": "Снижает длительность всех накладываемых на вас отрицательных эффектов.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "unstoppable",
+      "spellbreaker"
+    ],
+    "upgrade_to": [
+      "unstoppable",
+      "spellbreaker"
+    ],
+    "shop_image": "/assets/items/debuff-reducer.webp"
+  },
+  {
+    "id": "reduce-debuff-duration",
+    "name": "Развеивание магии",
+    "name_en": "Dispel Magic",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_shield": 10.0,
+      "move_speed": 2.0
+    },
+    "active": "Снимает с вас все отрицательные эффекты, кроме наложенных ультами. Если был снят хоть один эффект, вы лечите себя и получаете бонус к скорости передвижения. Нельзя применять в состоянии оглушения и сна.",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/reduce-debuff-duration.png",
+    "cooldown": 45.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/reduce-debuff-duration.webp"
+  },
+  {
+    "id": "tech-purge",
+    "name": "Спиритическая стойкость",
+    "name_en": "Spirit Resilience",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_shield": 30.0
+    },
+    "active": null,
+    "passive": "Если у вас менее 50% здоровья, вы получаете дополнительную сопротивляемость спиритизму.",
+    "counters": [],
+    "image": "assets/items/tech-purge.png",
+    "description": "Если у вас менее 50% здоровья, вы получаете дополнительную сопротивляемость спиритизму.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/tech-purge.webp"
+  },
+  {
+    "id": "chonky",
+    "name": "Выдержка",
+    "name_en": "Fortitude",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 375.0,
+      "move_speed": 1.5
+    },
+    "active": null,
+    "passive": "Если в течение некоторого времени не получать урон, вам даётся восстановление здоровья.",
+    "counters": [],
+    "image": "assets/items/chonky.png",
+    "description": "Если в течение некоторого времени не получать урон, вам даётся восстановление здоровья.",
+    "cooldown": 0.0,
+    "components": [
+      "extra-health"
+    ],
+    "upgrade_from": "extra-health",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/chonky.webp"
+  },
+  {
+    "id": "trophy-collector",
+    "name": "Собиратель трофеев",
+    "name_en": "Trophy Collector",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "move_speed": 2.0
+    },
+    "active": null,
+    "passive": "При каждой помощи или убийстве вы получаете бонус к скорости бега и дальности умений, а ещё у вас начинают пассивно генерироваться души. Данный эффект накапливается и не обнуляется в случае смерти.",
+    "counters": [],
+    "image": "assets/items/trophy-collector.png",
+    "description": "При каждой помощи или убийстве вы получаете бонус к скорости бега и дальности умений, а ещё у вас начинают пассивно генерироваться души. Данный эффект накапливается и не обнуляется в случае смерти.",
+    "cooldown": 0.0,
+    "components": [
+      "sprint-boots"
+    ],
+    "upgrade_from": "sprint-boots",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/trophy-collector.webp"
+  },
+  {
+    "id": "cardio-calibrator",
+    "name": "Скоростная стойкость",
+    "name_en": "Enduring Speed",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "move_speed": 2.0
+    },
+    "active": null,
+    "passive": "Уменьшает эффективность наложенного врагами снижения скорости передвижения.",
+    "counters": [],
+    "image": "assets/items/cardio-calibrator.png",
+    "description": "Уменьшает эффективность наложенного врагами снижения скорости передвижения.",
+    "cooldown": 0.0,
+    "components": [
+      "sprint-boots"
+    ],
+    "upgrade_from": "sprint-boots",
+    "upgrades_to": [
+      "juggernaut"
+    ],
+    "upgrade_to": [
+      "juggernaut"
+    ],
+    "shop_image": "/assets/items/cardio-calibrator.webp"
+  },
+  {
+    "id": "superior-stamina",
+    "name": "Превосходная выносливость",
+    "name_en": "Stamina Mastery",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "stamina": 2
+    },
+    "active": null,
+    "passive": "Позволяет делать дополнительный прыжок или рывок в воздухе перед приземлением.",
+    "counters": [],
+    "image": "assets/items/superior-stamina.png",
+    "cooldown": 0.0,
+    "components": [
+      "extra-stamina"
+    ],
+    "upgrade_from": "extra-stamina",
+    "upgrades_to": [
+      "aerial-supremacy"
+    ],
+    "upgrade_to": [
+      "aerial-supremacy"
+    ],
+    "shop_image": "/assets/items/superior-stamina.webp"
+  },
+  {
+    "id": "rapid-rounds",
+    "name": "Спешная стрельба",
+    "name_en": "Rapid Rounds",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "fire_rate_pct": 0.12,
+      "move_speed": 1.0
+    },
+    "active": null,
+    "passive": "+12% к скорострельности, +1 м/с к скорости спринта.",
+    "counters": [],
+    "image": "assets/items/rapid-rounds.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "burst-fire",
+      "blitz-bullets"
+    ],
+    "upgrade_to": [
+      "burst-fire",
+      "blitz-bullets"
+    ],
+    "shop_image": "/assets/items/rapid-rounds.webp",
+    "description": "Увеличивает скорострельность оружия и скорость передвижения."
+  },
+  {
+    "id": "bullet-armor-reduction-aura",
+    "name": "Аура охотника",
+    "name_en": "Hunter's Aura",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 125.0,
+      "move_speed": 0.75
+    },
+    "active": null,
+    "passive": "Снижает сопротивляемость пулям и скорострельность у врагов поблизости. Если рядом только один вражеский герой, эффект удваивается.",
+    "counters": [],
+    "image": "assets/items/bullet-armor-reduction-aura.png",
+    "description": "Снижает сопротивляемость пулям и скорострельность у врагов поблизости. Если рядом только один вражеский герой, эффект удваивается.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/bullet-armor-reduction-aura.webp"
+  },
+  {
+    "id": "grit",
+    "name": "Крепость",
+    "name_en": "Grit",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "bullet_shield": 200.0,
+      "base_hp": 100.0
+    },
+    "active": "Вы ненадолго получаете барьер.",
+    "passive": "Вы ненадолго получаете барьер.",
+    "counters": [],
+    "image": "assets/items/grit.png",
+    "description": "Вы ненадолго получаете барьер.",
+    "cooldown": 60.0,
+    "components": [],
+    "upgrades_to": [
+      "weapon-shielding",
+      "spirit-bubble",
+      "guardian-ward",
+      "vex-barrier"
+    ],
+    "upgrade_to": [
+      "weapon-shielding",
+      "spirit-bubble",
+      "guardian-ward",
+      "vex-barrier"
+    ],
+    "shop_image": "/assets/items/grit.webp"
+  },
+  {
+    "id": "weapon-shielding",
+    "name": "Оружейная защита",
+    "name_en": "Weapon Shielding",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "bullet_shield": 300.0
+    },
+    "active": null,
+    "passive": "Даёт вам барьер каждый раз, когда вражеские герои наносят вам значительный урон от оружия за короткий интервал времени.",
+    "counters": [],
+    "image": "assets/items/weapon-shielding.png",
+    "description": "Даёт вам барьер каждый раз, когда вражеские герои наносят вам значительный урон от оружия за короткий интервал времени.",
+    "cooldown": 35.0,
+    "components": [
+      "grit"
+    ],
+    "upgrade_from": "grit",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/weapon-shielding.webp"
+  },
+  {
+    "id": "spirit-bubble",
+    "name": "Спиритическая защита",
+    "name_en": "Spirit Shielding",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "bullet_shield": 300.0,
+      "spirit_shield": 18.0
+    },
+    "active": null,
+    "passive": "Даёт вам барьер каждый раз, когда вражеские герои наносят вам значительный спиритический урон за короткий интервал времени.",
+    "counters": [],
+    "image": "assets/items/spirit-bubble.png",
+    "description": "Даёт вам барьер каждый раз, когда вражеские герои наносят вам значительный спиритический урон за короткий интервал времени.",
+    "cooldown": 45.0,
+    "components": [
+      "grit"
+    ],
+    "upgrade_from": "grit",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/spirit-bubble.webp"
+  },
+  {
+    "id": "regenerating-bullet-shield",
+    "name": "Боевой жилет",
+    "name_en": "Battle Vest",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "fire_rate_pct": 8.0,
+      "bullet_shield": 18.0,
+      "weapon_damage": 18.0
+    },
+    "active": null,
+    "passive": "Если у вас более 65% здоровья, увеличивается наносимый вами урон от оружия и вам даётся повышенная скорострельность.",
+    "counters": [],
+    "image": "assets/items/regenerating-bullet-shield.png",
+    "description": "Если у вас более 65% здоровья, увеличивается наносимый вами урон от оружия и вам даётся повышенная скорострельность.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/regenerating-bullet-shield.webp"
+  },
+  {
+    "id": "magic-shield",
+    "name": "Эмблема заклинателя",
+    "name_en": "Enchanter's Emblem",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 15.0,
+      "spirit_shield": 18.0,
+      "cooldown_reduction_pct": 0.05
+    },
+    "active": null,
+    "passive": "Если у вас более 65% здоровья, вам даётся дополнительная спиритическая мощь и сокращённое время перезарядки умений.",
+    "counters": [],
+    "image": "assets/items/magic-shield.png",
+    "description": "Если у вас более 65% здоровья, вам даётся дополнительная спиритическая мощь и сокращённое время перезарядки умений.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/magic-shield.webp"
+  },
+  {
+    "id": "improved-spirit",
+    "name": "Добавочный спиритизм",
+    "name_en": "Extra Spirit",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "spirit_power": 9.0
+    },
+    "active": null,
+    "passive": "+9 к мощи духа, +1 к регенерации здоровья.",
+    "counters": [],
+    "image": "assets/items/improved-spirit.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "soaring-spirit",
+      "magic-storm"
+    ],
+    "upgrade_to": [
+      "soaring-spirit",
+      "magic-storm"
+    ],
+    "shop_image": "/assets/items/improved-spirit.webp",
+    "description": "Увеличивает спиритическую мощь и базовое восстановление здоровья."
+  },
+  {
+    "id": "mystic-regeneration",
+    "name": "Мистическое восстановление",
+    "name_en": "Mystic Regeneration",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "base_hp": 150.0
+    },
+    "active": null,
+    "passive": "Нанесение спиритического урона вражеским героям даёт вам бонусное восстановление. Накапливается при нанесении урона разным героям.",
+    "counters": [],
+    "image": "assets/items/mystic-regeneration.png",
+    "description": "Нанесение спиритического урона вражеским героям даёт вам бонусное восстановление. Накапливается при нанесении урона разным героям.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "resonant-healing"
+    ],
+    "upgrade_to": [
+      "resonant-healing"
+    ],
+    "shop_image": "/assets/items/mystic-regeneration.webp"
+  },
+  {
+    "id": "soaring-spirit",
+    "name": "Улучшенный спиритизм",
+    "name_en": "Improved Spirit",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 17.0,
+      "move_speed": 1.0,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "+17 к мощи духа, +2 к регенерации здоровья, +1 м/с к скорости спринта.",
+    "counters": [],
+    "image": "assets/items/soaring-spirit.png",
+    "cooldown": 0.0,
+    "components": [
+      "improved-spirit"
+    ],
+    "upgrade_from": "improved-spirit",
+    "upgrades_to": [
+      "boundless-spirit"
+    ],
+    "upgrade_to": [
+      "boundless-spirit"
+    ],
+    "shop_image": "/assets/items/soaring-spirit.webp",
+    "description": "Значительно увеличивает спиритическую мощь, мобильность и регенерацию."
+  },
+  {
+    "id": "tech-overflow",
+    "name": "Спиритическое переполнение",
+    "name_en": "Spiritual Overflow",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 20.0,
+      "base_hp": 80.0,
+      "spirit_power": 6.0
+    },
+    "active": null,
+    "passive": "Стреляя во вражеских героев, вы накапливаете эффект, который повышает вашу скорострельность, спиритическую мощь и кражу здоровья спиритизмом.",
+    "counters": [],
+    "image": "assets/items/tech-overflow.png",
+    "description": "Стреляя во вражеских героев, вы накапливаете эффект, который повышает вашу скорострельность, спиритическую мощь и кражу здоровья спиритизмом.",
+    "cooldown": 0.0,
+    "components": [
+      "health-stealing-magic"
+    ],
+    "upgrade_from": "health-stealing-magic",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/tech-overflow.webp"
+  },
+  {
+    "id": "tech-range",
+    "name": "Усиленное расширение",
+    "name_en": "Greater Expansion",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_shield": 10.0
+    },
+    "active": null,
+    "passive": "Увеличивает дальность и радиус действия ваших умений и предметов.",
+    "counters": [],
+    "image": "assets/items/tech-range.png",
+    "description": "Увеличивает дальность и радиус действия ваших умений и предметов.",
+    "cooldown": 0.0,
+    "components": [
+      "mystic-reach"
+    ],
+    "upgrade_from": "mystic-reach",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/tech-range.webp"
+  },
+  {
+    "id": "extra-charge",
+    "name": "Добавочные заряды",
+    "name_en": "Extra Charge",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "spirit_power": 7.0
+    },
+    "active": null,
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/extra-charge.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "rapid-recharge"
+    ],
+    "upgrade_to": [
+      "rapid-recharge"
+    ],
+    "shop_image": "/assets/items/extra-charge.webp"
+  },
+  {
+    "id": "health-stealing-magic",
+    "name": "Спиритическая кража здоровья",
+    "name_en": "Spirit Lifesteal",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 90.0,
+      "spirit_power": 6.0
+    },
+    "active": null,
+    "passive": "+13% к спиритическому вампиризму, +90 к здоровью, +6 к мощи духа.",
+    "counters": [],
+    "image": "assets/items/health-stealing-magic.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "leech",
+      "tech-overflow",
+      "infuser"
+    ],
+    "upgrade_to": [
+      "leech",
+      "tech-overflow",
+      "infuser"
+    ],
+    "shop_image": "/assets/items/health-stealing-magic.webp",
+    "description": "Возвращает часть нанесённого способностями урона в виде здоровья владельца."
+  },
+  {
+    "id": "bullet-resist-shredder",
+    "name": "Измельчитель пулестойкости",
+    "name_en": "Bullet Resist Shredder",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 9.0,
+      "bullet_shield": 9.0
+    },
+    "active": null,
+    "passive": "Снижает сопротивляемость пулям у врагов, которым вы наносите спиритический урон.",
+    "counters": [],
+    "image": "assets/items/bullet-resist-shredder.png",
+    "description": "Снижает сопротивляемость пулям у врагов, которым вы наносите спиритический урон.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/bullet-resist-shredder.webp"
+  },
+  {
+    "id": "mystic-reverb",
+    "name": "Мистический отзвук",
+    "name_en": "Mystic Reverb",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 15.0,
+      "cooldown_reduction_pct": 0.1
+    },
+    "active": null,
+    "passive": "Усиливает выбранное умение: оно получает кражу здоровья, замедляет цель и после короткой задержки наносит врагам вокруг неё долю от нанесённого ей урона.",
+    "counters": [],
+    "image": "assets/items/mystic-reverb.png",
+    "cooldown": 6.25,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/mystic-reverb.webp"
+  },
+  {
+    "id": "magic-burst",
+    "name": "Мистический импульс",
+    "name_en": "Mystic Burst",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "spirit_power": 12.0,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "Постепенно заряжается спиритическим уроном, благодаря чему умения, наносящие более 80 ед. урона, причиняют дополнительный урон.",
+    "counters": [],
+    "image": "assets/items/magic-burst.png",
+    "description": "Постепенно заряжается спиритическим уроном, благодаря чему умения, наносящие более 80 ед. урона, причиняют дополнительный урон.",
+    "cooldown": 14.0,
+    "components": [],
+    "upgrades_to": [
+      "magic-shock"
+    ],
+    "upgrade_to": [
+      "magic-shock"
+    ],
+    "shop_image": "/assets/items/magic-burst.webp"
+  },
+  {
+    "id": "magic-shock",
+    "name": "Гроза танков",
+    "name_en": "Tankbuster",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 100.0
+    },
+    "active": null,
+    "passive": "Постепенно заряжается спиритическим уроном, благодаря чему умения, наносящие более 165 ед. урона, причиняют дополнительный урон. Игнорирует сопротивляемость спиритизму.",
+    "counters": [],
+    "image": "assets/items/magic-shock.png",
+    "description": "Постепенно заряжается спиритическим уроном, благодаря чему умения, наносящие более 165 ед. урона, причиняют дополнительный урон. Игнорирует сопротивляемость спиритизму.",
+    "cooldown": 14.0,
+    "components": [
+      "magic-burst"
+    ],
+    "upgrade_from": "magic-burst",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/magic-shock.webp"
+  },
+  {
+    "id": "magic-slow",
+    "name": "Мистическое замедление",
+    "name_en": "Mystic Slow",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 100.0,
+      "move_speed": 0.75
+    },
+    "active": null,
+    "passive": "Когда цель получает спиритический урон, у неё снижается скорость передвижения.",
+    "counters": [],
+    "image": "assets/items/magic-slow.png",
+    "description": "Когда цель получает спиритический урон, у неё снижается скорость передвижения.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "ultimate-burst"
+    ],
+    "upgrade_to": [
+      "ultimate-burst"
+    ],
+    "shop_image": "/assets/items/magic-slow.webp"
+  },
+  {
+    "id": "escalating-exposure",
+    "name": "Растущее воздействие",
+    "name_en": "Escalating Exposure",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_shield": 17.0
+    },
+    "active": null,
+    "passive": "Нанося спиритический урон, вы получаете накапливаемое повышение спиритизма, которое увеличивает спиритический урон, наносимый вами цели.",
+    "counters": [],
+    "image": "assets/items/escalating-exposure.png",
+    "description": "Нанося спиритический урон, вы получаете накапливаемое повышение спиритизма, которое увеличивает спиритический урон, наносимый вами цели.",
+    "cooldown": 0.0,
+    "components": [
+      "apprentice-tome"
+    ],
+    "upgrade_from": "apprentice-tome",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/escalating-exposure.webp"
+  },
+  {
+    "id": "rapid-recharge",
+    "name": "Спешные заряды",
+    "name_en": "Rapid Recharge",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "cooldown_reduction_pct": 0.14,
+      "spirit_power": 14.0
+    },
+    "active": null,
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/rapid-recharge.png",
+    "cooldown": 0.0,
+    "components": [
+      "extra-charge"
+    ],
+    "upgrade_from": "extra-charge",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/rapid-recharge.webp"
+  },
+  {
+    "id": "omnicharge-pendant",
+    "name": "Всезарядная печать",
+    "name_en": "Omnicharge Signet",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "cooldown_reduction_pct": 0.3,
+      "spirit_power": 50.0
+    },
+    "active": null,
+    "passive": "Позволяет добавить любому активному умению, не являющемуся ультом, дополнительные заряды. У умений с системой зарядов повышается их число.",
+    "counters": [],
+    "image": "assets/items/omnicharge-pendant.png",
+    "description": "Позволяет добавить любому активному умению, не являющемуся ультом, дополнительные заряды. У умений с системой зарядов повышается их число.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/omnicharge-pendant.webp"
+  },
+  {
+    "id": "cooldown-reduction",
+    "name": "Превосходная перезарядка умений",
+    "name_en": "Superior Cooldown",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "cooldown_reduction_pct": 0.2
+    },
+    "active": null,
+    "passive": "Сокращает время перезарядки ваших умений.",
+    "counters": [],
+    "image": "assets/items/cooldown-reduction.png",
+    "description": "Сокращает время перезарядки ваших умений.",
+    "cooldown": 0.0,
+    "components": [
+      "improved-cooldown"
+    ],
+    "upgrade_from": "improved-cooldown",
+    "upgrades_to": [
+      "transcendent-cooldown"
+    ],
+    "upgrade_to": [
+      "transcendent-cooldown"
+    ],
+    "shop_image": "/assets/items/cooldown-reduction.webp"
+  },
+  {
+    "id": "transcendent-cooldown",
+    "name": "Трансцендентная перезарядка",
+    "name_en": "Transcendent Cooldown",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "cooldown_reduction_pct": 0.25
+    },
+    "active": null,
+    "passive": "Сокращает время перезарядки ваших умений и предметов.",
+    "counters": [],
+    "image": "assets/items/transcendent-cooldown.png",
+    "description": "Сокращает время перезарядки ваших умений и предметов.",
+    "cooldown": 0.0,
+    "components": [
+      "cooldown-reduction"
+    ],
+    "upgrade_from": "cooldown-reduction",
+    "upgrades_to": [
+      "timeless-emblem"
+    ],
+    "upgrade_to": [
+      "timeless-emblem"
+    ],
+    "shop_image": "/assets/items/transcendent-cooldown.webp"
+  },
+  {
+    "id": "containment",
+    "name": "Замедляющие чары",
+    "name_en": "Slowing Hex",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "move_speed": 0.5
+    },
+    "active": "Замедляет передвижение выбранного врага и накладывает безмолвие на его предметы и умения, связанные с передвижением.Увеличивает гравитацию цели.Не влияет на расход её выносливости.",
+    "passive": "Замедляет передвижение выбранного врага и накладывает безмолвие на его предметы и умения, связанные с передвижением.Увеличивает гравитацию цели.Не влияет на расход её выносливости.",
+    "counters": [],
+    "image": "assets/items/containment.png",
+    "description": "Замедляет передвижение выбранного врага и накладывает безмолвие на его предметы и умения, связанные с передвижением.Увеличивает гравитацию цели.Не влияет на расход её выносливости.",
+    "cooldown": 29.0,
+    "components": [],
+    "upgrades_to": [
+      "aoe-root"
+    ],
+    "upgrade_to": [
+      "aoe-root"
+    ],
+    "shop_image": "/assets/items/containment.webp"
+  },
+  {
+    "id": "spirit-sap",
+    "name": "Спиритическое истощение",
+    "name_en": "Spirit Sap",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 150.0,
+      "spirit_power": -30.0
+    },
+    "active": "Снижает сопротивляемость спиритизму и спиритическую мощь выбранного врага.",
+    "passive": "Снижает сопротивляемость спиритизму и спиритическую мощь выбранного врага.",
+    "counters": [],
+    "image": "assets/items/spirit-sap.png",
+    "description": "Снижает сопротивляемость спиритизму и спиритическую мощь выбранного врага.",
+    "cooldown": 18.0,
+    "components": [],
+    "upgrades_to": [
+      "focus-lens"
+    ],
+    "upgrade_to": [
+      "focus-lens"
+    ],
+    "shop_image": "/assets/items/spirit-sap.webp"
+  },
+  {
+    "id": "focus-lens",
+    "name": "Фокусная линза",
+    "name_en": "Focus Lens",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 20.0,
+      "spirit_power": -30.0
+    },
+    "active": "Накладывает безмолвие на выбранного врага. Часть всего урона, нанесённого в период безмолвия, накладывается на цель по окончании действия эффекта.",
+    "passive": "Накладывает безмолвие на выбранного врага. Часть всего урона, нанесённого в период безмолвия, накладывается на цель по окончании действия эффекта.",
+    "counters": [],
+    "image": "assets/items/focus-lens.png",
+    "description": "Накладывает безмолвие на выбранного врага. Часть всего урона, нанесённого в период безмолвия, накладывается на цель по окончании действия эффекта.",
+    "cooldown": 45.0,
+    "components": [
+      "spirit-sap"
+    ],
+    "upgrade_from": "spirit-sap",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/focus-lens.webp"
+  },
+  {
+    "id": "withering-whip",
+    "name": "Ржавый ствол",
+    "name_en": "Rusted Barrel",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "base_hp": 130.0,
+      "move_speed": 0.5
+    },
+    "active": "У выбранной цели снижаются скорострельность и сопротивляемость пулям.",
+    "passive": "У выбранной цели снижаются скорострельность и сопротивляемость пулям.",
+    "counters": [],
+    "image": "assets/items/withering-whip.png",
+    "description": "У выбранной цели снижаются скорострельность и сопротивляемость пулям.",
+    "cooldown": 16.0,
+    "components": [],
+    "upgrades_to": [
+      "greater-withering-whip"
+    ],
+    "upgrade_to": [
+      "greater-withering-whip"
+    ],
+    "shop_image": "/assets/items/withering-whip.webp"
+  },
+  {
+    "id": "greater-withering-whip",
+    "name": "Чары обезоруживания",
+    "name_en": "Disarming Hex",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 175.0,
+      "move_speed": 0.75
+    },
+    "active": "Разоружает выбранного врага и снижает его сопротивляемость пулям.",
+    "passive": "Разоружает выбранного врага и снижает его сопротивляемость пулям.",
+    "counters": [],
+    "image": "assets/items/greater-withering-whip.png",
+    "description": "Разоружает выбранного врага и снижает его сопротивляемость пулям.",
+    "cooldown": 16.0,
+    "components": [
+      "withering-whip"
+    ],
+    "upgrade_from": "withering-whip",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/greater-withering-whip.webp"
+  },
+  {
+    "id": "rupture",
+    "name": "Разложение",
+    "name_en": "Decay",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 90.0,
+      "spirit_power": 8.0
+    },
+    "active": "Вы постепенно наносите урон цели на основе её текущего здоровья.Урон от «Разложения» не может убить и не влияет на срабатывание предметов.",
+    "passive": "Вы постепенно наносите урон цели на основе её текущего здоровья.Урон от «Разложения» не может убить и не влияет на срабатывание предметов.",
+    "counters": [],
+    "image": "assets/items/rupture.png",
+    "description": "Вы постепенно наносите урон цели на основе её текущего здоровья.Урон от «Разложения» не может убить и не влияет на срабатывание предметов.",
+    "cooldown": 30.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/rupture.webp"
+  },
+  {
+    "id": "discord",
+    "name": "Кара",
+    "name_en": "Scourge",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 125.0,
+      "spirit_shield": 40.0
+    },
+    "active": "Накладывает на союзника сопротивляемость спиритизму, сопротивляемость отриц. эффектам и ауру, которая наносит урон врагам пропорционально их макс. здоровью. Отрицательные эффекты, уже наложенные на цель, ослабляются.Можно применять на себя.",
+    "passive": "Накладывает на союзника сопротивляемость спиритизму, сопротивляемость отриц. эффектам и ауру, которая наносит урон врагам пропорционально их макс. здоровью. Отрицательные эффекты, уже наложенные на цель, ослабляются.Можно применять на себя.",
+    "counters": [],
+    "image": "assets/items/discord.png",
+    "description": "Накладывает на союзника сопротивляемость спиритизму, сопротивляемость отриц. эффектам и ауру, которая наносит урон врагам пропорционально их макс. здоровью. Отрицательные эффекты, уже наложенные на цель, ослабляются.Можно применять на себя.",
+    "cooldown": 35.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/discord.webp"
+  },
+  {
+    "id": "phantom-strike",
+    "name": "Фантомный удар",
+    "name_en": "Phantom Strike",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 8.0,
+      "weapon_damage": 15.0
+    },
+    "active": "Телепортирует вас к выбранному врагу и притягивает его к земле, нанося урон, обезоруживая его, и снижая скорость его передвижения.",
+    "passive": "Телепортирует вас к выбранному врагу и притягивает его к земле, нанося урон, обезоруживая его, и снижая скорость его передвижения.",
+    "counters": [],
+    "image": "assets/items/phantom-strike.png",
+    "description": "Телепортирует вас к выбранному врагу и притягивает его к земле, нанося урон, обезоруживая его, и снижая скорость его передвижения.",
+    "cooldown": 35.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/phantom-strike.webp"
+  },
+  {
+    "id": "warp-stone",
+    "name": "Камень переноса",
+    "name_en": "Warp Stone",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "bullet_shield": 30.0
+    },
+    "active": "Телепортирует вас вперёд и увеличивает сопротивляемость пулям.",
+    "passive": "Телепортирует вас вперёд и увеличивает сопротивляемость пулям.",
+    "counters": [],
+    "image": "assets/items/warp-stone.png",
+    "description": "Телепортирует вас вперёд и увеличивает сопротивляемость пулям.",
+    "cooldown": 16.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/warp-stone.webp"
+  },
+  {
+    "id": "aoe-root",
+    "name": "Паутинный вихрь",
+    "name_en": "Vortex Web",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "move_speed": 0.75
+    },
+    "active": "Вы бросаете вакуумную гранату, которая притягивает врагов в небольшую область и накладывает на них «Замедляющие чары». Альт. огонь: применить на конкретную цель.",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/aoe-root.png",
+    "cooldown": 42.0,
+    "components": [
+      "containment"
+    ],
+    "upgrade_from": "containment",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/aoe-root.webp"
+  },
+  {
+    "id": "ability-refresher",
+    "name": "Обновитель",
+    "name_en": "Refresher",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_shield": 14.0,
+      "bullet_shield": 15.0
+    },
+    "active": "Сбрасывает перезарядку всех ваших умений и восстанавливает все их заряды.",
+    "passive": "Сбрасывает перезарядку всех ваших умений и восстанавливает все их заряды.",
+    "counters": [],
+    "image": "assets/items/ability-refresher.png",
+    "description": "Сбрасывает перезарядку всех ваших умений и восстанавливает все их заряды.",
+    "cooldown": 300.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/ability-refresher.webp"
+  },
+  {
+    "id": "cheat-death",
+    "name": "Обман смерти",
+    "name_en": "Cheat Death",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 200.0,
+      "bullet_shield": 15.0
+    },
+    "active": null,
+    "passive": "Если вам наносят смертельный урон, вы получаете временное бессмертие, а также избавляетесь от всех отрицательных эффектов, кроме оглушения.В этом состоянии вы наносите уменьшенный урон, и имеете сниженное лечение.",
+    "counters": [],
+    "image": "assets/items/cheat-death.png",
+    "cooldown": 90.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/cheat-death.webp"
+  },
+  {
+    "id": "cloaking-device-active",
+    "name": "Сплетение теней",
+    "name_en": "Shadow Weave",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "move_speed": 1.0,
+      "fire_rate_pct": 0.25,
+      "spirit_power": 25.0
+    },
+    "active": "Даёт скрытность на 13 секунд. Получение урона ненадолго раскрывает вас. При выходе из скрытности атакой начинается засада (+скорострельность, мощь духа и урон ближнего боя).",
+    "passive": "+1 м/с к скорости спринта, +2 к регенерации здоровья вне боя.",
+    "counters": [],
+    "image": "assets/items/cloaking-device-active.png",
+    "description": "Даёт скрытность и мощный бонус к характеристикам при нападении из засады.",
+    "cooldown": 37.0,
+    "components": [
+      "sprint-boots"
+    ],
+    "upgrade_from": "sprint-boots",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/cloaking-device-active.webp"
+  },
+  {
+    "id": "rocket-booster",
+    "name": "Грациозный скачок",
+    "name_en": "Majestic Leap",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "bullet_shield": 200.0,
+      "move_speed": 2.0
+    },
+    "active": "Подбрасывает вас ввысь и даёт вам барьер. Находясь в воздухе, вы можете снова применить этот предмет, чтобы ускорить падение.Нельзя использовать в течение 5 сек. после того, как вас атаковал вражеский герой.",
+    "passive": "Подбрасывает вас ввысь и даёт вам барьер. Находясь в воздухе, вы можете снова применить этот предмет, чтобы ускорить падение.Нельзя использовать в течение 5 сек. после того, как вас атаковал вражеский герой.",
+    "counters": [],
+    "image": "assets/items/rocket-booster.png",
+    "description": "Подбрасывает вас ввысь и даёт вам барьер. Находясь в воздухе, вы можете снова применить этот предмет, чтобы ускорить падение.Нельзя использовать в течение 5 сек. после того, как вас атаковал вражеский герой.",
+    "cooldown": 45.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/rocket-booster.webp"
+  },
+  {
+    "id": "health-nova",
+    "name": "Вспышка исцеления",
+    "name_en": "Healing Nova",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_power": 8.0
+    },
+    "active": "Лечит вас и союзников поблизости.",
+    "passive": "Лечит вас и союзников поблизости.",
+    "counters": [],
+    "image": "assets/items/health-nova.png",
+    "description": "Лечит вас и союзников поблизости.",
+    "cooldown": 60.0,
+    "components": [
+      "health-stimpak"
+    ],
+    "upgrade_from": "health-stimpak",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/health-nova.webp"
+  },
+  {
+    "id": "health-stimpak",
+    "name": "Обряд лечения",
+    "name_en": "Healing Rite",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "move_speed": 2.0
+    },
+    "active": "Даёт цели восстановление здоровья и скорость бега. Эффект пропадает, если цель получает урон от вражеских героев или построек. Можно применить на себя.",
+    "passive": "Даёт цели восстановление здоровья и скорость бега. Эффект пропадает, если цель получает урон от вражеских героев или построек. Можно применить на себя.",
+    "counters": [],
+    "image": "assets/items/health-stimpak.png",
+    "description": "Даёт цели восстановление здоровья и скорость бега. Эффект пропадает, если цель получает урон от вражеских героев или построек. Можно применить на себя.",
+    "cooldown": 70.0,
+    "components": [],
+    "upgrades_to": [
+      "guardian-aura",
+      "health-nova"
+    ],
+    "upgrade_to": [
+      "guardian-aura",
+      "health-nova"
+    ],
+    "shop_image": "/assets/items/health-stimpak.webp"
+  },
+  {
+    "id": "shrink-ray",
+    "name": "Луч уменьшения",
+    "name_en": "Shrink Ray",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "fire_rate_pct": 20.0,
+      "move_speed": 5.0
+    },
+    "active": "Уменьшает размер модели и даёт цели бонус к скорости передвижения. Позволяет цели использовать туннели. Можно применить на себя.",
+    "passive": "Уменьшает размер модели и даёт цели бонус к скорости передвижения. Позволяет цели использовать туннели. Можно применить на себя.",
+    "counters": [],
+    "image": "assets/items/shrink-ray.png",
+    "description": "Уменьшает размер модели и даёт цели бонус к скорости передвижения. Позволяет цели использовать туннели. Можно применить на себя.",
+    "cooldown": 30.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/shrink-ray.webp"
+  },
+  {
+    "id": "infuser",
+    "name": "Насытитель",
+    "name_en": "Infuser",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 50.0,
+      "spirit_power": 6.0,
+      "spirit_shield": 10.0
+    },
+    "active": "Даёт бонус к краже здоровья спиритизмом и спиритической мощи.",
+    "passive": "Даёт бонус к краже здоровья спиритизмом и спиритической мощи.",
+    "counters": [],
+    "image": "assets/items/infuser.png",
+    "description": "Даёт бонус к краже здоровья спиритизмом и спиритической мощи.",
+    "cooldown": 30.0,
+    "components": [
+      "health-stealing-magic"
+    ],
+    "upgrade_from": "health-stealing-magic",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/infuser.webp"
+  },
+  {
+    "id": "guardian-ward",
+    "name": "Заслон стража",
+    "name_en": "Guardian Ward",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "move_speed": 2.75
+    },
+    "active": "Цель получает барьер и временное повышение скорости передвижения. Можно применять на себя.Если применяется не на себя, время перезарядки сокращается вдвое.",
+    "passive": "Цель получает барьер и временное повышение скорости передвижения. Можно применять на себя.Если применяется не на себя, время перезарядки сокращается вдвое.",
+    "counters": [],
+    "image": "assets/items/guardian-ward.png",
+    "description": "Цель получает барьер и временное повышение скорости передвижения. Можно применять на себя.Если применяется не на себя, время перезарядки сокращается вдвое.",
+    "cooldown": 60.0,
+    "components": [
+      "grit"
+    ],
+    "upgrade_from": "grit",
+    "upgrades_to": [
+      "divine-barrier"
+    ],
+    "upgrade_to": [
+      "divine-barrier"
+    ],
+    "shop_image": "/assets/items/guardian-ward.webp"
+  },
+  {
+    "id": "divine-barrier",
+    "name": "Божественный барьер",
+    "name_en": "Divine Barrier",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "bullet_shield": 600.0,
+      "move_speed": 2.75
+    },
+    "active": "Снимает все отрицательные эффекты (кроме оглушения) с цели, а также даёт ей барьер и бонус к скорости передвижения. Можно применять на себя. При применении не на себя время перезарядки сокращается вдвое.",
+    "passive": "Снимает все отрицательные эффекты (кроме оглушения) с цели, а также даёт ей барьер и бонус к скорости передвижения. Можно применять на себя. При применении не на себя время перезарядки сокращается вдвое.",
+    "counters": [],
+    "image": "assets/items/divine-barrier.png",
+    "description": "Снимает все отрицательные эффекты (кроме оглушения) с цели, а также даёт ей барьер и бонус к скорости передвижения. Можно применять на себя. При применении не на себя время перезарядки сокращается вдвое.",
+    "cooldown": 45.0,
+    "components": [
+      "guardian-ward"
+    ],
+    "upgrade_from": "guardian-ward",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/divine-barrier.webp"
+  },
+  {
+    "id": "thermal-detonator",
+    "name": "Алхимический огонь",
+    "name_en": "Alchemical Fire",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_power": 10.0
+    },
+    "active": "Вы бросаете колбу, которая взрывается в указанной точке и создаёт область, наносящую растущий спиритический урон каждую секунду и снижающую сопротивляемость пулям у врагов.Урон существам, не являющимися героями, ниже на 50%.",
+    "passive": "Вы бросаете колбу, которая взрывается в указанной точке и создаёт область, наносящую растущий спиритический урон каждую секунду и снижающую сопротивляемость пулям у врагов.Урон существам, не являющимися героями, ниже на 50%.",
+    "counters": [],
+    "image": "assets/items/thermal-detonator.png",
+    "description": "Вы бросаете колбу, которая взрывается в указанной точке и создаёт область, наносящую растущий спиритический урон каждую секунду и снижающую сопротивляемость пулям у врагов.Урон существам, не являющимися героями, ниже на 50%.",
+    "cooldown": 30.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/thermal-detonator.webp"
+  },
+  {
+    "id": "blood-tribute",
+    "name": "Кровавая дань",
+    "name_en": "Blood Tribute",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "fire_rate_pct": 0.3,
+      "move_speed": 2.0,
+      "spirit_shield": 8.0
+    },
+    "active": "При включении жертвует здоровьем каждую секунду, повышая скорострельность (+30%), сопротивляемость эффектам (+35%) и скорость передвижения (+2 м/с).",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/blood-tribute.png",
+    "description": "Непрерывно расходует здоровье владельца ради резкого усиления боевых параметров.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/blood-tribute.webp"
+  },
+  {
+    "id": "kinetic-sash",
+    "name": "Кинетический рывок",
+    "name_en": "Kinetic Dash",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "fire_rate_pct": 20.0,
+      "stamina": 1
+    },
+    "active": null,
+    "passive": "При совершении рывка с прыжком вы получаете бонус к скорострельности и боезапасу до следующей перезарядки. Действует до 7 сек.",
+    "counters": [],
+    "image": "assets/items/kinetic-sash.png",
+    "description": "При совершении рывка с прыжком вы получаете бонус к скорострельности и боезапасу до следующей перезарядки. Действует до 7 сек.",
+    "cooldown": 0.0,
+    "components": [
+      "extra-stamina"
+    ],
+    "upgrade_from": "extra-stamina",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/kinetic-sash.webp"
+  },
+  {
+    "id": "arcane-surge",
+    "name": "Колдовской порыв",
+    "name_en": "Arcane Surge",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 20.0,
+      "stamina": 1
+    },
+    "active": null,
+    "passive": "После совершения рывка с прыжком следующее умение, которое вы используете в течение 7 сек., будет иметь бонусную дальность, длительность и спиритическую мощь.",
+    "counters": [],
+    "image": "assets/items/arcane-surge.png",
+    "description": "После совершения рывка с прыжком следующее умение, которое вы используете в течение 7 сек., будет иметь бонусную дальность, длительность и спиритическую мощь.",
+    "cooldown": 0.0,
+    "components": [
+      "extra-stamina"
+    ],
+    "upgrade_from": "extra-stamina",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/arcane-surge.webp"
+  },
+  {
+    "id": "colossus",
+    "name": "Колосс",
+    "name_en": "Colossus",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "weapon_damage": 15.0
+    },
+    "active": "Вы увеличиваетесь в размерах и получаете бонусы к сопротивляемости пулям и спиритизму, а также наносите повышенный урон ближнего боя. Враги поблизости замедляются и имеют сниженную скорость рывка.",
+    "passive": "Вы увеличиваетесь в размерах и получаете бонусы к сопротивляемости пулям и спиритизму, а также наносите повышенный урон ближнего боя. Враги поблизости замедляются и имеют сниженную скорость рывка.",
+    "counters": [],
+    "image": "assets/items/colossus.png",
+    "description": "Вы увеличиваетесь в размерах и получаете бонусы к сопротивляемости пулям и спиритизму, а также наносите повышенный урон ближнего боя. Враги поблизости замедляются и имеют сниженную скорость рывка.",
+    "cooldown": 37.0,
+    "components": [
+      "extra-health"
+    ],
+    "upgrade_from": "extra-health",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/colossus.webp"
+  },
+  {
+    "id": "cold-front",
+    "name": "Холодный фронт",
+    "name_en": "Cold Front",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_shield": 6.0
+    },
+    "active": "Вы выпускаете расширяющуюся леденящую волну, которая наносит спиритический урон и замедляет задетых врагов.",
+    "passive": "Вы выпускаете расширяющуюся леденящую волну, которая наносит спиритический урон и замедляет задетых врагов.",
+    "counters": [],
+    "image": "assets/items/cold-front.png",
+    "description": "Вы выпускаете расширяющуюся леденящую волну, которая наносит спиритический урон и замедляет задетых врагов.",
+    "cooldown": 25.0,
+    "components": [],
+    "upgrades_to": [
+      "arctic-blast"
+    ],
+    "upgrade_to": [
+      "arctic-blast"
+    ],
+    "shop_image": "/assets/items/cold-front.webp"
+  },
+  {
+    "id": "arctic-blast",
+    "name": "Арктический взрыв",
+    "name_en": "Arctic Blast",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_shield": 10.0
+    },
+    "active": "Вы выпускаете расширяющуюся леденящую волну, которая наносит спиритический урон и замораживает, а затем замедляет задетые цели.У замедленных жертв замораживается восстановление выносливости",
+    "passive": "Вы выпускаете расширяющуюся леденящую волну, которая наносит спиритический урон и замораживает, а затем замедляет задетые цели.У замедленных жертв замораживается восстановление выносливости",
+    "counters": [],
+    "image": "assets/items/arctic-blast.png",
+    "description": "Вы выпускаете расширяющуюся леденящую волну, которая наносит спиритический урон и замораживает, а затем замедляет задетые цели.У замедленных жертв замораживается восстановление выносливости",
+    "cooldown": 24.0,
+    "components": [
+      "cold-front"
+    ],
+    "upgrade_from": "cold-front",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/arctic-blast.webp"
+  },
+  {
+    "id": "self-bubble",
+    "name": "Развоплощение",
+    "name_en": "Ethereal Shift",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_shield": 30.0,
+      "spirit_power": 20.0,
+      "move_speed": 3.0
+    },
+    "active": "После этого вы получаете временные усиления:",
+    "passive": "Вы мгновенно переходите в состояние пустоты и кратковременно становитесь неуязвимы.",
+    "counters": [],
+    "image": "assets/items/self-bubble.png",
+    "description": "Вы мгновенно переходите в состояние пустоты и кратковременно становитесь неуязвимы.",
+    "cooldown": 37.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/self-bubble.webp"
+  },
+  {
+    "id": "arcane-extension",
+    "name": "Увеличитель длительности",
+    "name_en": "Duration Extender",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "spirit_power": 8.0
+    },
+    "active": null,
+    "passive": "Усиливает выбранное умение, повышая время его действия.",
+    "counters": [],
+    "image": "assets/items/arcane-extension.png",
+    "description": "Усиливает выбранное умение, повышая время его действия.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "imbued-duration-extender"
+    ],
+    "upgrade_to": [
+      "imbued-duration-extender"
+    ],
+    "shop_image": "/assets/items/arcane-extension.webp"
+  },
+  {
+    "id": "imbued-duration-extender",
+    "name": "Превосходная длительность",
+    "name_en": "Superior Duration",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "bullet_shield": 8.0
+    },
+    "active": null,
+    "passive": "Увеличивает длительность действия ваших умений и предметов.",
+    "counters": [],
+    "image": "assets/items/imbued-duration-extender.png",
+    "description": "Увеличивает длительность действия ваших умений и предметов.",
+    "cooldown": 0.0,
+    "components": [
+      "arcane-extension"
+    ],
+    "upgrade_from": "arcane-extension",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/imbued-duration-extender.webp"
+  },
+  {
+    "id": "fury-trance",
+    "name": "Яростный экстаз",
+    "name_en": "Fury Trance",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 110.0,
+      "spirit_shield": 40.0,
+      "weapon_damage": 6.0,
+      "move_speed": 1.0
+    },
+    "active": "Даёт скорострельность, сопротивляемость спиритизму и скорость передвижения, а также снимает штраф к скорости передвижения при стрельбе, но накладывает безмолвие и не даёт восстанавливать и использовать выносливость.",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/fury-trance.png",
+    "cooldown": 18.0,
+    "components": [
+      "vampire"
+    ],
+    "upgrade_from": "vampire",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/fury-trance.webp"
+  },
+  {
+    "id": "surging-power",
+    "name": "Порыв вампиризма",
+    "name_en": "Vampiric Burst",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 110.0,
+      "bullet_shield": 10.0,
+      "weapon_damage": 6.0
+    },
+    "active": "Даёт бонус к краже здоровья, скорострельности и боезапасу. Увеличенный этим умением боезапас может превысить максимальный.",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/surging-power.png",
+    "cooldown": 30.0,
+    "components": [
+      "vampire"
+    ],
+    "upgrade_from": "vampire",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/surging-power.webp"
+  },
+  {
+    "id": "boxing-glove",
+    "name": "Витальный удар",
+    "name_en": "Lifestrike",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 125.0
+    },
+    "active": null,
+    "passive": "Ваши атаки ближнего боя замедляют врагов и лечат вас на процент от нанесённого в ближнем бою урона, а также на фиксированное количество единиц. Лечение от существ, не являющихся героями, эффективно на 40%. Множитель времени перезарядки составляет 1.5 при нанесении лёгких ударов ближнего боя.",
+    "counters": [],
+    "image": "assets/items/boxing-glove.png",
+    "description": "Ваши атаки ближнего боя замедляют врагов и лечат вас на процент от нанесённого в ближнем бою урона, а также на фиксированное количество единиц. Лечение от существ, не являющихся героями, эффективно на 40%. Множитель времени перезарядки составляет 1.5 при нанесении лёгких ударов ближнего боя.",
+    "cooldown": 4.0,
+    "components": [
+      "life-strike"
+    ],
+    "upgrade_from": "life-strike",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/boxing-glove.webp"
+  },
+  {
+    "id": "acolytes-glove",
+    "name": "Спиритический удар",
+    "name_en": "Spirit Strike",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "spirit_power": 12.0,
+      "weapon_damage": 8.0
+    },
+    "active": null,
+    "passive": "Совершив лёгкий или тяжёлый удар ближнего боя по герою, вы нанесёте ему дополнительный спиритический урон и уменьшите его сопротивляемость спиритизму.При нанесении лёгких ударов ближнего боя перезарядка длится в 2 раза дольше.",
+    "counters": [],
+    "image": "assets/items/acolytes-glove.png",
+    "description": "Совершив лёгкий или тяжёлый удар ближнего боя по герою, вы нанесёте ему дополнительный спиритический урон и уменьшите его сопротивляемость спиритизму.При нанесении лёгких ударов ближнего боя перезарядка длится в 2 раза дольше.",
+    "cooldown": 8.0,
+    "components": [],
+    "upgrades_to": [
+      "spirit-snatch"
+    ],
+    "upgrade_to": [
+      "spirit-snatch"
+    ],
+    "shop_image": "/assets/items/acolytes-glove.webp"
+  },
+  {
+    "id": "spirit-snatch",
+    "name": "Похищение спиритизма",
+    "name_en": "Spirit Snatch",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_power": -25.0,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "Совершив лёгкий или тяжёлый удар ближнего боя по герою, вы нанесёте ему дополнительный спиритический урон, а также украдёте его сопротивляемость спиритизму и спиритическую мощь.При нанесении лёгких ударов ближнего боя сила эффектов снижается на 30%.",
+    "counters": [],
+    "image": "assets/items/spirit-snatch.png",
+    "description": "Совершив лёгкий или тяжёлый удар ближнего боя по герою, вы нанесёте ему дополнительный спиритический урон, а также украдёте его сопротивляемость спиритизму и спиритическую мощь.При нанесении лёгких ударов ближнего боя сила эффектов снижается на 30%.",
+    "cooldown": 6.0,
+    "components": [
+      "acolytes-glove"
+    ],
+    "upgrade_from": "acolytes-glove",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/spirit-snatch.webp"
+  },
+  {
+    "id": "melee-charge",
+    "name": "Удар с зарядом",
+    "name_en": "Melee Charge",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "bullet_shield": 6.0
+    },
+    "active": null,
+    "passive": "Ваш следующий тяжёлый удар ближнего боя наносит врагу повышенный урон.",
+    "counters": [],
+    "image": "assets/items/melee-charge.png",
+    "description": "Ваш следующий тяжёлый удар ближнего боя наносит врагу повышенный урон.",
+    "cooldown": 5.0,
+    "components": [],
+    "upgrades_to": [
+      "crushing-fists"
+    ],
+    "upgrade_to": [
+      "crushing-fists"
+    ],
+    "shop_image": "/assets/items/melee-charge.webp"
+  },
+  {
+    "id": "crushing-fists",
+    "name": "Сокрушительные кулаки",
+    "name_en": "Crushing Fists",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "bullet_shield": 12.0
+    },
+    "active": null,
+    "passive": "Ваш следующий тяжёлый удар ближнего боя наносит врагу повышенный урон.",
+    "counters": [],
+    "image": "assets/items/crushing-fists.png",
+    "description": "Нанесённый вами урон ближнего боя восстанавливает ваш боезапас и накладывает накапливаемый эффект снижения сопротивляемости пулям на врагов. Тяжёлый удар ближнего боя накладывает 2 ед. эффекта. Если на цель наложено макс. число единиц эффекта, она оглушается.",
+    "cooldown": 5.0,
+    "components": [
+      "melee-charge"
+    ],
+    "upgrade_from": "melee-charge",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/crushing-fists.webp"
+  },
+  {
+    "id": "resonant-healing",
+    "name": "Сияющее восстановление",
+    "name_en": "Radiant Regeneration",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 110.0,
+      "move_speed": 1.75
+    },
+    "active": null,
+    "passive": "Нанесение спиритического урона вражеским героям даёт вам бонусное восстановление. Накапливается при нанесении урона разным героям.",
+    "counters": [],
+    "image": "assets/items/resonant-healing.png",
+    "description": "Вы получаете лечение и кратковременный бонус к скорости передвижения при применении умения.",
+    "cooldown": 6.0,
+    "components": [
+      "mystic-regeneration"
+    ],
+    "upgrade_from": "mystic-regeneration",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/resonant-healing.webp"
+  },
+  {
+    "id": "burst-fire",
+    "name": "Шквальный огонь",
+    "name_en": "Burst Fire",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "fire_rate_pct": 14.0,
+      "move_speed": 1.25
+    },
+    "active": null,
+    "passive": "Ненадолго повышает ваши скорострельность и скорость передвижения, когда вы попадаете выстрелом по вражескому герою.",
+    "counters": [],
+    "image": "assets/items/burst-fire.png",
+    "description": "Ненадолго повышает ваши скорострельность и скорость передвижения, когда вы попадаете выстрелом по вражескому герою.",
+    "cooldown": 9.0,
+    "components": [
+      "rapid-rounds"
+    ],
+    "upgrade_from": "rapid-rounds",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/burst-fire.webp"
+  },
+  {
+    "id": "endurance",
+    "name": "Добавочное восстановление",
+    "name_en": "Extra Regen",
+    "category": "vitality",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "base_hp": 50.0
+    },
+    "active": null,
+    "passive": "+2.5 к регенерации здоровья в секунду, +1.5 к регенерации здоровья вне боя.",
+    "counters": [],
+    "image": "assets/items/endurance.png",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [
+      "regeneration-booster"
+    ],
+    "upgrade_to": [
+      "regeneration-booster"
+    ],
+    "shop_image": "/assets/items/endurance.webp",
+    "description": "Ускоряет пассивное и внебоевое восстановление здоровья."
+  },
+  {
+    "id": "magic-storm",
+    "name": "Прилив мощи",
+    "name_en": "Surge of Power",
+    "category": "spirit",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "spirit_power": 28.0,
+      "fire_rate_pct": 0.2,
+      "move_speed": 1.75
+    },
+    "active": null,
+    "passive": "Усиливает выбранное умение: навсегда увеличивает его спиритическую мощь. Применив его, вы некоторое время передвигаетесь быстрее и не замедляетесь при совершении атак.",
+    "counters": [],
+    "image": "assets/items/magic-storm.png",
+    "description": "Усиливает выбранное умение: навсегда увеличивает его спиритическую мощь. Применив его, вы некоторое время передвигаетесь быстрее и не замедляетесь при совершении атак.",
+    "cooldown": 14.0,
+    "components": [
+      "improved-spirit"
+    ],
+    "upgrade_from": "improved-spirit",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/magic-storm.webp"
+  },
+  {
+    "id": "quick-silver",
+    "name": "Ртутная перезарядка",
+    "name_en": "Quicksilver Reload",
+    "category": "spirit",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "fire_rate_pct": 20.0
+    },
+    "active": null,
+    "passive": "Усиленное умение постепенно заряжается, благодаря чему при использовании наносит доп. спиритический урон, даёт повышенную скорострельность и перезаряжает оружие.",
+    "counters": [],
+    "image": "assets/items/quick-silver.png",
+    "description": "Усиленное умение постепенно заряжается, благодаря чему при использовании наносит доп. спиритический урон, даёт повышенную скорострельность и перезаряжает оружие.",
+    "cooldown": 18.0,
+    "components": [],
+    "upgrades_to": [
+      "ethereal-bullets"
+    ],
+    "upgrade_to": [
+      "ethereal-bullets"
+    ],
+    "shop_image": "/assets/items/quick-silver.webp"
+  },
+  {
+    "id": "ethereal-bullets",
+    "name": "Ртутный Магнум",
+    "name_en": "Mercurial Magnum",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 20.0,
+      "spirit_power": 7.0
+    },
+    "active": null,
+    "passive": "Усиленное умение постепенно заряжается, благодаря чему наносит доп. спиритический урон, повышает скорострельность и перезаряжает оружие при использовании. До следующей перезарядки оружия ваши пули наносят доп. спиритический урон, пропорциональный вашей спиритической мощи.",
+    "counters": [],
+    "image": "assets/items/ethereal-bullets.png",
+    "description": "Усиленное умение постепенно заряжается, благодаря чему наносит доп. спиритический урон, повышает скорострельность и перезаряжает оружие при использовании. До следующей перезарядки оружия ваши пули наносят доп. спиритический урон, пропорциональный вашей спиритической мощи.",
+    "cooldown": 15.0,
+    "components": [
+      "quick-silver"
+    ],
+    "upgrade_from": "quick-silver",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/ethereal-bullets.webp"
+  },
+  {
+    "id": "intensifying-clip",
+    "name": "Усиливающий магазин",
+    "name_en": "Intensifying Magazine",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 45.0
+    },
+    "active": null,
+    "passive": "Увеличивает урон от оружия при непрерывной стрельбе.",
+    "counters": [],
+    "image": "assets/items/intensifying-clip.png",
+    "description": "Увеличивает урон от оружия при непрерывной стрельбе.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/intensifying-clip.webp"
+  },
+  {
+    "id": "reinforcing-casings",
+    "name": "Растущая стойкость",
+    "name_en": "Escalating Resilience",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 125.0,
+      "weapon_damage": 18.0
+    },
+    "active": null,
+    "passive": "Увеличивает вашу сопротивляемость пулям, когда ваши пули задевают вражеского героя. Каждый выстрел может дать только одну единицу этого эффекта.",
+    "counters": [],
+    "image": "assets/items/reinforcing-casings.png",
+    "description": "Увеличивает вашу сопротивляемость пулям, когда ваши пули задевают вражеского героя. Каждый выстрел может дать только одну единицу этого эффекта.",
+    "cooldown": 0.0,
+    "components": [
+      "basic-magazine"
+    ],
+    "upgrade_from": "basic-magazine",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/reinforcing-casings.webp"
+  },
+  {
+    "id": "blitz-bullets",
+    "name": "Быстрый стрелок",
+    "name_en": "Swift Striker",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "fire_rate_pct": 0.2,
+      "move_speed": 0.75
+    },
+    "active": null,
+    "passive": "+20% к скорострельности, +0.75 м/с к скорости спринта.",
+    "counters": [],
+    "image": "assets/items/blitz-bullets.png",
+    "cooldown": 0.0,
+    "components": [
+      "rapid-rounds"
+    ],
+    "upgrade_from": "rapid-rounds",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/blitz-bullets.webp",
+    "description": "Увеличивает скорострельность оружия и скорость спринта."
+  },
+  {
+    "id": "veil-walker",
+    "name": "Незримый покров",
+    "name_en": "Veil Walker",
+    "category": "vitality",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "base_hp": 125.0,
+      "spirit_power": 6.0,
+      "move_speed": 3.5
+    },
+    "active": null,
+    "passive": "Пройдя через вселенскую вуаль, вы получите скрытность, лечение и повышенную скорость передвижения.",
+    "counters": [],
+    "image": "assets/items/veil-walker.png",
+    "description": "Пройдя через вселенскую вуаль, вы получите скрытность, лечение и повышенную скорость передвижения.",
+    "cooldown": 15.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/veil-walker.webp"
+  },
+  {
+    "id": "vex-barrier",
+    "name": "Барьерная реакция",
+    "name_en": "Reactive Barrier",
+    "category": "vitality",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "bullet_shield": 325.0,
+      "spirit_shield": 325.0
+    },
+    "active": null,
+    "passive": "Вы получаете барьер, когда оглушены, скованы, обездвижены, спите или обезмолвлены.",
+    "counters": [],
+    "image": "assets/items/vex-barrier.png",
+    "description": "Вы получаете барьер, когда оглушены, скованы, обездвижены, спите или обезмолвлены.",
+    "cooldown": 55.0,
+    "components": [
+      "grit"
+    ],
+    "upgrade_from": "grit",
+    "upgrades_to": [
+      "auto-cleanse"
+    ],
+    "upgrade_to": [
+      "auto-cleanse"
+    ],
+    "shop_image": "/assets/items/vex-barrier.webp"
+  },
+  {
+    "id": "auto-cleanse",
+    "name": "Непреклонность",
+    "name_en": "Indomitable",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "bullet_shield": 10.0,
+      "spirit_shield": 10.0
+    },
+    "active": null,
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/auto-cleanse.png",
+    "cooldown": 55.0,
+    "components": [
+      "vex-barrier"
+    ],
+    "upgrade_from": "vex-barrier",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/auto-cleanse.webp"
+  },
+  {
+    "id": "medic-bullets",
+    "name": "Живительный выстрел",
+    "name_en": "Restorative Shot",
+    "category": "weapon",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "weapon_damage": 6.0
+    },
+    "active": null,
+    "passive": "Следующий выстрел вас излечит (количество будет зависеть от того, во что или кого вы попадёте).",
+    "counters": [],
+    "image": "assets/items/medic-bullets.png",
+    "description": "Следующий выстрел вас излечит (количество будет зависеть от того, во что или кого вы попадёте).",
+    "cooldown": 6.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/medic-bullets.webp"
+  },
+  {
+    "id": "titan-round",
+    "name": "Титанический магазин",
+    "name_en": "Titanic Magazine",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 14.0
+    },
+    "active": null,
+    "passive": "+100% к размеру магазина, +14% к урону оружия.",
+    "counters": [],
+    "image": "assets/items/titan-round.png",
+    "cooldown": 0.0,
+    "components": [
+      "basic-magazine"
+    ],
+    "upgrade_from": "basic-magazine",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/titan-round.webp",
+    "description": "Удваивает боезапас магазина и увеличивает базовый урон пуль."
+  },
+  {
+    "id": "split-shot",
+    "name": "Веерный выстрел",
+    "name_en": "Split Shot",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 24.0,
+      "fire_rate_pct": 0.1
+    },
+    "active": "Ваше оружие начинает совершать мультивыстрелы. Попадание в более чем одного героя за выстрел даёт накапливаемый бонус к урону от оружия. При каждом мультивыстреле попасть в определённую цель можно только единожды.",
+    "passive": "Ваше оружие начинает совершать мультивыстрелы. Попадание в более чем одного героя за выстрел даёт накапливаемый бонус к урону от оружия. При каждом мультивыстреле попасть в определённую цель можно только единожды.",
+    "counters": [],
+    "image": "assets/items/split-shot.png",
+    "description": "Ваше оружие начинает совершать мультивыстрелы. Попадание в более чем одного героя за выстрел даёт накапливаемый бонус к урону от оружия. При каждом мультивыстреле попасть в определённую цель можно только единожды.",
+    "cooldown": 27.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/split-shot.webp"
+  },
+  {
+    "id": "active-reload",
+    "name": "Активная перезарядка",
+    "name_en": "Active Reload",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "fire_rate_pct": 15.0,
+      "move_speed": 0.75
+    },
+    "active": null,
+    "passive": "Нажав Перезарядка в указанный момент перезарядки, вы мгновенно завершите её и получите бонус к скорострельности, краже здоровья пулями и скорости передвижения.",
+    "counters": [],
+    "image": "assets/items/active-reload.png",
+    "description": "Нажав Перезарядка в указанный момент перезарядки, вы мгновенно завершите её и получите бонус к скорострельности, краже здоровья пулями и скорости передвижения.",
+    "cooldown": 12.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/active-reload.webp"
+  },
+  {
+    "id": "magic-carpet",
+    "name": "Ковёр-самолёт",
+    "name_en": "Magic Carpet",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 150.0,
+      "spirit_power": 15.0,
+      "move_speed": 7.0
+    },
+    "active": "Призывает волшебный ковёр на 12 секунд, который уносит вас прочь. Дарует невосприимчивость к замедлениям на время полёта.",
+    "passive": "+150 к максимальному здоровью, +15 к мощи духа.",
+    "counters": [],
+    "image": "assets/items/magic-carpet.png",
+    "description": "Призывает волшебный ковёр для стремительного полёта над полем боя.",
+    "cooldown": 32.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/magic-carpet.webp"
+  },
+  {
+    "id": "spirit-burn",
+    "name": "Спиритический ожог",
+    "name_en": "Spirit Burn",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 10.0,
+      "base_hp": 75.0
+    },
+    "active": null,
+    "passive": "Если нанести врагу значительный спиритический урон в течение 5 сек., происходит взрыв, который наносит урон этому врагу и обжигает его. Во время горения враги получают постепенный урон, а получаемое ими лечение уменьшается.Для каждого врага действует отдельная перезарядка: до её окончания нельзя повторно наложить эффект. Если целью выбран не герой, урон уменьшается вдвое.",
+    "counters": [],
+    "image": "assets/items/spirit-burn.png",
+    "description": "Если нанести врагу значительный спиритический урон в течение 5 сек., происходит взрыв, который наносит урон этому врагу и обжигает его. Во время горения враги получают постепенный урон, а получаемое ими лечение уменьшается.Для каждого врага действует отдельная перезарядка: до её окончания нельзя повторно наложить эффект. Если целью выбран не герой, урон уменьшается вдвое.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/spirit-burn.webp"
+  },
+  {
+    "id": "ultimate-burst",
+    "name": "Свиток молнии",
+    "name_en": "Lightning Scroll",
+    "category": "spirit",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 100.0,
+      "move_speed": 0.75
+    },
+    "active": null,
+    "passive": "Урон от вашего ульта накладывает оглушение и наносит доп. спиритический урон после короткой задержки.",
+    "counters": [],
+    "image": "assets/items/ultimate-burst.png",
+    "description": "Урон от вашего ульта накладывает оглушение и наносит доп. спиритический урон после короткой задержки.",
+    "cooldown": 0.0,
+    "components": [
+      "magic-slow"
+    ],
+    "upgrade_from": "magic-slow",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/ultimate-burst.webp"
+  },
+  {
+    "id": "absorbing-armor",
+    "name": "Ведьмовской доспех",
+    "name_en": "Witchmail",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "spirit_power": 14.0,
+      "spirit_shield": 22.0,
+      "cooldown_reduction_pct": 0.07
+    },
+    "active": null,
+    "passive": "Когда вы получаете большой спиритический урон от врагов, у вашего случайно выбранного умения сокращается время перезарядки.",
+    "counters": [],
+    "image": "assets/items/absorbing-armor.png",
+    "description": "Когда вы получаете большой спиритический урон от врагов, у вашего случайно выбранного умения сокращается время перезарядки.",
+    "cooldown": 1.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/absorbing-armor.webp"
+  },
+  {
+    "id": "healbuff",
+    "name": "Целебный темп",
+    "name_en": "Healing Tempo",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 0.1,
+      "move_speed": 1.0,
+      "spirit_shield": 10.0
+    },
+    "active": null,
+    "passive": "Когда вы применяете лечение к себе или союзнику, цель получает +25% к скорострельности и +2 м/с к скорости передвижения на 6 секунд.",
+    "counters": [],
+    "image": "assets/items/healbuff.png",
+    "description": "Дарует ускорение и скорострельность при каждом исцелении цели.",
+    "cooldown": 1.0,
+    "components": [
+      "regeneration-booster"
+    ],
+    "upgrade_from": "regeneration-booster",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/healbuff.webp"
+  },
+  {
+    "id": "aprounds",
+    "name": "Бронебой",
+    "name_en": "Armor Piercer",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "weapon_damage": 12.0
+    },
+    "active": null,
+    "passive": "+12% к урону оружия. Ваши пули прошивают врагов насквозь и игнорируют их пулевую броню.",
+    "counters": [],
+    "image": "assets/items/aprounds.png",
+    "description": "Пули получают бронебойность, пробивая цели и игнорируя сопротивляемость пулям.",
+    "cooldown": 0.0,
+    "components": [
+      "high-velocity-mag"
+    ],
+    "upgrade_from": "high-velocity-mag",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/aprounds.webp"
+  },
+  {
+    "id": "infinite-rounds",
+    "name": "Бесконечные патроны",
+    "name_en": "Infinite Rounds",
+    "category": "weapon",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "fire_rate_pct": 0.2
+    },
+    "active": null,
+    "passive": "+20% к скорострельности. Оружие получает бесконечный боезапас и не требует перезарядки.",
+    "counters": [],
+    "image": "assets/items/infinite-rounds.png",
+    "description": "Дарует бесконечный боезапас, исключая необходимость в перезарядке.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/infinite-rounds.webp"
+  },
+  {
+    "id": "deflecting-armor",
+    "name": "Латная броня",
+    "name_en": "Plated Armor",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "base_hp": 130.0
+    },
+    "active": null,
+    "passive": "Даёт шанс либо отразить летящие в вас пули, нейтрализовав весь урон от оружия, либо предотвратить все эффекты, накладываемые на вас пулями при попадании.",
+    "counters": [],
+    "image": "assets/items/deflecting-armor.png",
+    "description": "Даёт шанс либо отразить летящие в вас пули, нейтрализовав весь урон от оружия, либо предотвратить все эффекты, накладываемые на вас пулями при попадании.",
+    "cooldown": 1.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/deflecting-armor.webp"
+  },
+  {
+    "id": "juggernaut",
+    "name": "Громила",
+    "name_en": "Juggernaut",
+    "category": "vitality",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "move_speed": 1.5,
+      "base_hp": 150.0
+    },
+    "active": null,
+    "passive": "У стреляющих в вас врагов снижается скорострельность на 25%. Даёт +1.5 м/с к скорости и сопротивление замедлениям.",
+    "counters": [],
+    "image": "assets/items/juggernaut.png",
+    "cooldown": 0.0,
+    "components": [
+      "cardio-calibrator"
+    ],
+    "upgrade_from": "cardio-calibrator",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/juggernaut.webp",
+    "description": "Подавляет атакующий темп стрелков и увеличивает живучесть в ближнем бою."
+  },
+  {
+    "id": "enchanted-holsters",
+    "name": "Метатель чар",
+    "name_en": "Spellslinger",
+    "category": "weapon",
+    "tier": 4,
+    "cost": 6400,
+    "stats": {
+      "fire_rate_pct": 6.0,
+      "cooldown_reduction_pct": 0.05
+    },
+    "active": null,
+    "passive": "При использовании умения или предмета в бою вы получаете суммирующийся положительный эффект, повышающий вашу скорострельность и скорость перезарядки. Каждое новое использование продлевает действие эффекта.",
+    "counters": [],
+    "image": "assets/items/enchanted-holsters.png",
+    "description": "При использовании умения или предмета в бою вы получаете суммирующийся положительный эффект, повышающий вашу скорострельность и скорость перезарядки. Каждое новое использование продлевает действие эффекта.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/enchanted-holsters.webp"
+  },
+  {
+    "id": "weapon-backstabber",
+    "name": "Преследователь",
+    "name_en": "Stalker",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "base_hp": 50.0,
+      "move_speed": 1.5
+    },
+    "active": null,
+    "passive": "Нанесение урона от оружия на ближней дистанции открывает рану и даёт вам увеличенную скорость передвижения. Раненые враги получают постепенный спиритический урон, имеют сниженную сопротивляемость пулям и становятся видимыми сквозь стены.",
+    "counters": [],
+    "image": "assets/items/weapon-backstabber.png",
+    "description": "Нанесение урона от оружия на ближней дистанции открывает рану и даёт вам увеличенную скорость передвижения. Раненые враги получают постепенный спиритический урон, имеют сниженную сопротивляемость пулям и становятся видимыми сквозь стены.",
+    "cooldown": 6.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/weapon-backstabber.webp"
+  },
+  {
+    "id": "express-shot",
+    "name": "Экспресс-выстрел",
+    "name_en": "Express Shot",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 8.0
+    },
+    "active": null,
+    "passive": "При следующей атаке вы быстро произведёте два выстрела один за другим. Выпущенные при этом пули имеют повышенную скорость и наносят дополнительный урон. Данная атака расходует дополнительный боезапас.",
+    "counters": [],
+    "image": "assets/items/express-shot.png",
+    "description": "При следующей атаке вы быстро произведёте два выстрела один за другим. Выпущенные при этом пули имеют повышенную скорость и наносят дополнительный урон. Данная атака расходует дополнительный боезапас.",
+    "cooldown": 8.0,
+    "components": [
+      "high-velocity-mag"
+    ],
+    "upgrade_from": "high-velocity-mag",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/express-shot.webp"
+  },
+  {
+    "id": "icarus-wings",
+    "name": "Крылья серафима",
+    "name_en": "Seraphim Wings",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "stamina": 1,
+      "move_speed": 1.0
+    },
+    "active": "Взмывает высоко в воздух, позволяя парить и наносить увеличенный урон сверху вниз.",
+    "passive": "+1 заряд выносливости, +120% к скорости восстановления выносливости.",
+    "counters": [],
+    "image": "assets/items/icarus-wings.png",
+    "description": "Позволяет взмывать в воздух и вести прицельный огонь с высоты.",
+    "cooldown": 25.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/icarus-wings.webp"
+  },
+  {
+    "id": "mystical-piano",
+    "name": "Мистическое фортепиано",
+    "name_en": "Mystical Piano",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "spirit_power": 15.0,
+      "cooldown_reduction_pct": 0.1
+    },
+    "active": "Создаёт звуковой удар радиусом 12 м: оглушает врагов на 2 секунды после задержки в 1.7 сек и замедляет их перемещение.",
+    "passive": "+15 к мощи духа, +10% к снижению перезарядок.",
+    "counters": [],
+    "image": "assets/items/mystical-piano.png",
+    "description": "Вызывает мощный звуковой резонанс, оглушающий и замедляющий врагов в области.",
+    "cooldown": 23.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/mystical-piano.webp"
+  },
+  {
+    "id": "nullification-aura",
+    "name": "Обнуляющий импульс",
+    "name_en": "Nullification Burst",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "base_hp": 300.0
+    },
+    "active": "Снимает с врагов все положительные эффекты, а также не даёт им использовать выносливость и лечение.",
+    "passive": "Снимает с врагов все положительные эффекты, а также не даёт им использовать выносливость и лечение.",
+    "counters": [],
+    "image": "assets/items/nullification-aura.png",
+    "description": "Снимает с врагов все положительные эффекты, а также не даёт им использовать выносливость и лечение.",
+    "cooldown": 18.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/nullification-aura.webp"
+  },
+  {
+    "id": "celestial-guidance",
+    "name": "Небесное благословение",
+    "name_en": "Celestial Blessing",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "base_hp": 200.0,
+      "move_speed": 1.5
+    },
+    "active": "Исцеляет выбранного союзника или себя на 400 + 60% от недостающего здоровья и ускоряет передвижение на 5 м/с на 6 секунд.",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/celestial-guidance.png",
+    "description": "Мощное направленное благословение, восстанавливающее здоровье и дарующее ускорение.",
+    "cooldown": 30.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/celestial-guidance.webp"
+  },
+  {
+    "id": "eternal-gift",
+    "name": "Вечный дар",
+    "name_en": "Eternal Gift",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "spirit_power": 12.0,
+      "base_hp": 150.0
+    },
+    "active": null,
+    "passive": "Периодически даёт постоянный бонус к случайной характеристике.",
+    "counters": [],
+    "image": "assets/items/eternal-gift.png",
+    "description": "Периодически даёт постоянный бонус к случайной характеристике.",
+    "cooldown": 165.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/eternal-gift.webp"
+  },
+  {
+    "id": "patrons-blessing",
+    "name": "Мистическая связь",
+    "name_en": "Mystic Conduit",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "spirit_power": 40.0,
+      "cooldown_reduction_pct": 0.4
+    },
+    "active": null,
+    "passive": "Даёт вам и союзникам мощную спиритическую ауру. Сила ауры меньше для союзников.",
+    "counters": [],
+    "image": "assets/items/patrons-blessing.png",
+    "description": "Даёт вам и союзникам мощную спиритическую ауру. Сила ауры меньше для союзников.",
+    "cooldown": 25.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/patrons-blessing.webp"
+  },
+  {
+    "id": "eldritch-shot",
+    "name": "Терзающий выстрел",
+    "name_en": "Haunting Shot",
+    "category": "weapon",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "weapon_damage": 20.0,
+      "spirit_power": 10.0
+    },
+    "active": null,
+    "passive": "Ваша следующая пуля накладывает мощный отрицательный эффект, который снижает урон, лечение и скорость передвижения врага. Кроме того, она наносит доп. спиритический урон пропорционально текущему здоровью цели. Пуля имеет больший размер и прошивает цели насквозь.",
+    "counters": [],
+    "image": "assets/items/eldritch-shot.png",
+    "description": "Ваша следующая пуля накладывает мощный отрицательный эффект, который снижает урон, лечение и скорость передвижения врага. Кроме того, она наносит доп. спиритический урон пропорционально текущему здоровью цели. Пуля имеет больший размер и прошивает цели насквозь.",
+    "cooldown": 2.5,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/eldritch-shot.webp"
+  },
+  {
+    "id": "cloak-of-opportunity",
+    "name": "Плащ возможностей",
+    "name_en": "Cloak of Opportunity",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "bullet_shield": 500.0,
+      "move_speed": 3.0
+    },
+    "active": null,
+    "passive": "Блокирует следующее наложение на вас оглушения, сковывания, обездвиживания, сна или блокировки передвижения и даёт вам неудержимость. Вы также получаете барьер и увеличенную скорость передвижения.",
+    "counters": [],
+    "image": "assets/items/cloak-of-opportunity.png",
+    "description": "Блокирует следующее наложение на вас оглушения, сковывания, обездвиживания, сна или блокировки передвижения и даёт вам неудержимость. Вы также получаете барьер и увеличенную скорость передвижения.",
+    "cooldown": 12.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/cloak-of-opportunity.webp"
+  },
+  {
+    "id": "runed-gauntlets",
+    "name": "Рунные рукавицы",
+    "name_en": "Runed Gauntlets",
+    "category": "weapon",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "weapon_damage": 16.0,
+      "base_hp": 125.0
+    },
+    "active": null,
+    "passive": "Пробивает сквозь парирование.",
+    "counters": [],
+    "image": "assets/items/runed-gauntlets.png",
+    "description": "При каждом попадании тяжёлым ударом время текущих перезарядок сокращается.",
+    "cooldown": 10.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/runed-gauntlets.webp"
+  },
+  {
+    "id": "electric-slippers",
+    "name": "Электротапки",
+    "name_en": "Electric Slippers",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "stamina": 2,
+      "fire_rate_pct": 0.6
+    },
+    "active": null,
+    "passive": "При скольжении вы уклоняетесь от пуль, получаете бонус к скорострельности и наносите урон врагам вокруг. Перезарядка отдельна для каждой цели.",
+    "counters": [],
+    "image": "assets/items/electric-slippers.png",
+    "description": "При скольжении вы уклоняетесь от пуль, получаете бонус к скорострельности и наносите урон врагам вокруг. Перезарядка отдельна для каждой цели.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/electric-slippers.webp"
+  },
+  {
+    "id": "prism-blast",
+    "name": "Призматический взрыв",
+    "name_en": "Prism Blast",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "spirit_power": 25.0,
+      "fire_rate_pct": 0.15
+    },
+    "active": "Вы входите в состояние пустоты, которое ненадолго даёт вам неуязвимость и запрещает выбирать вас целью. Во время действия от вас исходят вращающиеся лазерные лучи.",
+    "passive": "Вы входите в состояние пустоты, которое ненадолго даёт вам неуязвимость и запрещает выбирать вас целью. Во время действия от вас исходят вращающиеся лазерные лучи.",
+    "counters": [],
+    "image": "assets/items/prism-blast.png",
+    "description": "Вы входите в состояние пустоты, которое ненадолго даёт вам неуязвимость и запрещает выбирать вас целью. Во время действия от вас исходят вращающиеся лазерные лучи.",
+    "cooldown": 40.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/prism-blast.webp"
+  },
+  {
+    "id": "unstable-concoction",
+    "name": "Нестабильный отвар",
+    "name_en": "Unstable Concoction",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "base_hp": 250.0,
+      "spirit_power": 20.0,
+      "weapon_damage": 20.0,
+      "move_speed": 10.0
+    },
+    "active": "Выпивает нестабильный отвар: даёт +3000 к здоровью, +150% к урону оружия, +150 к мощи духа и +10 м/с к скорости на 4 секунды.",
+    "passive": null,
+    "counters": [],
+    "image": "assets/items/unstable-concoction.png",
+    "description": "Взрывной алхимический эликсир, кратковременно превращающий героя в неостановимую угрозу.",
+    "cooldown": 25.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/unstable-concoction.webp"
+  },
+  {
+    "id": "shivas-bracelet",
+    "name": "Морозящий амулет",
+    "name_en": "Frostbite Charm",
+    "category": "spirit",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "cooldown_reduction_pct": 0.5,
+      "spirit_power": 70.0
+    },
+    "active": "У усиленного умения сокращается время перезарядки и увеличивается спиритическая мощь. Когда умение наносит урон, цель замораживается и получает дополнительный урон. Перезарядка отдельна для каждой цели.",
+    "passive": "У усиленного умения сокращается время перезарядки и увеличивается спиритическая мощь. Когда умение наносит урон, цель замораживается и получает дополнительный урон. Перезарядка отдельна для каждой цели.",
+    "counters": [],
+    "image": "assets/items/shivas-bracelet.png",
+    "description": "У усиленного умения сокращается время перезарядки и увеличивается спиритическая мощь. Когда умение наносит урон, цель замораживается и получает дополнительный урон. Перезарядка отдельна для каждой цели.",
+    "cooldown": 10.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/shivas-bracelet.webp"
+  },
+  {
+    "id": "shadow-strike",
+    "name": "Теневой удар",
+    "name_en": "Shadow Strike",
+    "category": "vitality",
+    "tier": 5,
+    "cost": 9999,
+    "stats": {
+      "base_hp": 350.0,
+      "stamina": 3
+    },
+    "active": "Совершает стремительный рывок из тени к цели, крадёт 40% сопротивления и наносит периодический урон.",
+    "passive": "+3 заряда выносливости, +350 к максимальному здоровью.",
+    "counters": [],
+    "image": "assets/items/shadow-strike.png",
+    "description": "Скрытный рывок к противнику с ослаблением его защитных покровов.",
+    "cooldown": 20.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/shadow-strike.webp"
+  },
+  {
+    "id": "bulletshredimbue",
+    "name": "Баллистические чары",
+    "name_en": "Ballistic Enchantment",
+    "category": "weapon",
+    "tier": 3,
+    "cost": 3200,
+    "stats": {
+      "weapon_damage": 20.0
+    },
+    "active": null,
+    "passive": "Выбранное умение получает повышенную дальность. Нанесение урона этим умением увеличивает урон от оружия за каждого задетого героя. Слабее действует на существ, не являющихся героями.",
+    "counters": [],
+    "image": "assets/items/bulletshredimbue.png",
+    "description": "Выбранное умение получает повышенную дальность. Нанесение урона этим умением увеличивает урон от оружия за каждого задетого героя. Слабее действует на существ, не являющихся героями.",
+    "cooldown": 0.0,
+    "components": [
+      "mystic-reach"
+    ],
+    "upgrade_from": "mystic-reach",
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/bulletshredimbue.webp"
+  },
+  {
+    "id": "rechargingbullets",
+    "name": "Прилив перезарядки",
+    "name_en": "Recharging Rush",
+    "category": "weapon",
+    "tier": 2,
+    "cost": 1600,
+    "stats": {
+      "weapon_damage": 10.0
+    },
+    "active": null,
+    "passive": "При нанесении значительного урона от оружия у вас восстанавливается заряд у всех умений с зарядами.",
+    "counters": [],
+    "image": "assets/items/rechargingbullets.png",
+    "description": "При нанесении значительного урона от оружия у вас восстанавливается заряд у всех умений с зарядами.",
+    "cooldown": 25.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/rechargingbullets.webp"
+  },
+  {
+    "id": "goose-egg",
+    "name": "Золотое гусиное яйцо",
+    "name_en": "Golden Goose Egg",
+    "category": "spirit",
+    "tier": 1,
+    "cost": 800,
+    "stats": {
+      "move_speed": 1.0
+    },
+    "active": "Приносит золотое яйцо: даёт постоянный приток золота в минуту ценой 15% снижения наносимого вами урона.",
+    "passive": "+1 м/с к скорости спринта, +1 к регенерации здоровья вне боя.",
+    "counters": [],
+    "image": "assets/items/goose-egg.png",
+    "description": "Источник пассивного дохода ценой боевой эффективности.",
+    "cooldown": 0.0,
+    "components": [],
+    "upgrades_to": [],
+    "upgrade_to": [],
+    "shop_image": "/assets/items/goose-egg.webp"
+  }
+]

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeadlockForge — тактический комплекс</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="/assets/icons/deadlockforge_256.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/hud.css">
+<link rel="stylesheet" href="./css/styles.css">
+<link rel="stylesheet" href="./css/animations.css">
+</head>
+<body class="bg-slate-950">
+
+<!-- Бесшовный зацикленный видеофон (Ping-Pong Loop) -->
+<div class="hud-video-bg-container" aria-hidden="true">
+  <video id="hud-bg-video"
+         class="hud-video-bg"
+         src="./assets/video/background_loop.mp4"
+         autoplay
+         muted
+         loop
+         playsinline
+         preload="metadata"></video>
+  <div class="hud-video-bg-overlay"></div>
+</div>
+
+<header class="hud-header">
+  <div class="hud-brand">
+    <div class="hud-gear"></div>
+    <h1 class="hud-title">DEADLOCK<span>FORGE</span></h1>
+    <span class="visually-hidden">DeadlockForge</span>
+  </div>
+  <nav class="hud-nav" role="tablist" aria-label="Разделы">
+    <button data-tab="hub"   class="hud-tab tab-active" role="tab">Хаб</button>
+    <button data-tab="tier"  class="hud-tab" role="tab">Тир-лист</button>
+    <button data-tab="draft" class="hud-tab" role="tab">Пик-ассистент 6v6</button>
+    <button data-tab="match" class="hud-tab" role="tab" title="Разбор матча и матчап-аналитика">Deep Match (Матчап)</button>
+    <button data-tab="lab"   class="hud-tab" role="tab">Билд-лаб</button>
+    <button data-tab="map"   class="hud-tab" role="tab">Карта</button>
+    <button data-tab="profile" class="hud-tab" role="tab">Профиль</button>
+  </nav>
+</header>
+
+<main class="hud-main">
+
+  <!-- ============ Экран 1: ХАБ ============ -->
+  <section id="tab-hub" class="tab-panel" role="tabpanel" aria-label="Хаб">
+    <div class="panel hub-user">
+      <div class="hub-avatar" id="hub-avatar">DO</div>
+      <div class="hub-user-info">
+        <div class="hub-nick" id="hub-nick">Deadlock Operator</div>
+        <div class="hub-rank"><span class="rank-badge" id="hub-rank-badge">Ascendant I</span>
+          <span class="hub-mmr" id="hub-mmr">MMR 1600</span></div>
+      </div>
+      <div class="hub-user-actions">
+        <div id="hub-music-widget" class="hub-music-widget" title="Фоновая музыка Deadlock">
+          <button id="hub-music-toggle-btn" class="hub-music-btn" type="button" aria-label="Вкл/Выкл музыку">
+            <span id="hub-music-icon" class="hub-music-icon">🎵 ▶</span>
+          </button>
+          <div class="hub-music-slider-wrap">
+            <span class="hub-music-label">МУЗЫКА</span>
+            <input type="range" id="hub-music-slider" class="volume-slider hub-music-slider" min="0" max="1" step="0.05" value="0.35" aria-label="Громкость музыки">
+            <span id="hub-music-val" class="volume-value hub-music-val">35%</span>
+          </div>
+        </div>
+        <button class="btn-amber" id="hub-refresh">Обновить профиль</button>
+      </div>
+    </div>
+
+    <div class="hub-grid">
+      <div class="hub-card" data-goto="match">
+        <div class="hub-card-icon icon-amber">◈</div>
+        <h3>DEEP MATCH</h3>
+        <p>Разобрать матч: кривая душ, главная ошибка, выводы тренера.</p>
+        <div class="hub-card-status" id="hub-last-match">Последний матч: —</div>
+        <div class="hub-card-cta">Разобрать новый матч →</div>
+      </div>
+      <div class="hub-card" data-goto="tier">
+        <div class="hub-card-icon icon-violet">★</div>
+        <h3>ТИР-ЛИСТ</h3>
+        <p>Винрейты героев и мета-оценки по актуальному патчу.</p>
+        <div class="hub-card-status" id="hub-tier-hint">S+ / S / A / B</div>
+        <div class="hub-card-cta">Открыть тир-лист →</div>
+      </div>
+      <div class="hub-card" data-goto="draft">
+        <div class="hub-card-icon icon-orange">⚔</div>
+        <h3>ПИК-АССИСТЕНТ 6v6</h3>
+        <p>Кого пикнуть, что собрать. Контр-пики и Red Flags драфта.</p>
+        <div class="hub-card-status">York · Broadway · Greenwich</div>
+        <div class="hub-card-cta">Собери драфт врага →</div>
+      </div>
+      <div class="hub-card" data-goto="lab">
+        <div class="hub-card-icon icon-emerald">⚒</div>
+        <h3>ЛАБОРАТОРИЯ БИЛДОВ</h3>
+        <p>12-слотовый конструктор с живым пересчётом статов и автозаменой.</p>
+        <div class="hub-card-status" id="hub-builds-count">Билдов сохранено: 0</div>
+        <div class="hub-card-cta">Открыть лабораторию →</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Экран 2: ТИР-ЛИСТ ============ -->
+  <section id="tab-tier" class="tab-panel hidden" role="tabpanel" aria-label="Тир-лист">
+    <div class="panel tier-controls">
+      <div class="tier-tabs" role="tablist" aria-label="Роли">
+        <button class="tier-tab tier-tab-active" data-role="">Все</button>
+        <button class="tier-tab" data-role="carry">Gun DPS / Керри</button>
+        <button class="tier-tab" data-role="initiator">Танки / Инициаторы</button>
+        <button class="tier-tab" data-role="duelist">Сплитпуш / Роуминг</button>
+        <button class="tier-tab" data-role="support">Саппорт / Контроль</button>
+      </div>
+      <span class="tier-meta-date" id="tier-meta-date"></span>
+    </div>
+    <div class="tier-header-row" role="row">
+      <span class="th-col th-tier">Сорт</span>
+      <span class="th-col th-portrait"></span>
+      <span class="th-col th-name">Герой</span>
+      <span class="th-col th-winrate">% побед</span>
+      <span class="th-col th-pickrate">Пикрейт</span>
+      <span class="th-col th-actions"></span>
+    </div>
+    <div id="tier-rows" class="tier-rows"></div>
+  </section>
+
+  <!-- ============ Экран 3: ПИК-АССИСТЕНТ ============ -->
+  <section id="tab-draft" class="tab-panel hidden" role="tabpanel" aria-label="Пик-ассистент">
+    <div class="panel draft-setup">
+      <!-- Команды с линиями 6v6 -->
+      <div class="draft-columns">
+        <div class="draft-team-board draft-my-board" id="draft-my-board">
+          <div class="draft-col-header my-team" id="draft-my-header" title="Клик — выбрать вашу команду для пика">
+            <div class="draft-team-header-left">
+              <span class="draft-team-dot"></span>
+              <span class="draft-team-label">Ваша команда</span>
+            </div>
+            <span class="draft-team-badge" id="draft-my-badge">0/6</span>
+          </div>
+          <div class="draft-slots-lanes" id="draft-my-slots"></div>
+        </div>
+        <div class="draft-team-board draft-enemy-board" id="draft-enemy-board">
+          <div class="draft-col-header enemy-team" id="draft-enemy-header" title="Клик — выбрать команду врага для пика">
+            <div class="draft-team-header-left">
+              <span class="draft-team-dot"></span>
+              <span class="draft-team-label">Вражеская команда</span>
+            </div>
+            <span class="draft-team-badge" id="draft-enemy-badge">0/6</span>
+          </div>
+          <div class="draft-slots-lanes" id="draft-enemy-slots"></div>
+        </div>
+      </div>
+
+      <!-- Тактическая панель управления драфтом -->
+      <div class="draft-toolbar">
+        <div class="draft-side-selector" role="group" aria-label="Выбор активной команды">
+          <button type="button" id="btn-side-my" class="draft-side-btn draft-side-my active" title="Выбирать героев в вашу команду">
+            <span class="side-indicator"></span>
+            <span>Ваша команда</span>
+            <span class="side-badge" id="side-my-count">0/6</span>
+          </button>
+          <button type="button" id="btn-side-enemy" class="draft-side-btn draft-side-enemy" title="Выбирать героев в команду врага">
+            <span class="side-indicator"></span>
+            <span>Вражеская команда</span>
+            <span class="side-badge" id="side-enemy-count">0/6</span>
+          </button>
+        </div>
+
+        <div class="draft-actions">
+          <button class="btn-amber btn-draft-main" id="btn-draft-analyze">⚡ Анализировать драфт</button>
+          <label class="file-btn" title="Загрузить скриншот экрана загрузки или таба в игре">
+            📷 Скриншот драфта / TAB
+            <input type="file" id="draft-screenshot" accept="image/*" hidden>
+          </label>
+          <button class="btn-ghost" id="btn-draft-paste" title="Вставить скриншот из буфера обмена (Ctrl+V)">📋 Вставить (Ctrl+V)</button>
+          <button class="btn-ghost btn-sm" id="btn-draft-clear" title="Очистить все слоты">✕ Сброс</button>
+          <label class="switch-wrap" title="Зеркальная дуэль / песочница">
+            <input type="checkbox" id="mirror-toggle">
+            <span>Зеркальные пики</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="draft-status-row">
+        <span class="draft-error" id="draft-error"></span>
+      </div>
+
+      <div id="draft-ai-loader" class="draft-ai-loader hidden">
+        <span class="draft-spinner">⚡</span> AI анализирует скриншот и героев матча...
+      </div>
+
+      <!-- Поиск и фильтрация героев -->
+      <div class="draft-hero-picker-panel">
+        <div class="draft-hero-picker-header">
+          <div class="draft-search-wrap">
+            <span class="draft-search-icon">🔍</span>
+            <input type="text" id="draft-hero-search" class="text-input draft-search-input"
+                   placeholder="Поиск героя (Абрамс, Ivy, Виндикта...)..." autocomplete="off" spellcheck="false">
+            <button type="button" id="draft-hero-search-clear" class="draft-search-clear hidden" title="Очистить поиск">✕</button>
+          </div>
+          <div class="draft-role-filters" id="draft-role-filters" role="group" aria-label="Фильтр героев по роли">
+            <button type="button" class="draft-role-pill active" data-role="">Все (<span id="draft-count-all">0</span>)</button>
+            <button type="button" class="draft-role-pill" data-role="carry">Керри</button>
+            <button type="button" class="draft-role-pill" data-role="initiator">Танки / Инициаторы</button>
+            <button type="button" class="draft-role-pill" data-role="duelist">Сплитпуш</button>
+            <button type="button" class="draft-role-pill" data-role="support">Саппорты</button>
+          </div>
+        </div>
+        <div class="hero-grid" id="draft-hero-grid" role="group" aria-label="Выбор героев"></div>
+      </div>
+    </div>
+    <div id="draft-tactics-panel" class="panel draft-tactics hidden">
+      <h2 class="section-title good">🎯 Тактический план на игру (AI Vision)</h2>
+      <div id="draft-tactics-summary" class="draft-tactics-summary"></div>
+      <div class="draft-tactics-grid">
+        <div class="draft-tactics-box">
+          <h3 class="dt-box-title">🛡 Критические контр-предметы</h3>
+          <div id="draft-tactics-counters" class="dt-box-content"></div>
+        </div>
+        <div class="draft-tactics-box">
+          <h3 class="dt-box-title">⚔ План на лейнинг (0-10 мин)</h3>
+          <div id="draft-tactics-lane" class="dt-box-content"></div>
+        </div>
+        <div class="draft-tactics-box">
+          <h3 class="dt-box-title">⚠ Главные угрозы сетапа</h3>
+          <div id="draft-tactics-threats" class="dt-box-content"></div>
+        </div>
+      </div>
+    </div>
+    <div id="draft-result" class="hidden">
+      <h2 class="section-title danger">Red Flags</h2>
+      <p class="section-hint">Критические уязвимости драфта — чинятся покупками и пиками.</p>
+      <div id="red-flags" class="red-flag-grid"></div>
+      <h2 class="section-title good">Синергии врага (наша команда)</h2>
+      <div id="synergy-block" class="synergy-grid"></div>
+      <h2 class="section-title">Контр-пики</h2>
+      <div id="counter-picks" class="counter-grid"></div>
+      <h2 class="section-title">Угрозы врага</h2>
+      <div id="draft-threats" class="threat-grid"></div>
+      <h2 class="section-title">Рекомендуемые предметы</h2>
+      <div id="draft-items" class="reco-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============ Экран 4: DEEP MATCH ============ -->
+  <section id="tab-match" class="tab-panel hidden" role="tabpanel" aria-label="Deep Match">
+    <div class="panel match-setup">
+      <div class="match-inputs">
+        <input type="text" id="match-id-input" class="text-input"
+               placeholder="Match ID (например 105179800)">
+        <label class="file-btn" id="match-file-label">
+          Скриншот статистики
+          <input type="file" id="match-screenshot" accept="image/*" hidden>
+        </label>
+        <button class="btn-amber" id="btn-match-analyze">Разобрать матч</button>
+        <button class="btn-ghost" id="btn-match-offline" title="Быстрый оффлайн-анализ без запросов к LLM">Быстрый оффлайн-анализ</button>
+        <div class="match-progress hidden" id="match-progress">
+          <div class="match-progress-bar"><div class="match-progress-fill" id="match-progress-fill"></div></div>
+          <span class="match-progress-text" id="match-progress-text"></span>
+          <span class="match-busy-badge" id="match-busy-badge" title="В один момент времени обрабатывается ровно один матч">🔒 1 матч в обработке</span>
+        </div>
+      </div>
+      <div id="ai-key-warning" class="match-key-warning hidden">
+        <span>⚠ Для анализа матча нейросетью укажите API-ключ в <a href="javascript:void(0)" id="link-goto-profile">профиле</a> или используйте «Быстрый оффлайн-анализ».</span>
+      </div>
+
+      <!-- Выбор героя из состава матча -->
+      <div id="match-hero-picker" class="match-hero-picker hidden">
+        <div class="mhp-header">
+          <div class="mhp-title-wrap">
+            <span class="mhp-icon">🎯</span>
+            <div class="mhp-titles">
+              <h3 class="mhp-title">На каком герое ты играл в этом матче?</h3>
+              <p class="mhp-subtitle">Выберите вашего героя для точного тактического анализа, таймингов и персональных бенчмарков.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-ghost btn-sm" id="btn-mhp-cancel" title="Отменить выбор">✕</button>
+        </div>
+        <div id="mhp-content">
+          <div class="mhp-teams" id="mhp-teams"></div>
+          <div class="mhp-actions">
+            <button type="button" class="btn-amber mhp-confirm-btn" id="btn-mhp-confirm" disabled>
+              Начать разбор
+            </button>
+            <button type="button" class="btn-ghost" id="btn-mhp-cancel-bottom">Отмена</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="match-error" id="match-error"></div>
+      <span class="match-file-name" id="match-file-name"></span>
+    </div>
+    <div id="recent-matches" class="panel hidden">
+      <div class="panel-header-row">
+        <h2 class="section-title">Последние матчи</h2>
+        <button id="btn-refresh-matches" class="btn-ghost btn-sm" type="button" title="Обновить историю матчей">
+          <span class="refresh-spinner">🔄</span> Обновить
+        </button>
+      </div>
+      <div id="recent-matches-list" class="recent-matches-list"></div>
+    </div>
+    <div id="match-result" class="hidden">
+      <div class="panel">
+        <h2 class="section-title">Кривая душ</h2>
+        <canvas id="souls-chart" height="260"></canvas>
+        <div id="souls-event-card" class="souls-event hidden"></div>
+      </div>
+      <div class="match-cards">
+        <div class="panel mistake-card">
+          <h2 class="section-title danger">Главная ошибка</h2>
+          <div id="key-mistake"></div>
+        </div>
+        <div class="panel coach-card">
+          <h2 class="section-title good">Вывод тренера</h2>
+          <ol id="coach-conclusion" class="coach-list"></ol>
+          <div class="grade-badge" id="grade-badge">C</div>
+        </div>
+        <div class="panel bench-card">
+          <h2 class="section-title">Бенчмарки</h2>
+          <div id="benchmarks"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="section-title">Коррекция предметов</h2>
+        <div id="item-corrections"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Экран 5: ЛАБОРАТОРИЯ БИЛДОВ ============ -->
+  <section id="tab-lab" class="tab-panel hidden" role="tabpanel" aria-label="Билд-лаб">
+    <div class="panel">
+      <div class="lab-hero-row">
+        <div class="lab-hero-picker-wrapper">
+          <label class="form-label" for="lab-hero">Герой</label>
+          <div class="custom-hero-select" id="custom-hero-select">
+            <button type="button" class="hero-select-trigger" id="hero-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <img id="hero-trigger-portrait" class="hero-portrait-img" src="./assets/heroes/abrams.webp" alt="Абрамс">
+              <div class="hero-trigger-text">
+                <span id="hero-trigger-name" class="hero-trigger-name">Абрамс</span>
+                <span id="hero-trigger-role" class="hero-trigger-role">Танк / Инициатор</span>
+              </div>
+              <span class="hero-select-arrow">▼</span>
+            </button>
+            <div class="hero-select-dropdown hidden" id="hero-select-dropdown" role="listbox">
+              <input type="text" id="hero-search-input" class="hero-search-input" placeholder="Поиск героя...">
+              <div class="hero-options-list" id="hero-options-list"></div>
+            </div>
+          </div>
+          <select id="lab-hero" class="select-input visually-hidden" aria-hidden="true"></select>
+        </div>
+        <div class="lab-hero-signature" id="lab-hero-signature"></div>
+      </div>
+    </div>
+
+    <div class="lab-layout">
+      <div class="lab-main">
+        <div class="panel panel-build-board">
+          <div class="lab-board-header">
+            <h2 class="section-title">Билд (12 слотов)</h2>
+            <span class="lab-board-subtitle">Компактная сетка 12 слотов · Улучшения заменяются автоматически</span>
+          </div>
+          <div class="slot-groups slot-groups-universal">
+            <div id="slots-universal" class="slot-grid-universal"></div>
+            <!-- Скрытые контейнеры для обратной совместимости -->
+            <div id="slots-weapon" class="d-none" style="display:none;" hidden></div>
+            <div id="slots-vitality" class="d-none" style="display:none;" hidden></div>
+            <div id="slots-spirit" class="d-none" style="display:none;" hidden></div>
+            <div id="slots-flex" class="d-none" style="display:none;" hidden></div>
+          </div>
+          <div class="lab-actions">
+            <button class="btn-ghost" id="btn-reset-build">Сбросить билд</button>
+            <span class="lab-error" id="lab-error"></span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="section-title">Каталог предметов</h2>
+          <div class="catalog-filters">
+            <input id="item-search" type="search" class="text-input"
+                   placeholder="Поиск: имя, T3, 3000…">
+            <select id="filter-category" class="select-input">
+              <option value="">Все категории</option>
+              <option value="weapon">Оружие</option>
+              <option value="vitality">Живучесть</option>
+              <option value="spirit">Дух</option>
+            </select>
+            <select id="filter-tier" class="select-input">
+              <option value="">Все тиры</option>
+              <option value="1">Tier 1</option>
+              <option value="2">Tier 2</option>
+              <option value="3">Tier 3</option>
+              <option value="4">Tier 4</option>
+              <option value="5">Tier 5</option>
+            </select>
+            <span id="catalog-count" class="catalog-count"></span>
+          </div>
+          <div id="item-grid" class="item-grid"></div>
+        </div>
+      </div>
+
+      <aside class="lab-side">
+        <div class="panel panel-sticky">
+          <h2 class="section-title">Статы билда</h2>
+          <dl id="stats-panel" class="stats-list"></dl>
+          <div class="souls-total">
+            <dt>Душ потрачено</dt>
+            <dd id="stat-souls">0</dd>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title">Сохранённые билды <span class="slot-badge" id="slot-count" title="Заполнено слотов из 12">0/12</span></h2>
+      <div class="build-manager-row">
+        <input id="build-name" type="text" class="text-input" maxlength="60"
+               placeholder="Название билда">
+        <button class="btn-amber" id="btn-save-build">Сохранить билд</button>
+        <button class="btn-ghost" id="btn-copy-code">Скопировать код билда</button>
+      </div>
+      <div class="build-manager-row">
+        <input id="build-code" type="text" class="text-input"
+               placeholder="Код билда для импорта">
+        <button class="btn-ghost" id="btn-import-code">Импорт по коду</button>
+      </div>
+      <ul id="build-list" class="build-list"></ul>
+    </div>
+  </section>
+
+  <!-- ============ Экран 6: КАРТА ============ -->
+  <section id="tab-map" class="tab-panel hidden" role="tabpanel" aria-label="Карта">
+    <h2 class="section-title">The Cursed Apple — три линии</h2>
+    <div class="panel map-panel">
+      <div class="map-layer-controls" role="group" aria-label="Слои маркеров">
+        <button type="button" class="map-layer-toggle" data-layer="camps">Кемпы нейтралов</button>
+        <button type="button" class="map-layer-toggle" data-layer="urn">Soul Urn</button>
+        <button type="button" class="map-layer-toggle" data-layer="midboss">Midboss</button>
+        <button type="button" class="map-layer-toggle" data-layer="walkers">Walkers</button>
+      </div>
+      <div class="map-canvas" id="map-canvas">
+        <div class="map-stage" id="map-stage">
+          <img id="map-image" src="./assets/map/Map_colored.png"
+               alt="Цветная карта The Cursed Apple" onerror="this.style.display='none';document.getElementById('map-svg-fallback').style.display='block'">
+          <svg id="map-svg-fallback" viewBox="0 0 760 300" style="display:none" class="map-diagram" role="img"
+               aria-label="Схема трёх линий: Йорк, Бродвей, Гринвич">
+            <g data-lane="york">
+              <polygon points="70,40 250,24 250,290 70,276" fill="rgba(229,169,60,0.10)"/>
+              <line x1="90" y1="270" x2="235" y2="36" stroke="#E5A93C" stroke-width="3" stroke-dasharray="8 5"/>
+              <text x="115" y="150" fill="#E5A93C" font-size="13" font-weight="600">Йорк</text>
+            </g>
+            <g data-lane="broadway">
+              <polygon points="300,18 460,18 460,292 300,292" fill="rgba(59,130,246,0.10)"/>
+              <line x1="330" y1="278" x2="430" y2="30" stroke="#3B82F6" stroke-width="3" stroke-dasharray="8 5"/>
+              <text x="352" y="155" fill="#3B82F6" font-size="13" font-weight="600">Бродвей</text>
+            </g>
+            <g data-lane="greenwich">
+              <polygon points="510,24 690,40 690,276 510,290" fill="rgba(16,185,129,0.10)"/>
+              <line x1="525" y1="36" x2="675" y2="270" stroke="#10B981" stroke-width="3" stroke-dasharray="8 5"/>
+              <text x="565" y="150" fill="#10B981" font-size="13" font-weight="600">Гринвич</text>
+            </g>
+            <circle cx="380" cy="150" r="16" fill="rgba(229,169,60,0.15)" stroke="#E5A93C" stroke-width="2"/>
+            <text x="380" y="155" fill="#E5A93C" font-size="10" text-anchor="middle" font-weight="700">MB</text>
+          </svg>
+          <div id="map-markers" class="map-markers"></div>
+        </div>
+      </div>
+      <p class="map-hint">Клик по таймлайну подсвечивает маркеры на карте. Наведи на маркер — точный тайминг объекта.</p>
+    </div>
+    <div id="lane-cards" class="lane-cards"></div>
+    <h2 class="section-title">Таймлайн событий</h2>
+    <ol id="map-timeline" class="timeline"></ol>
+  </section>
+
+  <!-- ============ Экран 7: ПРОФИЛЬ & AI ============ -->
+  <section id="tab-profile" class="tab-panel hidden" role="tabpanel" aria-label="Профиль и настройки AI">
+    <div class="panel profile-panel">
+      <h2 class="section-title">Профиль игрока</h2>
+      <div class="profile-simple">
+        <div class="profile-idcard" id="profile-idcard">
+          <div class="hub-avatar" id="profile-avatar">DO</div>
+          <div class="profile-idinfo">
+            <div class="profile-detect-status" id="profile-detect-status">Steam не определён</div>
+            <div class="profile-idtext" id="profile-idtext"></div>
+          </div>
+          <button class="btn-amber" id="btn-detect-profile">Найти мой профиль</button>
+          <button class="btn-ghost" id="btn-steam-info" title="Ник, аватар и ранг из deadlock-api">Подтянуть ник и ранг</button>
+        </div>
+        <div class="rank-hidden-note hidden" id="rank-hidden-note">
+          <span aria-hidden="true">⚠</span>
+          <div><strong>Ранг скрыт.</strong> Включите Public match data в Deadlock:
+          Настройки → Игра → Общие → «Сделать данные матчей общедоступными».
+          Программа полностью работоспособна, плашка исчезнет после включения.</div>
+        </div>
+        <div class="profile-basic-row">
+          <label>Никнейм <input id="profile-name" type="text" class="text-input"></label>
+          <label>Ранг
+            <select id="profile-rank" class="select-input">
+              <option>Ascendant</option><option>Emissary</option><option>Archon</option>
+              <option>Phantom</option><option>Ritualist</option><option>Acolyte</option>
+              <option>Seeker</option><option>Alchemist</option><option>Magician</option>
+            </select>
+          </label>
+          <label>MMR <input id="profile-mmr" type="number" class="text-input"></label>
+          <button class="btn-amber" id="btn-save-profile">Сохранить профиль</button>
+        </div>
+        <details class="profile-advanced">
+          <summary>Расширенные (ручной ввод ID)</summary>
+          <div class="profile-form">
+            <label>Steam ID <input id="profile-steam" type="text" class="text-input" placeholder="STEAM_0:..."></label>
+            <label>Account ID <input id="profile-account" type="text" class="text-input" placeholder="напр. 156067414"></label>
+            <p class="section-hint">Ручной режим — фолбэк, если Steam не установлен или автодетект не нашёл профиль.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="panel ai-panel">
+      <h2 class="section-title">Нейросеть (Gemini / OpenAI / Custom Router)</h2>
+      <div class="ai-status-card hidden" id="ai-status-card">
+        <span class="ai-dot" id="ai-status-dot"></span>
+        <span id="ai-status-text">AI отключён</span>
+      </div>
+      <div class="ai-form" id="ai-key-form">
+        <div class="ai-form-grid">
+          <label>API-ключ
+            <input id="ai-key" type="password" class="text-input" placeholder="Введите API-ключ (напр. sk-...)">
+          </label>
+          <label>API URL роутера / провайдера
+            <input id="ai-base-url" type="text" class="text-input" placeholder="http://127.0.0.1:8089/v1 (локальный Failover) или https://api.zexkora.cc/v1">
+          </label>
+          <label>Модель
+            <div class="ai-model-select-wrap">
+              <select id="ai-model-select" class="select-input">
+                <option value="deepseek-v4-flash">deepseek-v4-flash (по умолчанию)</option>
+              </select>
+              <button type="button" class="btn-ghost btn-sm" id="btn-refresh-models" title="Выгрузить и проверить только рабочие модели">🔄 Модели</button>
+            </div>
+          </label>
+        </div>
+        <div class="ai-actions">
+          <button class="btn-amber" id="btn-save-ai">Сохранить настройки</button>
+          <button class="btn-ghost" id="btn-test-ai">Проверить соединение</button>
+        </div>
+        <div class="ai-status" id="ai-status"></div>
+        <p class="section-hint">Поддерживаются стандартные ключи Gemini, OpenAI и любые роутеры (локальный failover http://127.0.0.1:8089/v1, Zexkora, OpenRouter). По кнопке «🔄 Модели» происходит мгновенный опрос шлюза и выводятся <strong>только проверенные рабочие модели</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<!-- HUD Floating Volume Control (отображается только на вкладке Билд-лаб) -->
+<div id="volume-widget" class="hud-volume-widget hidden" role="region" aria-label="Управление звуком">
+  <button id="volume-mute-btn" class="volume-mute-btn" type="button" title="Переключить звук (Mute)" aria-label="Переключить звук">
+    <span id="volume-icon" class="volume-icon">🔊</span>
+  </button>
+  <div class="volume-slider-wrap">
+    <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="0.5" aria-label="Громкость">
+    <span id="volume-value" class="volume-value" title="Уровень громкости">50%</span>
+  </div>
+</div>
+
+<script>
+  // Fail-safe immediate tab navigation: ensures UI clicks work unconditionally
+  (function() {
+    function switchTab(tabId) {
+      if (!tabId) return;
+      document.querySelectorAll('.hud-tab').forEach(function(t) {
+        t.classList.toggle('tab-active', t.getAttribute('data-tab') === tabId);
+      });
+      document.querySelectorAll('.tab-panel').forEach(function(p) {
+        if (p.id === 'tab-' + tabId) {
+          p.classList.remove('hidden');
+        } else {
+          p.classList.add('hidden');
+        }
+      });
+      var vol = document.getElementById('volume-widget');
+      if (vol) {
+        vol.classList.toggle('hidden', tabId !== 'lab');
+      }
+      window.dispatchEvent(new Event('resize'));
+    }
+    document.addEventListener('click', function(e) {
+      var tabBtn = e.target.closest('.hud-tab');
+      if (tabBtn && tabBtn.getAttribute('data-tab')) {
+        switchTab(tabBtn.getAttribute('data-tab'));
+        return;
+      }
+      var card = e.target.closest('.hub-card');
+      if (card && card.getAttribute('data-goto')) {
+        switchTab(card.getAttribute('data-goto'));
+        return;
+      }
+    });
+  })();
+</script>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
