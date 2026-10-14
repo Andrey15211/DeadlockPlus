@@ -1,9 +1,13 @@
 """PyInstaller standalone build: dist/DeadlockForge.exe (single-file, windowed).
 
-Installs pyinstaller on first run, then bundles web/ and data/ via
---add-data and pywebview runtime files via --collect-all. run_desktop.py
-resolves those from sys._MEIPASS at runtime and exports
-DEADLOCK_WEB_DIR/DEADLOCK_DATA_DIR before importing the FastAPI app.
+Собирает по DeadlockForge.spec (web/ + data/ через datas, pywebview через
+collect_all, иконка exe из web/assets/icons). run_desktop.py резолвит эти
+каталоги из sys._MEIPASS и экспортирует DEADLOCK_WEB_DIR/DEADLOCK_DATA_DIR
+до импорта FastAPI-приложения.
+
+Спека обязательна не только ради иконки: её _strip_secrets выкидывает из
+бандла api.txt с ключом LLM и пользовательскую SQLite-базу. CLI-сборка без
+спеки эти файлы упаковывала.
 
 Usage:
     python scripts/build_standalone.py
@@ -33,23 +37,18 @@ def ensure_pyinstaller() -> str:
 
 
 def build() -> int:
+    """Собрать exe по DeadlockForge.spec.
+
+    Сборка идёт через спеку, а не через CLI-флаги: только спека прогоняет
+    datas через _strip_secrets и не даёт упаковать api.txt с ключом LLM и
+    пользовательскую SQLite-базу (они попадали в дистрибутив).
+    """
     python = ensure_pyinstaller()
-    cmd = [
-        python, "-m", "PyInstaller",
-        "--noconfirm",
-        "--clean",
-        "--onefile",
-        "--windowed",
-        "--name", "DeadlockForge",
-        # Иконка окна и ярлыка; без неё Windows показывает стандартную.
-        "--icon", str(ROOT / "web" / "assets" / "icons" / "deadlockforge.ico"),
-        "--paths", str(ROOT / "src"),
-        "--add-data", f"{ROOT / 'web'};web",
-        "--add-data", f"{ROOT / 'data'};data",
-        "--collect-all", "deadlockforge",
-        "--collect-all", "pywebview",
-        str(ENTRY),
-    ]
+    spec = ROOT / "DeadlockForge.spec"
+    if not spec.is_file():
+        print(f"[build] не найдена спека: {spec}", file=sys.stderr)
+        return 1
+    cmd = [python, "-m", "PyInstaller", "--noconfirm", "--clean", str(spec)]
     print("[build] " + " ".join(cmd))
     return subprocess.run(cmd, cwd=str(ROOT)).returncode
 

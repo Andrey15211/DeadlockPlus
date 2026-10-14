@@ -10,13 +10,6 @@
 import { el } from './ui.js';
 import { fetchMap } from './api.js';
 
-const LAYER_LABELS = {
-  camps: 'Лагеря нейтралов',
-  urn: 'Урна душ',
-  towers: 'Башни и объективы',
-  midboss: 'Мидбосс',
-};
-
 // Фолбэк пуст: если map.json не содержит маркеров, карта показывается
 // без точек — лучше пусто, чем выдуманные координаты.
 const FALLBACK_MARKERS = [];
@@ -142,12 +135,23 @@ function setLayerVisibility(layer, visible) {
     .forEach((n) => n.classList.toggle('off', !visible));
 }
 
-function initLayerToggles() {
+function initLayerToggles(markers) {
+  // Тумблер показываем только для слоёв, у которых есть маркеры: иначе
+  // кнопка «Midboss» кликается, но ничего не переключает. Координат
+  // мидбосса в deadlock-api нет, поэтому по умолчанию слой пуст.
+  const presentLayers = new Set((markers || []).map((m) => m.layer));
   document.querySelectorAll('.map-layer-toggle').forEach((btn) => {
     const layer = btn.dataset.layer;
+    if (!presentLayers.has(layer)) {
+      btn.hidden = true;
+      btn.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    btn.hidden = false;
+    btn.removeAttribute('aria-hidden');
     if (btn.dataset.wired === '1') return; // защита от повторного вызова
     btn.dataset.wired = '1';
-    btn.setAttribute('aria-pressed', 'true');
+    btn.setAttribute('aria-pressed', String(!btn.classList.contains('layer-off')));
     btn.addEventListener('click', () => {
       const nowVisible = !btn.classList.contains('layer-off');
       btn.classList.toggle('layer-off', nowVisible);
@@ -229,7 +233,7 @@ export function renderMapView(mapGuide) {
       ? mapGuide.markers
       : FALLBACK_MARKERS;
     renderMarkers(markers, list, timelineByTime, lanesById);
-    initLayerToggles();
+    initLayerToggles(list);
     renderProjectionNote(mapGuide.coordinate_system);
   }
 }
