@@ -1,31 +1,25 @@
-// map_view.js — экран «Карта»: линии, таймлайн, минимапа с маркерами-объектами.
+// map_view.js — экран «Карта»: линии, таймлайн, миникарта с маркерами-объектами.
 //
-// TZ B2: маркеры берутся из data/map.json (markers[] с нормализованными
-// координатами 0..1 — та же проекция, что match_loader._norm_coord для
-// точек смертей Deep Match). Фолбэк на локальный хардкод — если в гайде
-// маркеров нет (старый map.json).
+// TZ B2 + ревизия: маркеры берутся из data/map.json (markers[] с
+// нормализованными координатами 0..1 — та же проекция, что
+// match_loader._norm_coord для точек смертей Deep Match: left = x/(2R)+0.5,
+// top = 0.5 - y/(2R)). Координаты собраны из авторитетных данных
+// deadlock-api скриптом scripts/build_map_markers.py; слой walkers заменён
+// на towers, потому что шагоходы вписывались вручную и попадали за пределы карты.
 
 import { el } from './ui.js';
 import { fetchMap } from './api.js';
 
 const LAYER_LABELS = {
-  camps: 'Кемпы нейтралов',
+  camps: 'Лагеря нейтралов',
   urn: 'Урна душ',
+  towers: 'Башни и объективы',
   midboss: 'Мидбосс',
-  walkers: 'Шагоходы',
 };
 
-// Фолбэк-маркеры (используются, только если map.json их не содержит).
-const FALLBACK_MARKERS = [
-  { layer: 'camps', lane: 'york', x: 0.20, y: 0.30, label: 'Кемп Йорк-верх' },
-  { layer: 'camps', lane: 'york', x: 0.23, y: 0.64, label: 'Кемп Йорк-низ' },
-  { layer: 'camps', lane: 'broadway', x: 0.40, y: 0.22, label: 'Кемп Мид-верх' },
-  { layer: 'camps', lane: 'broadway', x: 0.41, y: 0.78, label: 'Кемп Мид-низ' },
-  { layer: 'urn', lane: 'broadway', x: 0.50, y: 0.50, label: 'Урна душ' },
-  { layer: 'midboss', lane: 'broadway', x: 0.56, y: 0.42, label: 'Мидбосс' },
-  { layer: 'walkers', lane: 'york', x: 0.24, y: 0.16, label: 'Шагоход Йорк' },
-  { layer: 'walkers', lane: 'greenwich', x: 0.76, y: 0.16, label: 'Шагоход Гринвич' },
-];
+// Фолбэк пуст: если map.json не содержит маркеров, карта показывается
+// без точек — лучше пусто, чем выдуманные координаты.
+const FALLBACK_MARKERS = [];
 
 // --- тултип -------------------------------------------------------------------
 
@@ -79,24 +73,23 @@ function hideMapTip() {
 // Формат подсказки объекта: точные тайминги из таймлайна гайда.
 function markerTooltip(marker, timelineByTime, lanesById) {
   const laneName = lanesById[marker.lane] || '';
+  const place = `${marker.label}${laneName ? ` — ${laneName}` : ''}`;
   switch (marker.layer) {
     case 'camps': {
       const ev = timelineByTime['3:00'];
-      return `${marker.label}${laneName ? ` — ${laneName}` : ''}: спавн в 3:00` +
-        (ev ? `. ${ev.description}` : '');
+      return `${place}: спавн в 3:00` + (ev ? `. ${ev.description}` : '');
     }
     case 'urn': {
       const ev = timelineByTime['10:00'];
-      return `${marker.label} — открывается в 10:00` +
-        (ev ? `. ${ev.description}` : '');
+      return `${place}: открывается в 10:00` + (ev ? `. ${ev.description}` : '');
     }
+    case 'towers':
+      return `${place} — оборонительный объект линии: снос открывает доступ к глубинным лагерям и базе.`;
     case 'midboss': {
       const ev = timelineByTime['12:00'];
-      return `${marker.label} — пробуждение в 12:00, взрослая фаза в 15:00` +
+      return `${place} — пробуждение в 12:00, взрослая фаза в 15:00` +
         (ev ? `. ${ev.description}` : '');
     }
-    case 'walkers':
-      return `${marker.label} — пушится для давления на линии (цель обороны/атаки фланга).`;
     default:
       return marker.label;
   }

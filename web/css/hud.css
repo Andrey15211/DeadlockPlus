@@ -2223,7 +2223,9 @@ aside.lab-side, .lab-side {
   position: relative;
   max-width: 100%;
   max-height: 68vh;
-  aspect-ratio: 502 / 560;
+  /* Квадрат: подложка обрезана до квадрата (scripts/prepare_map_asset.py),
+     поэтому контейнер маркеров совпадает с системой координат 0..1. */
+  aspect-ratio: 1 / 1;
   width: auto;
   height: 68vh;
   display: flex;
@@ -2231,7 +2233,7 @@ aside.lab-side, .lab-side {
   align-items: center;
 }
 
-@media (max-aspect-ratio: 502/560) {
+@media (max-aspect-ratio: 1/1) {
   .map-stage {
     width: 100%;
     height: auto;

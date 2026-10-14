@@ -214,10 +214,18 @@ def load_hero_map() -> dict[int, str]:
     return result
 
 
-def _norm_coord(value: float) -> float:
-    """World coordinate -> 0..1 (clipped): (x / (2*R)) + 0.5."""
-    v = value / (2.0 * _WORLD_RADIUS) + 0.5
-    return min(1.0, max(0.0, v))
+def _norm_coord(x: float, y: float) -> tuple[float, float]:
+    """Мировые координаты -> (left, top) в 0..1.
+
+    Ось Y инвертируется: в мире +Y направлен «вверх», а на миникарте top
+    растёт вниз. Проверено на 51 нейтральном лагере и 16 позициях башен
+    из /v1/assets/map: left = x/(2R)+0.5 и top = 0.5 - y/(2R) совпадают
+    для 51/51 и 16/16 объектов, тогда как прежняя формула без инверсии
+    давала 2/51 — точки уезжали за пределы игровой зоны.
+    """
+    left = min(1.0, max(0.0, x / (2.0 * _WORLD_RADIUS) + 0.5))
+    top = min(1.0, max(0.0, 0.5 - y / (2.0 * _WORLD_RADIUS)))
+    return left, top
 
 
 def _slug_hero(hero_id, hero_map: dict[int, str] | None) -> str:
@@ -250,10 +258,13 @@ def normalize_match(raw: dict, hero_map: dict[int, str] | None = None) -> Normal
         deaths: list[DeathTimelinePoint] = []
         for d in rp.get("death_details") or []:
             pos = d.get("death_pos") or {}
+            pos_x, pos_y = _norm_coord(
+                float(pos.get("x") or 0), float(pos.get("y") or 0)
+            )
             deaths.append(DeathTimelinePoint(
                 t=int(d.get("game_time_s") or 0),
-                pos_x=_norm_coord(float(pos.get("x") or 0)),
-                pos_y=_norm_coord(float(pos.get("y") or 0)),
+                pos_x=pos_x,
+                pos_y=pos_y,
                 killer_hero=_slug_hero(_killer_hero_id(raw_players, d), hero_map),
             ))
         curve: list[NetworthPoint] = []

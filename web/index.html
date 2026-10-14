@@ -435,15 +435,15 @@
     <h2 class="section-title">The Cursed Apple — три линии</h2>
     <div class="panel map-panel">
       <div class="map-layer-controls" role="group" aria-label="Слои маркеров">
-        <button type="button" class="map-layer-toggle" data-layer="camps">Кемпы нейтралов</button>
+        <button type="button" class="map-layer-toggle" data-layer="camps">Лагеря нейтралов</button>
         <button type="button" class="map-layer-toggle" data-layer="urn">Soul Urn</button>
-        <button type="button" class="map-layer-toggle" data-layer="midboss">Midboss</button>
-        <button type="button" class="map-layer-toggle" data-layer="walkers">Walkers</button>
+        <button type="button" class="map-layer-toggle layer-off" data-layer="towers">Башни и объективы</button>
+        <button type="button" class="map-layer-toggle layer-off" data-layer="midboss">Midboss</button>
       </div>
       <div class="map-canvas" id="map-canvas">
         <div class="map-stage" id="map-stage">
-          <img id="map-image" src="./assets/map/Map_colored.png"
-               alt="Цветная карта The Cursed Apple" onerror="this.style.display='none';document.getElementById('map-svg-fallback').style.display='block'">
+          <img id="map-image" src="./assets/map/cursed_apple_square.webp"
+               alt="Миникарта The Cursed Apple" onerror="this.style.display='none';document.getElementById('map-svg-fallback').style.display='block'">
           <svg id="map-svg-fallback" viewBox="0 0 760 300" style="display:none" class="map-diagram" role="img"
                aria-label="Схема трёх линий: Йорк, Бродвей, Гринвич">
             <g data-lane="york">

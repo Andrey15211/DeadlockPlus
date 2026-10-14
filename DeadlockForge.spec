@@ -1,18 +1,52 @@
 # -*- mode: python ; coding: utf-8 -*-
+"""PyInstaller-спека DeadlockForge (single-file, windowed).
+
+Ключевые решения:
+- иконка exe берётся из web/assets/icons/deadlockforge.ico (иначе Windows
+  подставляет стандартную «дискету»);
+- api.txt с ключом LLM НИКОГДА не упаковывается: файл попадал в дистрибутив
+  (deadlockforge/ai/api.txt) и утекал заказчику. Фильтр _strip_secrets снимает
+  его и любые другие *.txt с ключом из datas;
+- web/ и data/ пакуются целиком, остальное тянет collect_all.
+"""
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('C:/Projects/DeadlockForge/web', 'web'), ('C:/Projects/DeadlockForge/data', 'data')]
+ROOT = 'C:/Projects/DeadlockForge'
+
+# Имена, которые не должны попадать в сборку ни при каких условиях.
+BLOCKED_DATA_SUFFIXES = ('api.txt', 'secrets.txt', '.env')
+
+
+def _strip_secrets(datas):
+    """Убрать из datas секреты и пользовательские БД рантайма."""
+    keep = []
+    for src, dest in datas:
+        if src.lower().endswith(BLOCKED_DATA_SUFFIXES):
+            continue
+        if src.lower().endswith('.db'):  # SQLite создаётся на первом запуске
+            continue
+        keep.append((src, dest))
+    return keep
+
+
+datas = [
+    (f'{ROOT}/web', 'web'),
+    (f'{ROOT}/data', 'data'),
+]
 binaries = []
 hiddenimports = []
-tmp_ret = collect_all('deadlockforge')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('pywebview')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
+for pkg in ('deadlockforge', 'pywebview'):
+    pkg_datas, pkg_binaries, pkg_hidden = collect_all(pkg)
+    datas += pkg_datas
+    binaries += pkg_binaries
+    hiddenimports += pkg_hidden
+
+datas = _strip_secrets(datas)
 
 a = Analysis(
-    ['C:/Projects/DeadlockForge/run_desktop.py'],
-    pathex=['C:/Projects/DeadlockForge/src'],
+    [f'{ROOT}/run_desktop.py'],
+    pathex=[f'{ROOT}/src'],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
@@ -44,4 +78,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=f'{ROOT}/web/assets/icons/deadlockforge.ico',
 )

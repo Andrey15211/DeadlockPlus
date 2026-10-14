@@ -7,7 +7,7 @@ types. Field names are frozen: data JSON files and engine code both target them.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import AliasChoices, BaseModel, Field, model_validator
 
@@ -154,9 +154,14 @@ class TimelineEvent(BaseModel):
 
 
 class MapMarker(BaseModel):
-    """Объект на карте гайда: кемпы, урна, боссы, волкеры (TZ B2)."""
+    """Объект на карте гайда: лагеря, урна, башни, мидбосс.
 
-    layer: str                              # camps | urn | midboss | walkers
+    Слои закрыты: маркеры строятся из авторитетных данных deadlock-api
+    (neutral_camps, objective_positions, soul_urn_spawns), а не вписываются
+    вручную. Устаревший слой walkers заменён на towers.
+    """
+
+    layer: Literal["camps", "urn", "towers", "midboss"]
     lane: str                               # york | broadway | greenwich
     x: float = Field(ge=0.0, le=1.0)        # нормализованные 0..1
     y: float = Field(ge=0.0, le=1.0)
@@ -170,6 +175,7 @@ class MapGuide(BaseModel):
     # --- TZ B2: маркеры и координатная привязка (опционально для старых данных)
     markers: list[MapMarker] = Field(default_factory=list)
     coordinate_system: Optional[dict] = None
+    markers_source: Optional[dict] = None   # происхождение маркеров (endpoint, формула)
 
 
 # --- Engine result types ---------------------------------------------------
@@ -380,6 +386,16 @@ PROVIDER_DEFAULT_MODELS: dict[str, str] = {
 }
 
 
+def _clean_key(raw: str) -> str:
+    """Убрать BOM/пробелы/переводы строк из ключа.
+
+    Регрессия: ключ, сохранённый с BOM (utf-8-sig), попадал прямо в URL
+    запроса и валил его с UnicodeEncodeError — «ключ не работает» без
+    внятной причины.
+    """
+    return raw.replace("\ufeff", "").strip().strip('"').strip("'")
+
+
 def effective_ai_config(db_config: dict) -> AIConfig:
     """Merge DB row with code defaults + DEADLOCKFORGE_AI_KEY env override.
 
@@ -390,23 +406,23 @@ def effective_ai_config(db_config: dict) -> AIConfig:
     import sys
     from pathlib import Path
 
-    env_key = os.environ.get("DEADLOCKFORGE_AI_KEY", "").strip()
-    db_key = str((db_config or {}).get("api_key") or "").strip()
+    env_key = _clean_key(os.environ.get("DEADLOCKFORGE_AI_KEY", ""))
+    db_key = _clean_key(str((db_config or {}).get("api_key") or ""))
     file_key = ""
 
-    # Only check api.txt if no key from env/db AND DEADLOCKFORGE_AI_KEY was not explicitly cleared
+    # Локальный файл с ключом читается ТОЛЬКО вне пакета/репозитория:
+    # внутрипакетный src/deadlockforge/ai/api.txt исключён из поиска, потому что
+    # упаковывался в exe (утечка ключа в дистрибутив) и попадал в git.
     if not env_key and not db_key and "DEADLOCKFORGE_AI_KEY" not in os.environ and "pytest" not in sys.modules:
         exe_dir = Path(sys.executable).parent if hasattr(sys, "_MEIPASS") else Path.cwd()
         for candidate in [
-            Path("src/deadlockforge/ai/api.txt"),
-            Path(__file__).resolve().parent / "ai" / "api.txt",
-            Path("api.txt"),
             exe_dir / "api.txt",
             exe_dir / "data" / "api.txt",
+            exe_dir.parent / "api.txt",
         ]:
             if candidate.is_file():
                 try:
-                    file_key = candidate.read_text(encoding="utf-8").strip()
+                    file_key = _clean_key(candidate.read_text(encoding="utf-8-sig"))
                     if file_key:
                         break
                 except OSError:

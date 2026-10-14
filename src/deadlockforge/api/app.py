@@ -1031,8 +1031,11 @@ def create_app() -> FastAPI:
 
     @app.get("/assets/{file_path:path}")
     def assets(file_path: str):
-        target = (WEB_DIR / "assets" / file_path).resolve()
-        if not str(target).startswith(str((WEB_DIR / "assets").resolve())):
+        root = (WEB_DIR / "assets").resolve()
+        target = (root / file_path).resolve()
+        # Проверка вхождения по Path-иерархии, а не по префиксу строки:
+        # иначе соседний каталог с тем же началом имени ("assets_old") проходил бы.
+        if not target.is_relative_to(root):
             raise HTTPException(status_code=403, detail="Forbidden path.")
         if not target.is_file():
             raise HTTPException(status_code=404, detail="Asset not found.")

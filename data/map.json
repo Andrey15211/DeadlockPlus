@@ -2,23 +2,520 @@
   "coordinate_system": {
     "projection": "world_norm_0_1",
     "world_radius": 10752,
-    "note": "x,y в 0..1 от левого-верхнего угла минимапы; мировые координаты конвертируются как v / (2 * 10752) + 0.5 (та же проекция, что match_loader._norm_coord для точек смертей Deep Match)."
+    "note": "x,y в 0..1 от левого-верхнего угла миникарты; мировые координаты конвертируются как left = x/(2*radius)+0.5, top = 0.5 - y/(2*radius) — та же проекция, что match_loader._norm_coord для точек смертей Deep Match."
   },
   "markers": [
-    { "layer": "camps", "lane": "york",      "x": 0.20, "y": 0.30, "label": "Кемп Йорк-верх" },
-    { "layer": "camps", "lane": "york",      "x": 0.23, "y": 0.64, "label": "Кемп Йорк-низ" },
-    { "layer": "camps", "lane": "broadway",  "x": 0.40, "y": 0.22, "label": "Кемп Мид-верх" },
-    { "layer": "camps", "lane": "broadway",  "x": 0.41, "y": 0.78, "label": "Кемп Мид-низ" },
-    { "layer": "camps", "lane": "york",      "x": 0.33, "y": 0.46, "label": "Кемп центр-Йорк" },
-    { "layer": "camps", "lane": "greenwich", "x": 0.65, "y": 0.55, "label": "Кемп центр-Гринвич" },
-    { "layer": "camps", "lane": "greenwich", "x": 0.78, "y": 0.32, "label": "Кемп Гринвич-верх" },
-    { "layer": "camps", "lane": "greenwich", "x": 0.80, "y": 0.68, "label": "Кемп Гринвич-низ" },
-    { "layer": "urn",     "lane": "broadway", "x": 0.50, "y": 0.50, "label": "Урна душ" },
-    { "layer": "midboss", "lane": "broadway", "x": 0.56, "y": 0.42, "label": "Мидбосс" },
-    { "layer": "walkers", "lane": "york",      "x": 0.24, "y": 0.16, "label": "Шагоход Йорк" },
-    { "layer": "walkers", "lane": "greenwich", "x": 0.76, "y": 0.16, "label": "Шагоход Гринвич" },
-    { "layer": "walkers", "lane": "york",      "x": 0.27, "y": 0.84, "label": "Шагоход Йорк-нижний" },
-    { "layer": "walkers", "lane": "greenwich", "x": 0.73, "y": 0.84, "label": "Шагоход Гринвич-нижний" }
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.0699,
+      "y": 0.5,
+      "label": "Док (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.099,
+      "y": 0.3017,
+      "label": "Банк (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.1299,
+      "y": 0.4051,
+      "label": "Стройка (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.1667,
+      "y": 0.5595,
+      "label": "Док, администрация (слабый)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2247,
+      "y": 0.5551,
+      "label": "Док, администрация хранилище"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2292,
+      "y": 0.6116,
+      "label": "Трущобы, крыша (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2336,
+      "y": 0.4435,
+      "label": "york radio vault (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2351,
+      "y": 0.4226,
+      "label": "Штаб, крыша (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.244,
+      "y": 0.6711,
+      "label": "sw bodega upstairs camp (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2664,
+      "y": 0.5316,
+      "label": "Трущобы, лабаз нижняя (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2714,
+      "y": 0.5833,
+      "label": "Баскетбол (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2917,
+      "y": 0.381,
+      "label": "Штаб, 01 (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.2917,
+      "y": 0.6786,
+      "label": "Трущобы, склад (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.314,
+      "y": 0.5789,
+      "label": "Трущобы, переулок (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.3229,
+      "y": 0.3129,
+      "label": "Плаза, угол (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "york",
+      "x": 0.3363,
+      "y": 0.7039,
+      "label": "Трущобы, пакгауз (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3457,
+      "y": 0.5586,
+      "label": "Трущобы, нижняя (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3482,
+      "y": 0.5744,
+      "label": "Трущобы, верхняя (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3616,
+      "y": 0.381,
+      "label": "Плаза, каток 01 (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3869,
+      "y": 0.381,
+      "label": "Плаза, каток 02 (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3968,
+      "y": 0.4524,
+      "label": "Отель, 01 (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3988,
+      "y": 0.3586,
+      "label": "Плаза, яма vault1 (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.3988,
+      "y": 0.4033,
+      "label": "Плаза, яма vault2 (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.4107,
+      "y": 0.5402,
+      "label": "dept store camp (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.4397,
+      "y": 0.4568,
+      "label": "nw utility south neutrals (слабый)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.4613,
+      "y": 0.3185,
+      "label": "Плаза, каток 03 (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.5655,
+      "y": 0.5461,
+      "label": "se utility neutrals (слабый)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.5893,
+      "y": 0.6622,
+      "label": "Чайна-таун, рыбный (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.5908,
+      "y": 0.4613,
+      "label": "Оракул (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.6027,
+      "y": 0.5446,
+      "label": "drug store camp (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "broadway",
+      "x": 0.6112,
+      "y": 0.6298,
+      "label": "Чайна-таун, переулок (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6458,
+      "y": 0.6808,
+      "label": "Чайна-таун, колокол 02 (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.651,
+      "y": 0.5878,
+      "label": "Чайна-таун, колокол 1 (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6548,
+      "y": 0.3274,
+      "label": "Театр, верхний этаж 01 (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6756,
+      "y": 0.4137,
+      "label": "Театр, сцена 02 (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6771,
+      "y": 0.3278,
+      "label": "Театр, лобби (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6801,
+      "y": 0.686,
+      "label": "Чайна-таун, улица (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6935,
+      "y": 0.3705,
+      "label": "Театр, балкон (хранилище)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.6994,
+      "y": 0.4524,
+      "label": "Театр, нижняя (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7083,
+      "y": 0.5893,
+      "label": "Питомник, нижний этаж (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7113,
+      "y": 0.4137,
+      "label": "Театр, сцена 01 (сильный)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7202,
+      "y": 0.3266,
+      "label": "Театр, верхний этаж 02 (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7649,
+      "y": 0.5804,
+      "label": "Парк, библиотека крыша (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7693,
+      "y": 0.558,
+      "label": "Парк, библиотека хранилище"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7708,
+      "y": 0.3147,
+      "label": "Театр, верхний этаж (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7749,
+      "y": 0.4373,
+      "label": "Парк, клуб хранилище"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7932,
+      "y": 0.3973,
+      "label": "Парк, особняк крыша (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.7932,
+      "y": 0.4552,
+      "label": "Парк, клуб (слабый)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.869,
+      "y": 0.6064,
+      "label": "Парк, часовня (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.872,
+      "y": 0.7202,
+      "label": "Лечебница (средний)"
+    },
+    {
+      "layer": "camps",
+      "lane": "greenwich",
+      "x": 0.9271,
+      "y": 0.5,
+      "label": "Парк, ворота (сильный)"
+    },
+    {
+      "layer": "towers",
+      "lane": "york",
+      "x": 0.069,
+      "y": 0.5363,
+      "label": "Башня T1 1 (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "york",
+      "x": 0.1226,
+      "y": 0.3577,
+      "label": "Башня T1 1 (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "york",
+      "x": 0.1583,
+      "y": 0.6702,
+      "label": "Башня T2 1 (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "york",
+      "x": 0.1981,
+      "y": 0.2164,
+      "label": "Башня T2 1 (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "york",
+      "x": 0.2905,
+      "y": 0.92,
+      "label": "Древний (ядро) (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.3901,
+      "y": 0.6115,
+      "label": "Башня T2 3 (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.3905,
+      "y": 0.8236,
+      "label": "Титан (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.4095,
+      "y": 0.0,
+      "label": "Древний (ядро) (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.45,
+      "y": 0.3667,
+      "label": "Башня T1 3 (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.45,
+      "y": 0.5333,
+      "label": "Башня T1 3 (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.5095,
+      "y": 0.0757,
+      "label": "Титан (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "broadway",
+      "x": 0.5099,
+      "y": 0.2885,
+      "label": "Башня T2 3 (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "greenwich",
+      "x": 0.7117,
+      "y": 0.6853,
+      "label": "Башня T2 4 (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "greenwich",
+      "x": 0.7497,
+      "y": 0.2279,
+      "label": "Башня T2 4 (Команда 1)"
+    },
+    {
+      "layer": "towers",
+      "lane": "greenwich",
+      "x": 0.7774,
+      "y": 0.5423,
+      "label": "Башня T1 4 (Команда 0)"
+    },
+    {
+      "layer": "towers",
+      "lane": "greenwich",
+      "x": 0.828,
+      "y": 0.3637,
+      "label": "Башня T1 4 (Команда 1)"
+    },
+    {
+      "layer": "urn",
+      "lane": "york",
+      "x": 0.1938,
+      "y": 0.5,
+      "label": "Урна душ: точка 1"
+    },
+    {
+      "layer": "urn",
+      "lane": "york",
+      "x": 0.2887,
+      "y": 0.381,
+      "label": "Урна душ: точка 2"
+    },
+    {
+      "layer": "urn",
+      "lane": "york",
+      "x": 0.3289,
+      "y": 0.6429,
+      "label": "Урна душ: точка 3"
+    },
+    {
+      "layer": "urn",
+      "lane": "greenwich",
+      "x": 0.6994,
+      "y": 0.625,
+      "label": "Урна душ: точка 4"
+    },
+    {
+      "layer": "urn",
+      "lane": "greenwich",
+      "x": 0.7649,
+      "y": 0.4256,
+      "label": "Урна душ: точка 5"
+    },
+    {
+      "layer": "urn",
+      "lane": "greenwich",
+      "x": 0.7932,
+      "y": 0.5045,
+      "label": "Урна душ: точка 6"
+    }
   ],
   "lanes": [
     {
@@ -26,7 +523,10 @@
       "name": "Йорк",
       "color": "#E8B84B",
       "character": "Промышленная",
-      "districts": ["Haunted Lot", "Plaza"],
+      "districts": [
+        "Haunted Lot",
+        "Plaza"
+      ],
       "notes": "Промышленный фланг: узкие проходы между фабричными корпусами, много укрытий для засад и близких драк. Haunted Lot — зона проклятой земли с лесными крипами, Plaza даёт открытую площадку для командных разменов. Линия любит бойцов ближнего боя и контроллеров, которые запирают коридоры."
     },
     {
@@ -34,7 +534,9 @@
       "name": "Бродвей",
       "color": "#4B8DE8",
       "character": "Центральная",
-      "districts": ["Times Square"],
+      "districts": [
+        "Times Square"
+      ],
       "notes": "Центральная и самая короткая линия к базам — контроль Бродвея давит на обе вражеские команды. Times Square: открытая площадь с интенсивным трафиком героев. В логове лайна живёт Midboss — командная цель, определяющая темп мидгейма. Здесь держат сильного дуэлянта или керри с роум-саппортом."
     },
     {
@@ -42,7 +544,10 @@
       "name": "Гринвич",
       "color": "#4BE86B",
       "character": "Парковая",
-      "districts": ["Theater", "Chinatown"],
+      "districts": [
+        "Theater",
+        "Chinatown"
+      ],
       "notes": "Зелёный парковый фланг: широкие открытые пространства и длинные дистанции обзора — идеально для стрелков и снайперов вроде Виндикты и Грей Тэлона. Theater — амфитеатр для позиционных драк, Chinatown с Bell Tower — высокая точка обзора и контроль карты. Линия награждает кайт и наказывает слабую мобильность."
     }
   ],
@@ -93,5 +598,11 @@
       "description": "Каждая смерть в лейтгейме стоит 40+ секунд: тимфайты вокруг босса или пуш базы решают матч. Если объекты не закрываются — команды вскрывают линии через Soul Urn-давление.",
       "title": "Решающая фаза"
     }
-  ]
+  ],
+  "markers_source": {
+    "endpoint": "https://api.deadlock-api.com/v1/assets/map",
+    "radius": 10752,
+    "formula": "left = x/(2*radius)+0.5; top = 0.5 - y/(2*radius)",
+    "note": "Маркеры собраны из neutral_camps, objective_positions и entities.soul_urn_spawns; ручные координаты удалены."
+  }
 }

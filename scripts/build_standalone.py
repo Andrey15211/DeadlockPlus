@@ -41,6 +41,8 @@ def build() -> int:
         "--onefile",
         "--windowed",
         "--name", "DeadlockForge",
+        # Иконка окна и ярлыка; без неё Windows показывает стандартную.
+        "--icon", str(ROOT / "web" / "assets" / "icons" / "deadlockforge.ico"),
         "--paths", str(ROOT / "src"),
         "--add-data", f"{ROOT / 'web'};web",
         "--add-data", f"{ROOT / 'data'};data",

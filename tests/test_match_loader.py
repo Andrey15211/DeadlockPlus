@@ -144,9 +144,10 @@ def test_death_positions_normalized_0_1():
     for d in deaths:
         assert 0.0 <= d.pos_x <= 1.0
         assert 0.0 <= d.pos_y <= 1.0
-    # (10752, -10752) -> corner (1.0, 0.0), (0,0) -> center (0.5, 0.5)
+    # (10752, -10752) -> правый нижний угол (1.0, 1.0): мировой +Y — «вверх»,
+    # на миникарте top растёт вниз, поэтому ось Y инвертируется.
     assert deaths[0].pos_x == pytest.approx(1.0)
-    assert deaths[0].pos_y == pytest.approx(0.0)
+    assert deaths[0].pos_y == pytest.approx(1.0)
     assert deaths[1].pos_x == pytest.approx(0.5)
     assert deaths[1].pos_y == pytest.approx(0.5)
     assert deaths[0].t == 300
@@ -269,3 +270,44 @@ def test_parse_screenshot_empty_raises():
 def test_normalize_bad_shape_raises():
     with pytest.raises(ml.MatchLoadError):
         ml.normalize_match({"nope": 1})
+
+
+# --- проекция мира на миникарту -------------------------------------------
+
+
+def test_norm_coord_inverts_y_axis():
+    """Ось Y инвертируется: мир +Y «вверх», на миникарте top растёт вниз.
+
+    Регрессия: прежняя формула без инверсии уводила точки смертей за
+    пределы игровой зоны — координаты не совпадали с картой.
+    """
+    left, top = ml._norm_coord(0.0, 10752.0)
+    assert left == pytest.approx(0.5)
+    assert top == pytest.approx(0.0), "мировой верх -> top миникарты 0"
+
+    left, top = ml._norm_coord(0.0, -10752.0)
+    assert left == pytest.approx(0.5)
+    assert top == pytest.approx(1.0), "мировой низ -> top миникарты 1"
+
+    assert ml._norm_coord(0.0, 0.0) == pytest.approx((0.5, 0.5))
+
+
+def test_norm_coord_matches_deadlock_api_anchor_objects():
+    """Проекция сверена с /v1/assets/map: left = x/(2R)+0.5, top = 0.5-y/(2R).
+
+    Якоря — реальные мировые координаты объектов (radius 10752) вместе с
+    готовыми left_relative/top_relative из API.
+    """
+    radius = 10752.0
+    anchors = [
+        # (мировые x, y, left_relative, top_relative)
+        (3248.0, -1888.0, 0.6510416666666666, 0.5877976190476191),
+        (-9248.0, 0.0, 0.06994047619047619, 0.5),
+        (-3318.0, -1260.0, 0.345703125, 0.55859375),
+        (-8976.0, 3840.0, 0.0826, 0.3214),
+    ]
+    assert ml._WORLD_RADIUS == radius
+    for x, y, expect_left, expect_top in anchors:
+        left, top = ml._norm_coord(x, y)
+        assert left == pytest.approx(expect_left, abs=1e-3)
+        assert top == pytest.approx(expect_top, abs=1e-3)
