@@ -5,6 +5,10 @@
 src/deadlockforge/ai/api.txt
 ai/api.txt
 **/api.txt
+# .env с реальным ключом; шаблон .env.example версионируется.
+.env
+.env.*
+!.env.example
 
 # PyInstaller / сборки
 build/

@@ -111,6 +111,52 @@ def test_map_three_lanes():
     assert len(resp.json()["lanes"]) == 3
 
 
+def test_map_markers_come_from_api_source():
+    """Маркеры карты собраны из deadlock-api, а не вписаны вручную.
+
+    Регрессия: 4 из 14 прежних ручных маркеров лежали вне игровой зоны,
+    а слои camps/urn/towers не покрывались данными.
+    """
+    guide = _client.get("/api/map").json()
+    markers = guide["markers"]
+    assert len(markers) > 20, "маркеры должны покрывать лагеря и объективы карты"
+    layers = {m["layer"] for m in markers}
+    assert {"camps", "towers", "urn"} <= layers
+    assert "walkers" not in layers, "слой walkers заменён на towers"
+    for m in markers:
+        assert 0.0 <= m["x"] <= 1.0
+        assert 0.0 <= m["y"] <= 1.0
+    source = guide.get("markers_source") or {}
+    assert "assets/map" in str(source.get("endpoint", ""))
+
+
+def test_assets_route_rejects_path_traversal():
+    """Обход каталога через /assets/ закрыт (403/404, но не выдача файла)."""
+    for path in (
+        "/assets/..%2f..%2fpyproject.toml",
+        "/assets/%2e%2e/%2e%2e/pyproject.toml",
+        "/assets/../data/heroes.json",
+    ):
+        resp = _client.get(path)
+        assert resp.status_code in (403, 404), f"{path} -> {resp.status_code}"
+        assert b"deadlockforge" not in resp.content[:200]
+
+
+def test_catalog_endpoints_require_revalidation():
+    """Каталоги отдают ETag и запрещают эвристический кэш."""
+    for endpoint in ("/api/heroes", "/api/items", "/api/map"):
+        resp = _client.get(endpoint)
+        assert resp.status_code == 200
+        etag = resp.headers.get("etag")
+        assert etag, f"{endpoint} без ETag"
+        cache = resp.headers.get("cache-control", "")
+        assert "no-cache" in cache or "must-revalidate" in cache, (
+            f"{endpoint}: Cache-Control={cache!r} допускает устаревание"
+        )
+        again = _client.get(endpoint, headers={"If-None-Match": etag})
+        assert again.status_code == 304
+
+
 def test_build_validate():
     resp = _client.post(
         "/api/build/validate",

@@ -16,11 +16,41 @@ python run_server.py              # только сервер: http://127.0.0.1:
 
 Требования: Windows 10/11 (WebView2 встроен), Python 3.10+.
 
+Рекомендуемое окружение — uv-venv проекта (`.venv`), он же используется
+для сборки exe:
+
+```bash
+uv venv .venv
+uv pip install --python .venv/Scripts/python.exe -e . pytest pillow numpy httpx2
+.venv/Scripts/python.exe -m pytest -q
+```
+
+## Переменные окружения
+
+| Переменная | Назначение |
+|---|---|
+| `DEADLOCKFORGE_AI_KEY` | ключ LLM; **высший приоритет**. Если задана (в т.ч. пустой), файлы с ключом игнорируются |
+| `DEADLOCK_DATA_DIR` | каталог `data/` (задаётся `run_desktop.py` для frozen-сборки) |
+| `DEADLOCK_WEB_DIR` | каталог `web/` со SPA |
+| `DEADLOCK_DEBUG=1` | включает DevTools в PyWebView |
+| `DEADLOCK_API_KEY` | Bearer для deadlock-api (повышает лимиты) |
+| `DEADLOCK_VPK` | путь к `pak01_dir.vpk` для извлечения ассетов |
+
+**Секреты не хранятся в репозитории.** Ключ читается из
+`DEADLOCKFORGE_AI_KEY` либо из `api.txt` **вне** пакета (рядом с exe или в
+его `data/`). Внутрипакетный `src/deadlockforge/ai/api.txt` намеренно
+исключён: раньше он упаковывался в exe и утекал в дистрибутив. Шаблон —
+[`.env.example`](.env.example).
+
 ## Тесты
 
 ```bash
 python -m pytest -q
 ```
+
+Live-тесты AI (`tests/test_gemini_coach_live.py`) обращаются к внешнему
+провайдеру. Они **пропускаются**, если ключ не задан или сервис недоступен
+(429/5xx/model_not_found): состояние внешней среды не должно красить сборку.
 
 ## Архитектура
 
@@ -38,9 +68,12 @@ python -m pytest -q
 | `src/deadlockforge/storage/db.py` | SQLite: профиль, 16-слотовые билды, разборы матчей, AI-конфиг |
 | `src/deadlockforge/assets/ingest.py` | пайплайн ассетов Valve: локальный VPK + CDN fallback |
 | `src/deadlockforge/api/app.py` | REST-шов + раздача SPA |
-| `web/` | SPA: 6 экранов (ХАБ, ТИР-ЛИСТ, ПИК-АССИСТЕНТ, DEEP MATCH, ЛАБОРАТОРИЯ, ПРОФИЛЬ) |
+| `web/` | SPA: 7 экранов (ХАБ, ТИР-ЛИСТ, ПИК-АССИСТЕНТ, DEEP MATCH, БИЛД-ЛАБ, КАРТА, ПРОФИЛЬ) |
 | `run_desktop.py` | PyWebView shell: сервер в daemon-потоке, graceful shutdown |
-| `scripts/build_standalone.py` | PyInstaller-сборка автономного каталога |
+| `scripts/build_standalone.py` | PyInstaller-сборка автономного exe (с иконкой, без секретов) |
+| `DeadlockForge.spec` | спека сборки: `_strip_secrets` не даёт упаковать ключ и `.db` |
+| `scripts/build_map_markers.py` | маркеры карты из `/v1/assets/map` (лагеря, объективы, урна) |
+| `scripts/prepare_map_asset.py` | обрезка подложки карты до квадрата проекции мира |
 | `data/` | JSON-датасет: герои, предметы, контр-правила, карта |
 
 ## REST API

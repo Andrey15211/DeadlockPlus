@@ -338,12 +338,16 @@ def create_app() -> FastAPI:
     _map_etag = f'"{hashlib.md5(_cached_map_json.encode("utf-8")).hexdigest()}"'
 
     def _catalog_response(req: Request, content: str, etag: str) -> Response:
+        # no-cache не запрещает кэш, а требует ревалидацию по ETag: иначе
+        # WebView2 применяет эвристическое кэширование и может отдать
+        # устаревший каталог после обновления датасетов.
+        cache_headers = {"ETag": etag, "Cache-Control": "no-cache, must-revalidate"}
         if_none_match = req.headers.get("if-none-match")
         if if_none_match:
             client_etags = [t.strip() for t in if_none_match.split(",")]
             if etag in client_etags or f"W/{etag}" in client_etags or "*" in client_etags:
-                return Response(status_code=304, headers={"ETag": etag})
-        return Response(content=content, media_type="application/json", headers={"ETag": etag})
+                return Response(status_code=304, headers=cache_headers)
+        return Response(content=content, media_type="application/json", headers=cache_headers)
 
     @app.get("/api/heroes", response_model=list[Hero])
     def heroes(request: Request) -> Response:
@@ -1001,13 +1005,17 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="File not found.")
         st = file_path.stat()
         etag = f'"{st.st_mtime_ns:x}-{st.st_size:x}"'
+        # no-cache + ETag: браузер обязан ревалидировать. Без этого заголовка
+        # WebView2 кэширует эвристически и может отдать старый js после
+        # обновления сборки.
+        headers = {"ETag": etag, "Cache-Control": "no-cache, must-revalidate"}
         if_none_match = request.headers.get("if-none-match")
         if if_none_match:
             # Handle possible weak etag or multiple etags
             client_etags = [t.strip() for t in if_none_match.split(",")]
             if etag in client_etags or f"W/{etag}" in client_etags or "*" in client_etags:
-                return Response(status_code=304, headers={"ETag": etag})
-        return FileResponse(file_path, media_type=media_type, headers={"ETag": etag})
+                return Response(status_code=304, headers=headers)
+        return FileResponse(file_path, media_type=media_type, headers=headers)
 
     @app.get("/")
     def index():
