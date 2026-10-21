@@ -25,3 +25,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "live: tests hitting real external services (LLM router); slow, run explicitly with -m live",
+]
+addopts = "-m 'not live'"

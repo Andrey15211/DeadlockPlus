@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deadlock Plus Live</title>
+<style>
+  :root {
+    --bg: #070A0F; --card: #111622; --amber: #E5A93C; --violet: #8B5CF6;
+    --green: #10B981; --red: #ef4444; --text: #e6e9f0; --dim: #8a93a6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: rgba(7,10,15,0.92); color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px;
+    width: 420px; max-height: 640px; overflow-y: auto; padding: 10px;
+  }
+  h1 { font-size: 14px; letter-spacing: 2px; color: var(--amber); margin-bottom: 8px; text-transform: uppercase; }
+  .timer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  #match-timer { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+  .btn {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.15); color: var(--text);
+    padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;
+  }
+  .btn:hover { border-color: var(--amber); color: var(--amber); }
+  .btn.primary { background: var(--amber); color: #111; border: none; font-weight: 700; }
+  .section { background: var(--card); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+  .section-title { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  #next-event { color: var(--amber); font-weight: 700; margin-bottom: 4px; }
+  .event-list { list-style: none; max-height: 130px; overflow-y: auto; }
+  .event-list li { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .event-list li.hl { color: var(--amber); font-weight: 700; }
+  .event-time { font-variant-numeric: tabular-nums; color: var(--dim); }
+  .event-list li.hl .event-time { color: var(--amber); }
+  select, input { width: 100%; background: #0d1119; color: var(--text); border: 1px solid rgba(255,255,255,0.12); border-radius: 5px; padding: 5px 8px; font-size: 12px; margin-bottom: 6px; }
+  label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { background: rgba(229,169,60,0.15); border: 1px solid rgba(229,169,60,0.4); color: var(--amber); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+  .chip.red { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+  .chip.green { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.4); color: #6ee7b7; }
+  .toast { position: fixed; bottom: 10px; left: 10px; right: 10px; background: var(--card); border: 1px solid var(--amber); color: var(--amber); padding: 8px; border-radius: 6px; font-size: 12px; display: none; }
+  .row2 { display: flex; gap: 6px; } .row2 > * { flex: 1; }
+  #advice-ms { font-size: 10px; color: var(--dim); margin-top: 4px; }
+</style>
+</head>
+<body>
+  <h1>⚡ Deadlock Plus Live</h1>
+
+  <div class="section">
+    <div class="timer-row">
+      <span id="match-timer">00:00</span>
+      <button class="btn" id="btn-start-pause" title="Старт/Пауза">▶ Старт</button>
+      <button class="btn" id="btn-reset" title="Сброс">⟲</button>
+    </div>
+    <div id="next-event">—</div>
+    <ul class="event-list" id="event-list"></ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Состав (ручной ввод)</div>
+    <div class="row2">
+      <div><label>Мой герой</label><select id="my-hero"></select></div>
+    </div>
+    <div class="row2">
+      <div><label>Враги (до 6)</label><select id="enemies" multiple size="3"></select></div>
+    </div>
+    <button class="btn primary" id="btn-advice" style="width:100%;margin-top:2px;">⚡ Обновить советы</button>
+    <div style="margin-top:6px;"><label>Советы</label>
+      <div class="chips" id="advice-chips"><span style="color:var(--dim)">—</span></div>
+    </div>
+    <div id="advice-ms"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  let heroes = [], timerSec = 0, timerRunning = false, timerInt = null;
+  let timeline = [], respawns = {}, lastToast = '';
+
+  // --- Таймер матча ---
+  function fmt(sec) { const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+  function renderTimer() {
+    $('#match-timer').textContent = fmt(timerSec);
+    // ближайшее событие
+    let next = null;
+    for (const ev of timeline) {
+      if (ev.minutes * 60 > timerSec + 0.5) { next = ev; break; }
+    }
+    if (next) {
+      const left = Math.max(0, Math.round(next.minutes * 60 - timerSec));
+      $('#next-event').textContent = `⏳ ${next.title} — через ${fmt(left)}`;
+      if (left <= 30 && left > 0 && lastToast !== next.title) {
+        lastToast = next.title;
+        showToast(`${next.title} через ${left} сек!`);
+      }
+      if (left > 30) lastToast = '';
+    } else {
+      $('#next-event').textContent = '⏳ Все события прошли';
+    }
+    // подсветка в списке
+    document.querySelectorAll('#event-list li').forEach(li => {
+      const min = parseFloat(li.dataset.min);
+      li.classList.toggle('hl', next && min === next.minutes);
+    });
+  }
+  $('#btn-start-pause').addEventListener('click', () => {
+    timerRunning = !timerRunning;
+    $('#btn-start-pause').textContent = timerRunning ? '⏸ Пауза' : '▶ Старт';
+    if (timerRunning) {
+      timerInt = setInterval(() => { timerSec++; renderTimer(); }, 1000);
+    } else if (timerInt) { clearInterval(timerInt); timerInt = null; }
+    localStorage.setItem('live.timer', String(timerSec));
+    localStorage.setItem('live.running', String(timerRunning));
+  });
+  $('#btn-reset').addEventListener('click', () => {
+    timerSec = 0; lastToast = '';
+    if (timerRunning) { clearInterval(timerInt); timerRunning = false; $('#btn-start-pause').textContent = '▶ Старт'; }
+    renderTimer();
+    localStorage.setItem('live.timer', '0'); localStorage.setItem('live.running', 'false');
+  });
+
+  // --- Тайминги ---
+  async function loadTimers() {
+    try {
+      const r = await fetch('/api/live/timers');
+      const d = await r.json();
+      timeline = (d.timeline || []).map(ev => ({ ...ev, minutes: parseFloat(ev.minutes) })).sort((a,b) => a.minutes - b.minutes);
+      respawns = d.respawns || {};
+      const ul = $('#event-list');
+      ul.innerHTML = '';
+      for (const ev of timeline) {
+        const li = document.createElement('li');
+        li.dataset.min = ev.minutes;
+        li.innerHTML = `<span>${ev.title}</span><span class="event-time">${ev.time}</span>`;
+        ul.appendChild(li);
+      }
+      renderTimer();
+    } catch (e) { showToast('Тайминги не загружены'); }
+  }
+
+  // --- Герои / враги ---
+  async function loadHeroes() {
+    try {
+      const r = await fetch('/api/heroes');
+      heroes = await r.json();
+      const meSel = $('#my-hero'), enSel = $('#enemies');
+      meSel.innerHTML = '<option value="">— не выбран —</option>';
+      enSel.innerHTML = '';
+      for (const h of heroes) {
+        meSel.appendChild(new Option(h.name, h.id));
+        enSel.appendChild(new Option(h.name, h.id));
+      }
+    } catch (e) { showToast('Герои не загружены'); }
+  }
+
+  function showToast(msg) {
+    const t = $('#toast');
+    t.textContent = msg; t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  // --- Советы ---
+  async function refreshAdvice() {
+    const body = {
+      my_hero: $('#my-hero').value || '',
+      enemies: Array.from($('#enemies').selectedOptions).map(o => o.value),
+      items: [],
+    };
+    const t0 = performance.now();
+    try {
+      const r = await fetch('/api/live/advice', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const d = await r.json();
+      const box = $('#advice-chips');
+      box.innerHTML = '';
+      const add = (txt, cls='') => { const s=document.createElement('span'); s.className='chip '+cls; s.textContent=txt; box.appendChild(s); };
+      (d.tips || []).slice(0, 8).forEach(t => add(t, ''));
+      (d.red_flags || []).forEach(f => add('⚠ ' + f.title, 'red'));
+      if (!d.tips?.length && !d.red_flags?.length) box.innerHTML = '<span style="color:var(--dim)">— (пусто, выберите героя/врагов)</span>';
+      $('#advice-ms').textContent = `⚡ ${Math.round(performance.now()-t0)} мс`;
+    } catch (e) { showToast('Ошибка советов: ' + e.message); }
+  }
+  $('#btn-advice').addEventListener('click', refreshAdvice);
+
+  // --- restore ---
+  timerSec = parseInt(localStorage.getItem('live.timer') || '0', 10) || 0;
+  if (localStorage.getItem('live.running') === 'true') $('#btn-start-pause').click();
+  loadTimers(); loadHeroes();
+  // автозагрузка сохранённого состояния
+  fetch('/api/live/state').then(r => r.json()).then(s => {
+    if (s.my_hero) $('#my-hero').value = s.my_hero;
+    if (s.enemies?.length) {
+      Array.from($('#enemies').options).forEach(o => { if (s.enemies.includes(o.value)) o.selected = true; });
+    }
+  }).catch(() => {});
+})();
+</script>
+</body>
+</html>

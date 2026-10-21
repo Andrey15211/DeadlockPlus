@@ -6,6 +6,7 @@ import {
   fetchAIConfig, fetchAIModels, postAIConfig, postAITest,
   fetchBuilds, postSaveBuild, deleteBuild as apiDeleteBuild,
   postExportBuild, postImportBuild, postCalc,
+  fetchMatchReviews,
   getCachedReference,
   toast,
 } from './api.js';
@@ -19,12 +20,28 @@ import {
 import { initTierList } from './tierlist.js';
 import { initDrafter } from './drafter.js';
 import { initDeepMatch } from './deep_match.js';
+import { initCounterpicks } from './counterpicks.js';
 import { loadMapView } from './map_view.js';
 import { soundEngine, initVolumeWidget, initHubMusicWidget } from './audio.js';
 
 // --- загрузка ----------------------------------------------------------------
 
 let modulesInitialized = false;
+
+// Экран «Контрпики» грузит собственный датасет и не зависит от каталога
+// героев/предметов, поэтому инициализируется сразу после табов: он работает,
+// даже если /api/heroes или /api/items недоступны.
+let counterpicksInitialized = false;
+
+function initCounterpicksOnce() {
+  if (counterpicksInitialized) return;
+  counterpicksInitialized = true;
+  try {
+    initCounterpicks();
+  } catch (e) {
+    console.error('initCounterpicks error:', e);
+  }
+}
 
 function initModulesOnce() {
   if (modulesInitialized) return;
@@ -59,6 +76,9 @@ function initModulesOnce() {
 async function boot() {
   // 1. Инициализация табов сразу — клики работают даже при медленной сети или ошибках
   try { initTabs(); } catch (e) { console.error('initTabs error:', e); }
+
+  // 1b. Контрпики не зависят от каталога — стартуют сразу.
+  initCounterpicksOnce();
 
   // 2. Мгновенная инициализация из кэша (0 мс), если справочники сохранены в sessionStorage
   const cachedHeroes = getCachedReference('heroes');
@@ -223,6 +243,207 @@ function activateTab(name) {
 
 // --- хаб ----------------------------------------------------------------------
 
+// Сводка для ХАБа (TZ V2.0 4.3): «Последний матч» + «Сегодня хорошо заходят».
+// Экранирование в одну строку — хелпер для подстановки данных сервера в HTML.
+function escHtml(s) {
+  return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+}
+
+function gradeChipClass(grade) {
+  const g = String(grade || 'C').toLowerCase().replace('+', '-plus');
+  return `grade-${g}`;
+}
+
+function findHero(id) {
+  if (!id) return null;
+  const strId = String(id).toLowerCase();
+  if (state.heroById?.has(strId)) return state.heroById.get(strId);
+  const numId = Number(id);
+  const heroes = Array.isArray(state.heroes) ? state.heroes : [];
+  for (const h of heroes) {
+    if (String(h.id).toLowerCase() === strId) return h;
+    if (h.api_id != null && h.api_id === numId) return h;
+    if (String(h.name_en || '').toLowerCase() === strId) return h;
+  }
+  return null;
+}
+
+// Блок «Последний матч»: детальный обзор с иконкой, KDA, результатом и оценкой
+async function renderHubLastReview() {
+  const box = $('#hub-last-review');
+  if (!box) return;
+
+  let reviews = [];
+  try {
+    const res = await fetchMatchReviews(10);
+    if (Array.isArray(res)) reviews = res;
+  } catch (_) {}
+
+  let recentMatches = [];
+  try {
+    const resRecent = await fetchRecentMatches();
+    if (resRecent && Array.isArray(resRecent.matches)) {
+      recentMatches = resRecent.matches;
+    }
+  } catch (_) {}
+
+  let matchId = null;
+  let isReviewed = false;
+  let review = null;
+  let recentMatch = null;
+  let hero = null;
+  let heroName = '—';
+  let isWin = false;
+  let kdaStr = '—';
+  let mistake = '';
+  let grade = null;
+
+  if (recentMatches.length > 0) {
+    recentMatch = recentMatches[0];
+    matchId = String(recentMatch.match_id ?? '');
+    review = reviews.find((r) => String(r.match_id) === matchId);
+    isReviewed = !!review;
+
+    hero = findHero(recentMatch.hero_id) || (review ? findHero(review.hero_id) : null);
+    heroName = hero?.name || (recentMatch.hero_id ? `Герой #${recentMatch.hero_id}` : '—');
+    isWin = Number(recentMatch.player_match_outcome) === 1 || review?.result === 'win';
+
+    const k = recentMatch.player_kills ?? 0;
+    const d = recentMatch.player_deaths ?? 0;
+    const a = recentMatch.player_assists ?? 0;
+    kdaStr = `${k} / ${d} / ${a}`;
+
+    if (isReviewed) {
+      grade = review.performance_grade || 'C';
+      const km = review.key_mistake || {};
+      mistake = km.event || km.why_fatal || '';
+      if (review.kda && typeof review.kda === 'string') {
+        kdaStr = review.kda.replace(/\//g, ' / ');
+      }
+    }
+  } else if (reviews.length > 0) {
+    review = reviews[0];
+    matchId = String(review.match_id ?? '');
+    isReviewed = true;
+    hero = findHero(review.hero_id);
+    heroName = hero?.name || review.hero_id || '—';
+    isWin = review.result === 'win';
+    grade = review.performance_grade || 'C';
+    const km = review.key_mistake || {};
+    mistake = km.event || km.why_fatal || '';
+
+    if (review.kda) {
+      if (typeof review.kda === 'string') {
+        kdaStr = review.kda.replace(/\//g, ' / ');
+      } else if (typeof review.kda === 'object') {
+        const { kills = 0, deaths = 0, assists = 0 } = review.kda;
+        kdaStr = `${kills} / ${deaths} / ${assists}`;
+      }
+    }
+  }
+
+  if (!matchId && !review && !recentMatch) {
+    box.innerHTML = '<span class="hub-empty-hint">Разборов ещё нет — откройте <b>Deep Match</b> и разберите первый матч.</span>';
+    box.classList.add('empty');
+    return;
+  }
+
+  box.classList.remove('empty');
+  const portrait = hero?.portrait || (hero?.id ? `./assets/heroes/${hero.id}.webp` : './assets/heroes/abrams.webp');
+  const fallbackLetters = escHtml(heroName.slice(0, 2).toUpperCase());
+
+  box.innerHTML = `
+    <div class="hub-last-match-card" data-match-id="${escHtml(matchId)}" title="Открыть разбор матча #${escHtml(matchId)}">
+      <div class="hlm-portrait-wrap">
+        <img class="hlm-portrait" src="${escHtml(portrait)}" alt="${escHtml(heroName)}"
+             onerror="this.style.display='none';this.nextElementSibling?.classList.remove('hidden');">
+        <span class="hlm-portrait-fallback hidden">${fallbackLetters}</span>
+      </div>
+      <div class="hlm-details">
+        <div class="hlm-row-top">
+          ${isReviewed && grade ? `<span class="hub-grade-chip ${escHtml(gradeChipClass(grade))}" title="Оценка тренера">${escHtml(grade)}</span>` : ''}
+          <span class="hlm-hero-name">${escHtml(heroName)}</span>
+          <span class="hlm-result ${isWin ? 'ok' : 'bad'}">${isWin ? 'Победа' : 'Поражение'}</span>
+          <span class="hlm-kda"><span class="hlm-kda-label">KDA:</span> ${escHtml(kdaStr)}</span>
+        </div>
+        ${isReviewed && mistake
+          ? `<div class="hlm-mistake" title="${escHtml(mistake)}"><span class="hlm-mistake-label">Ошибка:</span> ${escHtml(mistake)}</div>`
+          : (!isReviewed
+              ? `<div class="hlm-unreviewed"><span class="hlm-unreviewed-badge">Матч не разобран</span> <span class="hlm-cta">Разобрать в Deep Match →</span></div>`
+              : '')
+        }
+      </div>
+    </div>`;
+
+  const card = box.querySelector('.hub-last-match-card');
+  if (card && matchId) {
+    card.addEventListener('click', () => {
+      const tabBtn = document.querySelector('.hud-nav [data-tab="match"]');
+      if (tabBtn) tabBtn.click();
+      const matchInput = document.getElementById('match-id-input');
+      if (matchInput) {
+        matchInput.value = matchId;
+        matchInput.dispatchEvent(new Event('input'));
+      }
+    });
+  }
+}
+
+// Блок «Сегодня хорошо заходят»: топ-5 героев списком с компактными иконками
+function renderHubMetaPicks() {
+  const box = $('#hub-meta-picks');
+  if (!box) return;
+  const ranked = (Array.isArray(state.heroes) ? state.heroes : [])
+    .filter((h) => !h.in_development && typeof h.winrate === 'number' && Number.isFinite(h.winrate))
+    .slice()
+    .sort((a, b) => (b.winrate || 0) - (a.winrate || 0))
+    .slice(0, 5);
+  if (!ranked.length) {
+    box.innerHTML = 'Мета ещё не загружена — данные героев недоступны.';
+    box.classList.add('empty');
+    return;
+  }
+  box.classList.remove('empty');
+  box.innerHTML = `
+    <div class="hub-meta-list">
+      ${ranked.map((h, idx) => {
+        const roles = (h.roles || []).map((r) => ROLE_LABEL[r] || r).join(' / ') || '—';
+        const portrait = h.portrait || `./assets/heroes/${h.id}.webp`;
+        const wr = (h.winrate * 100).toFixed(1);
+        const pr = h.pickrate != null ? (h.pickrate * 100).toFixed(1) : null;
+        return `
+          <div class="hub-meta-row" data-hero-id="${escHtml(h.id)}" title="Перейти к ${escHtml(h.name)} в тир-листе">
+            <span class="hmr-num">${idx + 1}</span>
+            <div class="hmr-icon-wrap">
+              <img class="hmr-icon" src="${escHtml(portrait)}" alt="${escHtml(h.name)}"
+                   onerror="this.style.display='none';this.nextElementSibling?.classList.remove('hidden');">
+              <span class="hmr-icon-fallback hidden">${escHtml(h.name.slice(0, 2).toUpperCase())}</span>
+            </div>
+            <span class="hmr-name">${escHtml(h.name)}</span>
+            <span class="hmr-role">${escHtml(roles)}</span>
+            <div class="hmr-stats">
+              <span class="hmr-wr">${wr}%</span>
+              ${pr ? `<span class="hmr-pr">${pr}% пик</span>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>`;
+
+  box.querySelectorAll('.hub-meta-row').forEach((row) => {
+    row.addEventListener('click', () => {
+      const tabBtn = document.querySelector('.hud-nav [data-tab="tier"]');
+      if (tabBtn) tabBtn.click();
+    });
+  });
+}
+
+function renderHubSummary() {
+  renderHubLastReview();
+  renderHubMetaPicks();
+}
+
 async function initHub() {
   try {
     const profile = await fetchProfile();
@@ -248,6 +469,7 @@ async function initHub() {
     btn.addEventListener('click', () => initHub());
   }
   refreshBuildsCount();
+  renderHubSummary();
 }
 
 async function refreshBuildsCount() {
@@ -769,14 +991,7 @@ async function detectProfile() {  const btn = $('#btn-detect-profile');
   }
 }
 
-// --- AI конфиг (Gemini 3.8 Flash) ---
-
-const PROVIDER_DEFAULT_MODELS = {
-  deepseek: 'deepseek-chat',
-  openai: 'gpt-4o',
-  anthropic: 'claude-3-7-sonnet-latest',
-  gemini: 'gemini-3.8-flash-low',
-};
+// --- AI конфиг ---
 
 async function loadAIConfig() {
   const statusCard = $('#ai-status-card');
@@ -784,6 +999,7 @@ async function loadAIConfig() {
   const keyInput = $('#ai-key');
   const baseUrlInput = $('#ai-base-url');
   const modelSelect = $('#ai-model-select');
+  const reasoningSelect = $('#ai-reasoning-select');
   const refreshModelsBtn = $('#btn-refresh-models');
   let cfg = null;
   try {
@@ -794,15 +1010,19 @@ async function loadAIConfig() {
   const fromEnv = cfg?.key_source === 'env';
   if (statusCard) statusCard.classList.remove('hidden');
 
-  const curModel = cfg?.model_name || 'gemini-3.8-flash-low';
+  const curModel = cfg?.model_name || 'glm-5.3-flash';
+  const curReasoning = cfg?.reasoning_effort || 'low';
+  if (reasoningSelect && curReasoning) {
+    reasoningSelect.value = curReasoning;
+  }
   if (fromEnv) {
-    if (statusText) statusText.textContent = `AI активен (env-ключ) · ${curModel}`;
+    if (statusText) statusText.textContent = `AI активен (env-ключ) · ${curModel} · CoT: ${curReasoning}`;
     if (statusCard) statusCard.className = 'ai-status-card ok';
   } else if (hasKey) {
-    if (statusText) statusText.textContent = `AI активен · ${curModel} · ${cfg.api_key_masked}`;
+    if (statusText) statusText.textContent = `AI активен · ${curModel} · CoT: ${curReasoning} · ${cfg.api_key_masked}`;
     if (statusCard) statusCard.className = 'ai-status-card ok';
   } else {
-    if (statusText) statusText.textContent = 'AI отключён — укажите API-ключ (Gemini, OpenAI, роутер)';
+    if (statusText) statusText.textContent = 'AI отключён — укажите API-ключ (роутер/OpenAI)';
     if (statusCard) statusCard.className = 'ai-status-card';
   }
   if (keyInput) keyInput.placeholder = (cfg && cfg.api_key_masked) || 'Введите API-ключ (напр. sk-...)';
@@ -864,17 +1084,20 @@ async function loadAIConfig() {
       const key = keyInput?.value?.trim();
       const baseUrl = baseUrlInput?.value?.trim();
       const selectedModel = modelSelect?.value?.trim();
+      const selectedReasoning = reasoningSelect?.value;
       try {
         const payload = {};
         if (key) payload.api_key = key;
         if (baseUrl !== undefined) payload.base_url = baseUrl || null;
         if (selectedModel) payload.model_name = selectedModel;
+        if (selectedReasoning) payload.reasoning_effort = selectedReasoning;
 
         // Если указан роутер или ключ от стороннего сервиса
         if (baseUrl && baseUrl.includes('/v1')) {
           payload.provider = 'openai';
-        } else if (key && key.startsWith('sk-') && !baseUrl) {
-          payload.provider = 'gemini';
+        } else if (key && key.startsWith('sk-')) {
+          payload.provider = 'openai';
+          payload.base_url = baseUrl || 'http://127.0.0.1:8089/v1';
         }
 
         await postAIConfig(payload);

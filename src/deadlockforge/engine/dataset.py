@@ -19,6 +19,7 @@ from pydantic import ValidationError
 
 from ..models import (
     CounterRule,
+    Counterpicks,
     Hero,
     Item,
     MapGuide,
@@ -59,6 +60,12 @@ def _data_root() -> Path:
 
 
 def _read_json(path: Path) -> object:
+    import sys
+
+    if not path.is_file() and hasattr(sys, "_MEIPASS"):
+        bundle_path = Path(sys._MEIPASS) / "data" / path.name
+        if bundle_path.is_file():
+            path = bundle_path
     if not path.is_file():
         raise FileNotFoundError(
             f"Required data file not found: {path}. Dataset incomplete — "
@@ -187,3 +194,24 @@ def load_catalog() -> Catalog:
 def get_catalog() -> Catalog:
     """Cached catalog accessor — loads (and validates) at most once."""
     return load_catalog()
+
+
+# --- Контрпики (экран 7) ---------------------------------------------------
+
+
+def load_counterpicks() -> Counterpicks:
+    """Read and validate data/counterpicks.json.
+
+    Отдельный от Catalog датасет: контент экрана «Контрпики» не участвует
+    в расчётах билдов, поэтому его загрузка не должна ломать основной каталог.
+    """
+    payload = _read_json(_data_root() / "counterpicks.json")
+    if not isinstance(payload, dict):
+        raise ValueError("counterpicks.json: ожидался объект с полями heroes/items.")
+    return _parse_single(Counterpicks, payload, _data_root() / "counterpicks.json", "counterpicks")
+
+
+@lru_cache(maxsize=1)
+def get_counterpicks() -> Counterpicks:
+    """Cached counterpicks accessor — loads (and validates) at most once."""
+    return load_counterpicks()

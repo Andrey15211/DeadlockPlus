@@ -1,13 +1,13 @@
-"""Live calibration and verification suite for Gemini 3.8 Flash AI Coach.
+"""Live calibration and verification suite for the AI Coach (router glm-5.3).
 
-Tests AI coach performance, tactical accuracy, and strict Pydantic CoachReport
-schema validation against real match datasets stored in SQLite (data/deadlockforge.db).
+V2.0 М4 + фикс «таймаут 200с»: разбор идёт через локальный failover-роутер
+127.0.0.1:8089/v1 (zexkora-агрегатор). С лаконичным промптом и потолком
+LLM_MAX_TOKENS=8000 glm-5.3-flash разбирает тяжёлый матч за 20–55с
+(валидный CoachReport, замер match 113150202). deepseek-v4-flash — быстрый
+пул владельца (fallback).
 
-Scope (TZ v1.6 Part 2):
-1. Load real matches from match_raw table (varying heroes, wins, defeats).
-2. Call gemini-3.8-flash via GeminiClient.
-3. Validate 100% Pydantic schema compliance with CoachReport.
-4. Verify depth, tactical correctness, farm benchmark comparisons, and practical exercises.
+Скопировано/переписано из прежнего test_gemini_coach_live.py; тесты гоняются
+ТОЛЬКО при наличии ключа (api.txt) — иначе skip, чтобы не красить сборку.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import json
 import os
 import sqlite3
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -30,9 +31,10 @@ from deadlockforge.engine import match_loader
 from deadlockforge.models import AIConfig, CoachReport
 
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "deadlockforge.db"
-# Ключ НЕ хранится внутри пакета (иначе он упаковывался в exe и утекал).
-# Разрешённые источники: env DEADLOCKFORGE_AI_KEY или api.txt в корне проекта.
 API_KEY_FILE = Path(__file__).resolve().parents[1] / "api.txt"
+# Локальный failover-роутер владельца (см. опрос: основная zexkora +
+# резервная 2api.zexkora объединены скриптом в 127.0.0.1:8089/v1).
+ROUTER_URL = "http://127.0.0.1:8089/v1"
 
 
 def _get_live_api_key() -> str:
@@ -42,8 +44,6 @@ def _get_live_api_key() -> str:
         return env_key
     if API_KEY_FILE.is_file():
         try:
-            # utf-8-sig: ключ мог быть сохранён с BOM, из-за чего уходил
-            # в URL с \ufeff и валил запрос UnicodeEncodeError.
             key = API_KEY_FILE.read_text(encoding="utf-8-sig").replace("\ufeff", "").strip()
             if key:
                 return key
@@ -61,12 +61,12 @@ def api_key():
 
 
 @pytest.fixture(scope="module")
-def gemini_client(api_key):
+def live_client(api_key):
     config = AIConfig(
-        provider="gemini",
-        model_name="gemini-3.8-flash",
+        provider="openai",
+        model_name="glm-5.3-flash",
         api_key=api_key,
-        base_url="https://api.zexkora.cc/v1" if api_key.startswith("sk-") else None,
+        base_url=ROUTER_URL,
         enable_thinking=False,
         temperature=0.2,
     )
@@ -83,12 +83,11 @@ def db_matches(hero_map):
     if not DB_PATH.is_file():
         pytest.skip("Database deadlockforge.db not found.")
     con = sqlite3.connect(str(DB_PATH))
-    cur = con.cursor()
-    rows = cur.execute("SELECT match_id, payload FROM match_raw").fetchall()
+    rows = con.execute("SELECT match_id, payload FROM match_raw").fetchall()
     con.close()
     if not rows:
         pytest.skip("No matches in match_raw table.")
-    
+
     matches = {}
     for mid, payload in rows:
         try:
@@ -100,17 +99,8 @@ def db_matches(hero_map):
     return matches
 
 
-# --- Live Tests on 3-4 Different Matches ---
-
-
 def _skip_if_external_unavailable(exc: cl.LLMError) -> None:
-    """Пропустить тест, если проблема на стороне внешнего сервиса.
-
-    Live-тесты зависят от стороннего роутера: 429 (квота), 5xx
-    (недоступность), model_not_found (модель у провайдера переименована или
-    снята) и сетевые сбои — это состояние внешней среды, а не регрессия кода.
-    Раньше 503 ронял сборку зелёных тестов.
-    """
+    """Пропустить тест, если проблема на стороне внешнего сервиса."""
     text = str(exc).lower()
     markers = (
         "429", "too many requests", "cooling down",
@@ -122,19 +112,31 @@ def _skip_if_external_unavailable(exc: cl.LLMError) -> None:
         pytest.skip(f"Внешний LLM-сервис недоступен ({exc}).")
 
 
+# Live-тесты: реальные сетевые вызовы LLM — гоняются только явно: pytest -m live.
+pytestmark = [pytest.mark.live]
+
+
+@pytest.fixture(autouse=True)
+def _no_real_sleep(monkeypatch):
+    """Убираем искусственные паузы time.sleep(2) между live-вызовами.
+
+    Пауза была нужна для rate-limit робости при последовательных запусках,
+    но 2 секунды на каждый из 4 тестов — 8 секунд пустого ожидания.
+    """
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+
+
 @pytest.mark.parametrize("match_id", ["777777", "113150202", "32250083"])
-def test_gemini_coach_live_analysis(match_id, db_matches, gemini_client):
-    """Run real gemini-3.8-flash analysis on real matches from SQLite."""
+def test_live_analysis_glm_flash(match_id, db_matches, live_client):
+    """Run real glm-5.3 analysis on real matches from SQLite."""
     if match_id not in db_matches:
         pytest.skip(f"Match {match_id} not found in database fixture.")
 
     match = db_matches[match_id]
     player = match.players[0]
 
-    import time
-    time.sleep(2)
     try:
-        report = coach.analyze_match(match, player.account_id, gemini_client)
+        report = coach.analyze_match(match, player.account_id, live_client)
     except cl.LLMError as e:
         _skip_if_external_unavailable(e)
         raise
@@ -173,11 +175,10 @@ def test_gemini_coach_live_analysis(match_id, db_matches, gemini_client):
         assert ic.reason != ""
 
 
-def test_gemini_coach_streaming_live(db_matches, gemini_client):
-    """Verify live streaming SSE on Gemini 3.8 Flash."""
+def test_live_streaming_glm_flash(db_matches, live_client):
+    """Verify live streaming response on glm-5.3 (router OpenAI-compatible)."""
     match_id = "113150202"
     if match_id not in db_matches:
-        # Fallback to first available match
         match_id = next(iter(db_matches.keys()))
 
     match = db_matches[match_id]
@@ -188,11 +189,9 @@ def test_gemini_coach_streaming_live(db_matches, gemini_client):
     def on_chunk(chars: int):
         received_chars.append(chars)
 
-    import time
-    time.sleep(2)
     try:
         report = coach.analyze_match_stream(
-            match, player.account_id, gemini_client, on_chunk=on_chunk
+            match, player.account_id, live_client, on_chunk=on_chunk
         )
     except cl.LLMError as e:
         _skip_if_external_unavailable(e)

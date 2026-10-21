@@ -274,35 +274,114 @@ CDR_CAP = 0.55
 class KeyMistake(BaseModel):
     """The single fatal mistake of the match, with timestamp."""
 
-    time: str                                 # "MM:SS"
-    location: str                             # линия / место на карте
-    event: str                                # что произошло
-    why_fatal: str                            # почему это стоило игры
-    correct_play: str                         # верный сценарий
+    time: str = ""                                 # "MM:SS"
+    location: str = Field(
+        default="—",
+        validation_alias=AliasChoices("location", "place", "lane", "map_location"),
+    )
+    event: str = Field(
+        default="",
+        validation_alias=AliasChoices("event", "mistake", "action", "description"),
+    )
+    why_fatal: str = Field(
+        default="",
+        validation_alias=AliasChoices("why_fatal", "reason", "impact", "why"),
+    )
+    correct_play: str = Field(
+        default="",
+        validation_alias=AliasChoices("correct_play", "lesson", "recommendation", "solution"),
+    )
 
 
 class ItemCorrection(BaseModel):
-    slot: str                                 # категория-слот ("weapon-2")
-    sold_or_skipped: str                      # что продано/пропущено
-    recommended: str                          # что нужно было купить
-    reason: str
+    slot: str = Field(
+        default="",
+        validation_alias=AliasChoices("slot", "category", "item_slot"),
+    )
+    sold_or_skipped: str = Field(
+        default="",
+        validation_alias=AliasChoices("sold_or_skipped", "skipped", "sold", "item_sold", "item_skipped"),
+    )
+    recommended: str = Field(
+        default="",
+        validation_alias=AliasChoices("recommended", "item_recommended", "buy"),
+    )
+    reason: str = Field(
+        default="",
+        validation_alias=AliasChoices("reason", "comment", "explanation"),
+    )
 
 
 class TeamfightSummary(BaseModel):
     """One teamfight: who died, when, what it cost."""
 
-    time: str                                 # "MM:SS"
-    outcome: str                              # кто выиграл размен и почему
-    lesson: str                               # что делать иначе
+    time: str = ""                                 # "MM:SS"
+    outcome: str = Field(
+        default="",
+        validation_alias=AliasChoices("outcome", "result", "verdict", "event"),
+    )
+    lesson: str = Field(
+        default="",
+        validation_alias=AliasChoices("lesson", "correct_play", "tip", "recommendation"),
+    )
 
 
 class PurchaseTiming(BaseModel):
     """One item purchase timing callout."""
 
-    time: str                                 # "MM:SS" покупки
-    item: str                                 # предмет (id или имя)
-    verdict: str                              # вовремя / поздно / рано
-    comment: str
+    time: str = ""                                 # "MM:SS" покупки
+    item: str = ""                                 # предмет (id или имя)
+    verdict: str = Field(
+        default="вовремя",
+        validation_alias=AliasChoices("verdict", "status", "timing_verdict", "evaluation"),
+    )
+    comment: str = Field(
+        default="",
+        validation_alias=AliasChoices("comment", "reason", "notes", "description"),
+    )
+
+
+class DeathSummary(BaseModel):
+    """V2.0: one player death breakdown (глубина «deep»)."""
+
+    time: str = ""                                 # "MM:SS"
+    location: str = Field(
+        default="—",
+        validation_alias=AliasChoices("location", "place", "lane", "map_location"),
+    )
+    cause: str = Field(
+        default="",
+        validation_alias=AliasChoices("cause", "killer", "reason", "why_fatal", "event", "description"),
+    )
+    lesson: str = Field(
+        default="",
+        validation_alias=AliasChoices("lesson", "correct_play", "tip", "recommendation", "solution"),
+    )
+
+
+class LaneComparison(BaseModel):
+    """V2.0: сравнение с соперником по линии (глубина «deep»)."""
+
+    opponent_hero: str = Field(
+        default="—",
+        validation_alias=AliasChoices("opponent_hero", "hero", "enemy_hero", "enemy"),
+    )
+    opponent_kda: str = Field(
+        default="—",
+        validation_alias=AliasChoices("opponent_kda", "kda", "enemy_kda"),
+    )
+    opponent_souls_at_10: float = Field(
+        default=0.0,
+        validation_alias=AliasChoices("opponent_souls_at_10", "souls_at_10", "souls10"),
+    )
+    opponent_net_worth: int = Field(
+        default=0,
+        validation_alias=AliasChoices("opponent_net_worth", "net_worth", "souls"),
+    )
+    verdict: str = Field(
+        default="",
+        validation_alias=AliasChoices("verdict", "summary", "conclusion", "result"),
+    )
 
 
 class Benchmarks(BaseModel):
@@ -326,6 +405,9 @@ class CoachReport(BaseModel):
     item_corrections: list[ItemCorrection] = Field(default_factory=list)
     teamfights: list[TeamfightSummary] = Field(default_factory=list)
     purchase_timings: list[PurchaseTiming] = Field(default_factory=list)
+    # V2.0: опциональные поля глубины «deep» (обязательные поля не менялись)
+    death_breakdown: list[DeathSummary] = Field(default_factory=list)
+    lane_comparison: Optional[LaneComparison] = None
 
 
 class SoulsPoint(BaseModel):
@@ -350,17 +432,32 @@ class MatchReview(BaseModel):
     coach_conclusion: list[str] = Field(default_factory=list)
     stat_benchmarks: dict = Field(default_factory=dict)
     item_analysis: dict = Field(default_factory=dict)
+    # V2.0: расширенные аналитические блоки глубокого разбора
+    teamfights: list[dict] = Field(default_factory=list)
+    purchase_timings: list[dict] = Field(default_factory=list)
+    death_breakdown: list[dict] = Field(default_factory=list)
+    lane_comparison: Optional[dict] = None
+    # V2.0 §4: точка зрения игрока (персистится — нужна для сравнения «с собой»)
+    account_id: Optional[int] = None
+    # V2.0: сравнение «с собой» — тренд + слабости игрока (не персистится)
+    progress: Optional[dict] = None
+    # V2.0 §4.1: дельта к средней норме игрока на этом герое (не персистится)
+    personal_benchmark: Optional[dict] = None
+    # V2.0 §5: координаты смертей для интерактивной миникарты (не персистится)
+    deaths_geo: list[dict] = Field(default_factory=list)
 
 
 # --- AI config contract (settings screen seam) -----------------------------
 
 
 class AIConfig(BaseModel):
-    provider: str = "gemini"                # deepseek | openai | gemini | anthropic
-    model_name: str = "gemini-3.8-flash-low"
+    provider: str = "openai"                # deepseek | openai | anthropic | router
+    model_name: str = "glm-5.3-flash"       # V2.0 М4: flash при thinking disabled
+                                            # и max_tokens=8000 (LLM_MAX_TOKENS)
     api_key: str = ""
     base_url: Optional[str] = None
     enable_thinking: bool = True
+    reasoning_effort: Optional[str] = "low" # off | low | medium | high
     thinking_budget: int = 2048
     temperature: float = 0.2
     system_prompt_override: Optional[str] = None
@@ -368,20 +465,21 @@ class AIConfig(BaseModel):
 
 # TZ A3: параметры AI задаются кодом/дефолтами; UI принимает только api_key.
 # Точка входа «зашитого ключа» — env DEADLOCKFORGE_AI_KEY, перекрывающий БД.
+# V2.0: дефолтная модель — glm-5.3 (роутер OpenAI-совместимый), см. ТЗ §8.
 AI_CONFIG_DEFAULTS: dict[str, object] = {
-    "provider": "gemini",
-    "model_name": "gemini-3.8-flash-low",
+    "provider": "openai",
+    "model_name": "glm-5.3-flash",
     "base_url": None,
     "enable_thinking": True,
+    "reasoning_effort": "low",
     "thinking_budget": 2048,
     "temperature": 0.2,
 }
 
 
 PROVIDER_DEFAULT_MODELS: dict[str, str] = {
-    "openai": "gpt-4o",
+    "openai": "glm-5.3-flash",
     "anthropic": "claude-3-7-sonnet-latest",
-    "gemini": "gemini-3.8-flash-low",
     "deepseek": "deepseek-chat",
 }
 
@@ -432,18 +530,36 @@ def effective_ai_config(db_config: dict) -> AIConfig:
     provider = (db_config or {}).get("provider") or AI_CONFIG_DEFAULTS["provider"]
     provider = str(provider).strip().lower()
     default_model = PROVIDER_DEFAULT_MODELS.get(provider, AI_CONFIG_DEFAULTS["model_name"])
-    model_name = (db_config or {}).get("model_name") or default_model
     base_url = (db_config or {}).get("base_url") or AI_CONFIG_DEFAULTS["base_url"]
+    # V2.0 М4: провайдер "gemini" удалён полностью (недоступен по API).
+    # Если в БД остался легаси-провайдер gemini — лечим в openai+роутер,
+    # иначе create_client упадёт на неизвестном провайдере.
+    if provider == "gemini":
+        provider = "openai"
+        if not base_url:
+            base_url = "http://127.0.0.1:8089/v1"
+    # V2.0 М4: ключи sk-... у владельца — роутерные (zexkora/локальный
+    # failover 127.0.0.1:8089). Если base_url не задан (чистая БД у друга,
+    # exe + api.txt) — не уходить на api.openai.com, а использовать локальный
+    # failover-роутер, как в UI по умолчанию.
+    if provider in ("openai", "router", "openrouter") and api_key.startswith("sk-") and not base_url:
+        base_url = "http://127.0.0.1:8089/v1"
+    model_name = (db_config or {}).get("model_name") or default_model
+    model_name = str(model_name)
+    # Легаси-имена gemini-моделей в БД — остатки старых настроек; на роутере
+    # их нет, резолвим в рабочую glm-5.3-flash (thinking disabled
+    # автоматически в OpenAIClient, замер 63.5с валидный отчёт).
+    if model_name.startswith("gemini-"):
+        model_name = "glm-5.3-flash"
 
-    # When using a proxy key (sk-...) with Gemini, route to the proxy endpoint unless overridden
-    if provider == "gemini" and api_key.startswith("sk-") and not base_url:
-        base_url = "https://api.zexkora.cc/v1"
+    reasoning_effort = (db_config or {}).get("reasoning_effort") or AI_CONFIG_DEFAULTS.get("reasoning_effort", "low")
 
     return AIConfig(
         provider=provider,
         model_name=str(model_name),
         base_url=base_url,  # type: ignore[arg-type]
         enable_thinking=bool(AI_CONFIG_DEFAULTS["enable_thinking"]),  # type: ignore[arg-type]
+        reasoning_effort=str(reasoning_effort),
         thinking_budget=int(AI_CONFIG_DEFAULTS["thinking_budget"]),  # type: ignore[arg-type]
         temperature=float(AI_CONFIG_DEFAULTS["temperature"]),  # type: ignore[arg-type]
         api_key=api_key,
@@ -461,3 +577,161 @@ class RedFlag(BaseModel):
     title: str
     detail: str
     fix: str                                   # конкретное действие/предмет
+
+
+# --- Контрпики (экран 7) ---------------------------------------------------
+# Источник: deadlockitembuilder.com, переведено на русский с официальной
+# терминологией deadlock-api. Строится скриптом scripts/build_counterpicks.py.
+
+
+class CounterOffer(BaseModel):
+    """Предмет-ответ в наборе на фазу: основной или альтернативный."""
+
+    item_id: str
+    label: str = ""                            # «Ситуационный ответ», «Опция для линии»
+    alt: bool = False                          # True — запасной вариант, а не основной
+
+
+class CounterProblem(BaseModel):
+    """Конкретная проблема в матчапе и покупка, которая её закрывает."""
+
+    problem: str
+    item_id: str
+    label: str = ""
+    when: str = ""
+    how: str = ""
+
+
+class CounterStage(BaseModel):
+    """Набор предметов на одну фазу игры."""
+
+    early: list[CounterOffer] = Field(default_factory=list)
+    mid: list[CounterOffer] = Field(default_factory=list)
+    late: list[CounterOffer] = Field(default_factory=list)
+
+
+class CounterGlance(BaseModel):
+    """Краткая выжимка: главная угроза, окно игрока, приоритет покупки."""
+
+    main_threat: str = ""
+    your_opening: str = ""
+    buy_priority: str = ""
+
+
+class CounterThreat(BaseModel):
+    """Угроза героя в терминах архетипа поведения."""
+
+    label: str
+    key: str = ""
+
+
+class CounterSit(BaseModel):
+    """Связка «проблема → предмет» из helper-слоя сайта."""
+
+    problem: str
+    item_id: str
+    how: str = ""
+
+
+class CounterHelper(BaseModel):
+    """Сводка и разбор проблем для быстрого блока «во что играть»."""
+
+    summary: str = ""
+    tip: str = ""
+    sits: list[CounterSit] = Field(default_factory=list)
+
+
+class CounterHero(BaseModel):
+    """Гайд «как играть против героя» целиком."""
+
+    id: str
+    name: str
+    name_en: str = ""
+    portrait: str = ""
+    intro: str = ""
+    roles: list[str] = Field(default_factory=list)
+    role_text: list[str] = Field(default_factory=list)
+    threats: list[CounterThreat] = Field(default_factory=list)
+    groups: list[str] = Field(default_factory=list)         # ключи групп сайта
+    group_tags: list[ThreatTag] = Field(default_factory=list)  # их теги проекта
+    glance: CounterGlance = Field(default_factory=CounterGlance)
+    note: str = ""
+    top: list[str] = Field(default_factory=list)            # лучшие ответы, по убыванию
+    stages: CounterStage = Field(default_factory=CounterStage)
+    problems: list[CounterProblem] = Field(default_factory=list)
+    why: dict[str, str] = Field(default_factory=dict)       # item_id -> почему помогает
+    lane: list[str] = Field(default_factory=list)
+    fight: list[str] = Field(default_factory=list)
+    faq: list[list[str]] = Field(default_factory=list)      # пары [вопрос, ответ]
+    related: list[str] = Field(default_factory=list)        # id других героев
+    helper: CounterHelper = Field(default_factory=CounterHelper)
+
+
+class CounterItemTarget(BaseModel):
+    """Матчап, в котором предмет работает: герой и проблема из его гайда."""
+
+    hero_id: str
+    problem_index: Optional[int] = None
+    note: str = ""
+    methods: list[str] = Field(default_factory=list)
+
+
+class CounterItemEntry(BaseModel):
+    """Против кого предмет и с какой пометкой (в списке «все матчапы»)."""
+
+    hero_id: str
+    label: str = ""
+
+
+class CounterItemAlt(BaseModel):
+    """Запасной предмет с пояснением, чем он отличается."""
+
+    item_id: str
+    text: str = ""
+
+
+class CounterItemGuide(BaseModel):
+    """Гайд по предмету-контру: когда брать, чем заменить, во что играть."""
+
+    id: str
+    name: str
+    name_en: str = ""
+    category: ItemCategory
+    tier: int = Field(ge=1, le=5)
+    cost: int = Field(ge=0)
+    image: str = ""
+    roles: list[str] = Field(default_factory=list)
+    stages: list[str] = Field(default_factory=list)
+    short: str = ""
+    intro: str = ""
+    who: str = ""
+    when: str = ""
+    example: str = ""
+    watch: str = ""
+    buy: str = ""
+    why: list[str] = Field(default_factory=list)
+    timing: list[list[str]] = Field(default_factory=list)   # [фаза, средняя минута]
+    avg_minutes: Optional[float] = None
+    best: list[CounterItemTarget] = Field(default_factory=list)
+    all: list[CounterItemEntry] = Field(default_factory=list)
+    alts: list[CounterItemAlt] = Field(default_factory=list)
+
+
+class CounterGroup(BaseModel):
+    """Группа контр-мер: например «Анти-хил» со списком предметов."""
+
+    key: str
+    name: str
+    items: list[str] = Field(default_factory=list)
+
+
+class Counterpicks(BaseModel):
+    """Корень датасета «Контрпики»."""
+
+    version: int = 1
+    source: str = ""
+    extracted_at: str = ""
+    stages: list[str] = Field(default_factory=list)
+    groups: list[CounterGroup] = Field(default_factory=list)
+    heroes: list[CounterHero] = Field(default_factory=list)
+    items: list[CounterItemGuide] = Field(default_factory=list)

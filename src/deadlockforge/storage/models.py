@@ -17,11 +17,12 @@ PROFILE_DEFAULTS: dict[str, Any] = {
 }
 
 AI_CONFIG_DEFAULTS: dict[str, Any] = {
-    "provider": "deepseek",
-    "model_name": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "model_name": "glm-5.3-flash",
     "api_key": "",
     "base_url": None,
     "enable_thinking": True,
+    "reasoning_effort": "low",
     "thinking_budget": 2048,
     "temperature": 0.2,
     "system_prompt_override": None,
@@ -31,4 +32,5 @@ AI_CONFIG_DEFAULTS: dict[str, Any] = {
 BUILD_JSON_COLUMNS = ("weapon_slots", "vitality_slots", "spirit_slots",
                       "flex_slots")
 REVIEW_JSON_COLUMNS = ("kda", "souls_curve", "coach_conclusion",
-                       "stat_benchmarks", "item_analysis")
+                       "stat_benchmarks", "item_analysis",
+                       "teamfights", "purchase_timings", "death_breakdown", "lane_comparison")

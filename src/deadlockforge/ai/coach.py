@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from typing import Optional
 
 from pydantic import ValidationError
@@ -18,8 +19,10 @@ from ..engine.match_loader import NormalizedMatch
 from ..models import (
     Benchmarks,
     CoachReport,
+    DeathSummary,
     ItemCorrection,
     KeyMistake,
+    LaneComparison,
     PurchaseTiming,
     TeamfightSummary,
 )
@@ -37,6 +40,18 @@ BASE_COACH_PROMPT = """\
 Твой разбор предельно техничен, циничен к ошибкам, объективен и свободен от воды.
 Запрещены любые шаблонные односложные отписки («1 раз умер, главная ошибка», «играл неплохо»).
 Каждый тезис опирается на точные тайминги (MM:SS), механику способностей, позиционирование и макро-ситуацию.
+
+ЛАКОНИЧНОСТЬ — ЖЁСТКОЕ ТРЕБОВАНИЕ (приоритет №1):
+Отвечай МАКСИМАЛЬНО КРАТКО и по делу. Никакой воды, повторов, общих слов,
+вводных фраз и лишнего контекста. Каждая фраза несёт факт или цифру.
+- Весь ответ — один компактный JSON (см. схему). Никаких вступлений,
+  благодарностей, пояснений и текста вне JSON.
+- coach_conclusion: каждый пункт — 1 короткое предложение (до ~15 слов).
+- item_corrections / purchase_timings / teamfights / death_breakdown:
+  reason, comment, lesson — до ~10 слов на поле.
+- key_mistake: event / why_fatal / correct_play — до ~15 слов на поле.
+- Целевой объём всего ответа: 300–700 слов. Если фактов мало — пиши меньше,
+  но точно. Запрещено раздувать отчёт ради объёма.
 
 Ты всегда отвечаешь СТРОГО одним валидным JSON-объектом по схеме:
 
@@ -110,6 +125,86 @@ BASE_COACH_PROMPT = """\
 
 COACH_SYSTEM_PROMPT = BASE_COACH_PROMPT
 
+# --- V2.0: три глубины разбора (ТЗ §3.1) -----------------------------------
+
+VALID_DEPTHS = ("short", "medium", "deep")
+DEFAULT_DEPTH = "medium"
+
+COACH_PROMPT_SUFFIXES: dict[str, str] = {
+    "short": """\
+РЕЖИМ РАЗБОРА: «КОРОТКИЙ» (быстрый, ≤30 с).
+Отчёт ДОЛЖЕН содержать ТОЛЬКО: performance_grade, key_mistake,
+coach_conclusion (РОВНО 3 пункта), benchmarks.
+- item_corrections — пустой массив []; teamfights, purchase_timings,
+  death_breakdown, lane_comparison — НЕ заполняй.
+- НЕ разбирай покупки, тайминги, тимфайты и смерти по отдельности.
+- coach_conclusion: [1] оценка темпа фарма на 10:00 против нормы роли,
+  [2] главная причина исхода матча, [3] одно конкретное упражнение на
+  следующий матч с измеримым результатом.
+""",
+    "medium": """\
+РЕЖИМ РАЗБОРА: «СРЕДНИЙ» (по умолчанию).
+Отчёт: performance_grade, key_mistake, coach_conclusion (3-5 пунктов),
+benchmarks, item_corrections, purchase_timings.
+- purchase_timings: 2-4 пункта — аудит таймингов покупок: что куплено
+  поздно/рано, какой критический предмет пропущен против сетапа врага
+  (time "MM:SS", item на русском, verdict вовремя/поздно/рано, comment).
+- teamfights — пустой массив []; death_breakdown, lane_comparison — НЕ заполняй.
+""",
+    "deep": """\
+РЕЖИМ РАЗБОРА: «МАКСИМАЛЬНЫЙ» (полный).
+ВАЖНО: Формулируй анализ четко и предельно лаконично (1-2 предложения на пункт). Не трать токены на избыточные рассуждения, сразу формируй итоговый JSON.
+Отчёт: performance_grade, key_mistake, coach_conclusion (5 пунктов),
+benchmarks, item_corrections, purchase_timings, teamfights,
+death_breakdown, lane_comparison.
+- teamfights: массив объектов {time, outcome, lesson}. Разбери тимфайты
+  (time "MM:SS", outcome - кто выиграл размен и почему, lesson).
+- death_breakdown: массив объектов {time, location, cause, lesson}. Разбери
+  смерти игрока из поля deaths (где, когда, причина гибели/killer, что делать иначе). До 10 смертей.
+- lane_comparison: объект {opponent_hero, opponent_kda, opponent_souls_at_10, opponent_net_worth, verdict}.
+  Сравни с соперником по линии (поле lane_opponent). Кто выиграл линию и за счёт чего — verdict.
+- В coach_conclusion добавь пункт про итог линии против lane_opponent.
+""",
+}
+
+
+def get_coach_prompt(depth: str | None = None) -> str:
+    """Промпт тренера для выбранной глубины: BASE + суффикс глубины.
+
+    Валидные значения: short | medium | deep (регистронезависимо);
+    дефолт — medium. Неизвестная глубина -> ValueError.
+    """
+    d = (depth or DEFAULT_DEPTH).strip().lower()
+    if d not in VALID_DEPTHS:
+        raise ValueError(
+            f"unknown depth '{depth}', expected one of {sorted(VALID_DEPTHS)}"
+        )
+    return BASE_COACH_PROMPT + "\n\n" + COACH_PROMPT_SUFFIXES[d]
+
+
+def build_coach_prompt(depth: str | None = None,
+                       player_context: dict | None = None,
+                       system_prompt_override: str | None = None) -> str:
+    """Собрать финальный промпт: глубина + история игрока + правила юзера.
+
+    player_context — результат ai.progress.build_player_context (тренд +
+    слабости игрока из match_reviews); system_prompt_override — личные
+    правила пользователя из AIConfig.
+    """
+    prompt = get_coach_prompt(depth)
+    if player_context:
+        from .progress import context_to_prompt
+
+        block = context_to_prompt(player_context)
+        if block:
+            prompt += "\n\n" + block
+    if system_prompt_override and system_prompt_override.strip():
+        prompt += (
+            "\n\nПРАВИЛА ПОЛЬЗОВАТЕЛЯ (личные инструкции, приоритет над общими):\n"
+            + system_prompt_override.strip()
+        )
+    return prompt
+
 _JSON_FENCE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
 
 
@@ -117,16 +212,24 @@ def analyze_match(match: NormalizedMatch | dict, my_account_id: int | None,
                   client: LLMClient,
                   image_bytes: bytes | None = None,
                   fallback: bool = True,
-                  hero_slug: str | None = None) -> CoachReport:
+                  hero_slug: str | None = None,
+                  depth: str | None = DEFAULT_DEPTH,
+                  player_context: dict | None = None,
+                  system_prompt_override: str | None = None) -> CoachReport:
     """Build the compact prompt, call the LLM, validate the schema.
+
+    depth: short | medium | deep (V2.0, дефолт medium) — выбирает вариант
+    промпта; player_context — тренд/слабости игрока из ai.progress;
+    system_prompt_override — личные правила пользователя.
 
     Raises LLMError on invalid schema or network failure (when fallback=False);
     falls back to a heuristic local report only when fallback=True.
     """
     dataset = _compact_dataset(match, my_account_id, hero_slug=hero_slug)
+    prompt = build_coach_prompt(depth, player_context, system_prompt_override)
     try:
         raw = client.generate_coach_report(
-            COACH_SYSTEM_PROMPT, dataset, image_bytes=image_bytes
+            prompt, dataset, image_bytes=image_bytes
         )
     except LLMError as e:
         if fallback:
@@ -137,33 +240,172 @@ def analyze_match(match: NormalizedMatch | dict, my_account_id: int | None,
     return _validate_report(raw)
 
 
+# Модели-дублёры: если выбранная «остывает» (429) или отдаёт пустой ответ,
+# разбор автоматически пробует следующую рабочую — фича не должна падать
+# из-за одного залипшего провайдера.
+# deepseek-v4-flash — быстрый пул каналов владельца (лог: «куда бодрее идет»).
+FALLBACK_MODELS: tuple[str, ...] = (
+    "glm-5.3-flash", "deepseek-v4-flash", "glm-5.3", "kimi-k3",
+    "GLM-5.3", "GLM-5.3-flash", "Kimi-K3", "MiniMax-M3", "mimo-3",
+)
+
+
+def analyze_match_with_fallback(match: NormalizedMatch | dict,
+                                my_account_id: int | None,
+                                config,
+                                image_bytes: bytes | None = None,
+                                hero_slug: str | None = None,
+                                depth: str | None = DEFAULT_DEPTH,
+                                player_context: dict | None = None,
+                                on_attempt=None,
+                                on_chunk=None,
+                                total_timeout: float | None = None,
+                                attempt_timeout: float | None = None,
+                                ) -> tuple[CoachReport, str]:
+    """Разбор с автосменой модели при «остывании»/сбое.
+
+    Пробует config.model_name, затем модели из FALLBACK_MODELS (кроме
+    залипшей). Возвращает (отчёт, имя модели, которой это удалось).
+    Исключение — только если не сработала ни одна модель.
+
+    total_timeout — дедлайн на всю цепочку моделей (сек, общий);
+    attempt_timeout — потолок одной попытки. Остаток total_timeout
+    пробрасывается в сокет-таймаут клиента, поэтому после истечения окна
+    запрос к провайдеру реально обрывается, а не продолжает жечь квоту.
+    """
+    from .client import create_client
+
+    deadline = None if total_timeout is None else time.monotonic() + float(total_timeout)
+    tried: list[str] = []
+    chain: list[str] = []
+    for candidate in (config.model_name, *FALLBACK_MODELS):
+        if candidate and candidate not in chain:
+            chain.append(candidate)
+
+    last_exc: Exception | None = None
+    for model in chain:
+        if deadline is not None and time.monotonic() >= deadline:
+            last_exc = last_exc or LLMError(
+                f"Время разбора истекло ({int(total_timeout)}с) до ответа модели")
+            break
+        tried.append(model)
+        if on_attempt:
+            try:
+                on_attempt(model, tried)
+            except Exception:  # noqa: BLE001 — прогресс не критичен
+                pass
+        try:
+            cfg = config.model_copy(update={"model_name": model})
+            client = create_client(cfg)
+            if deadline is not None:
+                remaining = deadline - time.monotonic()
+                if attempt_timeout:
+                    remaining = min(remaining, float(attempt_timeout))
+                # Сокет не должен переживать дедлайн: max(5.0, ...) давал до
+                # 5с лишних после истечения окна — квота жглась в фоне.
+                client.request_timeout = max(1.0, remaining)
+            if on_chunk:
+                report = analyze_match_stream(
+                    match, my_account_id, client,
+                    image_bytes=image_bytes,
+                    on_chunk=on_chunk,
+                    hero_slug=hero_slug, depth=depth,
+                    player_context=player_context,
+                    system_prompt_override=cfg.system_prompt_override,
+                    deadline=deadline,
+                )
+            else:
+                report = analyze_match(
+                    match, my_account_id, client,
+                    image_bytes=image_bytes, fallback=False,
+                    hero_slug=hero_slug, depth=depth,
+                    player_context=player_context,
+                    system_prompt_override=cfg.system_prompt_override,
+                )
+            return report, model
+        except LLMError as e:
+            last_exc = e
+            continue
+        except Exception as e:  # noqa: BLE001 — пробуем следующую модель
+            last_exc = e
+            continue
+
+    raise LLMError(
+        f"Ни одна модель не ответила (пробовали: {', '.join(tried)}). "
+        f"Последняя ошибка: {last_exc}"
+    )
+
+
 def analyze_match_stream(match: NormalizedMatch | dict, my_account_id: int | None,
                          client: LLMClient,
                          image_bytes: bytes | None = None,
                          on_chunk=None,
-                         hero_slug: str | None = None) -> CoachReport:
+                         hero_slug: str | None = None,
+                         depth: str | None = DEFAULT_DEPTH,
+                         player_context: dict | None = None,
+                         system_prompt_override: str | None = None,
+                         deadline: float | None = None) -> CoachReport:
     """Streaming-вариант: on_chunk(received_chars) на каждый chunk.
 
+    depth / player_context / system_prompt_override — как в analyze_match.
     Исключения LLMError пробрасываются в API, чтобы UI выводил реальную
     ошибку нейросети вместо тихого шаблона.
+
+    deadline — монотонное время окончания окна разбора: повторный (не-стрим)
+    вызов после истечения дедлайна уже не может уложиться в окно, поэтому он
+    не делается — иначе квота тратится дважды.
     """
     dataset = _compact_dataset(match, my_account_id, hero_slug=hero_slug)
+    prompt = build_coach_prompt(depth, player_context, system_prompt_override)
+
+    def _clamp_socket() -> None:
+        """Остаток окна → сокет-таймаут перед КАЖДЫМ вызовом.
+
+        Без этого фолбэк после долгого стрима получал полный attempt_budget
+        заново (двойная оплата времени) и жил дольше дедлайна."""
+        if deadline is not None:
+            client.request_timeout = min(
+                client.request_timeout,
+                max(1.0, deadline - time.monotonic()))
+
     try:
+        _clamp_socket()
         raw = client.generate_coach_report_stream(
-            COACH_SYSTEM_PROMPT, dataset, image_bytes=image_bytes,
+            prompt, dataset, image_bytes=image_bytes,
             on_chunk=on_chunk,
         )
         return _validate_report(raw)
     except Exception as stream_err:
+        if deadline is not None and time.monotonic() >= deadline:
+            raise
         try:
+            _clamp_socket()
             raw_full = client.generate_coach_report(
-                COACH_SYSTEM_PROMPT, dataset, image_bytes=image_bytes
+                prompt, dataset, image_bytes=image_bytes
             )
             if on_chunk and raw_full:
                 on_chunk(len(raw_full))
             return _validate_report(raw_full)
         except Exception:
             raise stream_err
+
+
+def _clamp_performance_grade(grade: str) -> str:
+    """Приводит оценку LLM к валидному алфавиту S+|S|A|B|C.
+
+    LLM иногда присылает 'D', 'F', 'A-' и т.п. Вместо ошибки валидации
+    клампим значение: всё хуже C становится C, A-/A+ нормализуются к A/S.
+    Значения, не являющиеся осмысленными оценками ('ZZZ', пустая строка,
+    'oops'), не нормализуются — валидация потом честно упадёт с ошибкой.
+    """
+    g = grade.strip().upper()
+    if g in {"S+", "S", "A", "B", "C"}:
+        return g
+    if g in {"S++", "SS", "A+", "A-"}:
+        return "A" if g.startswith("A") else "S"
+    if g in {"D", "F", "E"}:
+        return "C"
+    return grade  # не трогаем мусор — пусть валидация даст осмысленную ошибку
 
 
 def _validate_report(raw: str) -> CoachReport:
@@ -174,12 +416,14 @@ def _validate_report(raw: str) -> CoachReport:
     except json.JSONDecodeError as e:
         raise LLMError(f"LLM returned invalid JSON: {e}; body: {parsed[:300]}") from e
 
+    if not isinstance(data, dict):
+        raise LLMError(f"LLM returned non-dict JSON ({type(data).__name__})")
+
     # Автоматическая локализация терминов, персонажей и предметов в тексте
-    if isinstance(data, dict):
-        data = localize_report_dict(data)
+    data = localize_report_dict(data)
 
     # Авто-нормализация бенчмарков: если LLM прислал 5535 вместо коэффициента 1.11
-    if isinstance(data, dict) and isinstance(data.get("benchmarks"), dict):
+    if isinstance(data.get("benchmarks"), dict):
         bm = data["benchmarks"]
         s10 = bm.get("souls_at_10")
         if isinstance(s10, (int, float)) and s10 > 10:
@@ -188,6 +432,70 @@ def _validate_report(raw: str) -> CoachReport:
             v = bm.get(k)
             if isinstance(v, (int, float)) and v > 10:
                 bm[k] = round(float(v) / 100.0, 2)
+    elif data.get("benchmarks") is None:
+        data["benchmarks"] = {}
+
+    # Авто-нормализация performance_grade и списков:
+    grade = data.get("performance_grade")
+    if isinstance(grade, str):
+        data["performance_grade"] = _clamp_performance_grade(grade)
+
+    concl = data.get("coach_conclusion")
+    if isinstance(concl, str):
+        data["coach_conclusion"] = [concl]
+    elif not isinstance(concl, list):
+        data["coach_conclusion"] = []
+
+    concl_list = data["coach_conclusion"]
+    if len(concl_list) > 5:
+        data["coach_conclusion"] = concl_list[:5]
+    elif len(concl_list) < 3:
+        fallbacks = [
+            "Оптимизируйте темп фарма на линии и добивание душ.",
+            "Следите за миникартой и избегайте изолированных смертей.",
+            "Адаптируйте закупку предметов под сетап соперников.",
+        ]
+        for fb in fallbacks:
+            if len(data["coach_conclusion"]) >= 3:
+                break
+            data["coach_conclusion"].append(fb)
+
+    # Нормализация key_mistake: если строка вместо объекта
+    if isinstance(data.get("key_mistake"), str):
+        data["key_mistake"] = {
+            "time": "10:00",
+            "location": "Карта",
+            "event": data["key_mistake"],
+            "why_fatal": "Потеря преимущества по карте",
+            "correct_play": "Держаться рядом с союзниками и не рисковать в одиночку",
+        }
+    elif not isinstance(data.get("key_mistake"), dict):
+        data["key_mistake"] = {}
+
+    # Нормализация lane_comparison: если строка, пустой dict или False
+    if isinstance(data.get("lane_comparison"), str):
+        data["lane_comparison"] = {"verdict": data["lane_comparison"]}
+    elif data.get("lane_comparison") is False or data.get("lane_comparison") == {}:
+        data["lane_comparison"] = None
+
+    # Нормализация списков (death_breakdown, purchase_timings, teamfights, item_corrections):
+    for list_key, text_field in (
+        ("death_breakdown", "cause"),
+        ("purchase_timings", "item"),
+        ("teamfights", "outcome"),
+        ("item_corrections", "recommended"),
+    ):
+        items = data.get(list_key)
+        if isinstance(items, list):
+            cleaned = []
+            for item in items:
+                if isinstance(item, str):
+                    cleaned.append({text_field: item})
+                elif isinstance(item, dict):
+                    cleaned.append(item)
+            data[list_key] = cleaned
+        elif items is not None:
+            data[list_key] = []
 
     try:
         return CoachReport.model_validate(data)
@@ -318,6 +626,7 @@ def _compact_dataset(match: NormalizedMatch | dict,
     allies = [_hero_ru(p.hero_id_slug) for p in match.players if me is not None and p.team == me.team and p.account_id != me.account_id]
     pace_info = evaluate_souls_pace(souls_10, me.hero_id_slug if me else None)
     suggested_counters = get_counter_recommendations_for_enemies(enemies_raw)
+    lane_opponent = _lane_opponent(match, me)
 
     return {
         "match_id": match.match_id,
@@ -337,6 +646,7 @@ def _compact_dataset(match: NormalizedMatch | dict,
         "allied_heroes": allies_raw,
         "allied_heroes_ru": allies,
         "suggested_counters": suggested_counters,
+        "lane_opponent": lane_opponent,
         "networth_curve_20pts": my_curve[:15],
         "items_top5": items,
         "items_timeline": items_all,
@@ -366,6 +676,38 @@ def _events(match: NormalizedMatch) -> list[dict]:
     return events
 
 
+def _lane_opponent(match: NormalizedMatch, me) -> Optional[dict]:
+    """Эвристика соперника по линии: враг, чаще всего убивавший игрока.
+
+    В метаданных нет явного назначения линий, поэтому «соперник по линии»
+    выводится из тимлайна смертей: убийца с максимальным числом киллов по
+    игроку — самый вероятный оппонент линии. Fallback — первый враг в списке.
+    """
+    if me is None:
+        return None
+    killer_counts: dict[str, int] = {}
+    for d in me.deaths_timeline:
+        if d.killer_hero:
+            killer_counts[d.killer_hero] = killer_counts.get(d.killer_hero, 0) + 1
+    foes = [p for p in match.players if p.team != me.team]
+    if not foes:
+        return None
+    top = max(killer_counts, key=killer_counts.get) if killer_counts else None
+    foe = next((p for p in foes if p.hero_id_slug == top), None) if top else None
+    if foe is None:
+        foe = foes[0]
+    souls_10 = 0.0
+    for pt in foe.networth_curve:
+        if pt.t <= 600:
+            souls_10 = float(pt.networth)
+    return {
+        "hero": _hero_ru(foe.hero_id_slug),
+        "kda": f"{foe.kills}/{foe.deaths}/{foe.assists}",
+        "souls_at_10": souls_10,
+        "net_worth": foe.net_worth,
+    }
+
+
 def compute_match_benchmarks(match: NormalizedMatch, player) -> dict:
     """Вычисляет точные математические бенчмарки матча из телеметрии.
 
@@ -382,6 +724,7 @@ def compute_match_benchmarks(match: NormalizedMatch, player) -> dict:
             "target_souls": 4000,
             "team_kills": 0,
             "player_ka": 0,
+            "early_deaths": 0,
         }
 
     souls_10 = 0.0
@@ -399,6 +742,9 @@ def compute_match_benchmarks(match: NormalizedMatch, player) -> dict:
     player_ka = player.kills + player.assists
     participation = round(player_ka / max(1, team_kills), 2)
 
+    # V2.0 §4: смерти до 10-й минуты — база сравнения «с собой на герое».
+    early_deaths = sum(1 for d in player.deaths_timeline if d.t <= 600)
+
     return {
         "souls_at_10": souls_ratio,
         "lane_efficiency": lane_eff,
@@ -407,6 +753,7 @@ def compute_match_benchmarks(match: NormalizedMatch, player) -> dict:
         "target_souls": int(target),
         "team_kills": int(team_kills),
         "player_ka": int(player_ka),
+        "early_deaths": int(early_deaths),
     }
 
 

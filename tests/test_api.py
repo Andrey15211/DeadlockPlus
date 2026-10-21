@@ -344,13 +344,13 @@ def test_import_valid_codec_unknown_item_id():
 
 
 def test_ai_config_multi_provider_roundtrip():
-    """Тест поддержки мультивендорности в /api/ai/config (OpenAI, Anthropic, Gemini, DeepSeek)."""
-    # 1. Смена на OpenAI: дефолтная модель gpt-4o
+    """Тест поддержки мультивендорности в /api/ai/config (OpenAI, Anthropic, DeepSeek)."""
+    # 1. Смена на OpenAI: дефолтная модель glm-5.3-flash (V2.0 М4, роутер)
     r = _client.post("/api/ai/config", json={"provider": "openai", "api_key": "sk-test12345678"})
     assert r.status_code == 200
     cfg = _client.get("/api/ai/config").json()
     assert cfg["provider"] == "openai"
-    assert cfg["model_name"] == "gpt-4o"
+    assert cfg["model_name"] == "glm-5.3-flash"
     assert cfg["has_key"] is True
 
     # 2. Смена на Anthropic: дефолтная модель claude-3-7-sonnet-latest
@@ -360,12 +360,26 @@ def test_ai_config_multi_provider_roundtrip():
     assert cfg["provider"] == "anthropic"
     assert cfg["model_name"] == "claude-3-7-sonnet-latest"
 
-    # 3. Смена на Gemini с кастомной моделью
-    r = _client.post("/api/ai/config", json={"provider": "gemini", "model_name": "gemini-2.5-flash"})
+    # Возвращаем дефолт владельца (glm-5.3-flash, роутер) — тест не должен
+    # оставлять прод-БД на легаси-конфиге (V2.0 М4).
+    _client.post("/api/ai/config", json={
+        "provider": "openai", "model_name": "glm-5.3-flash",
+        "base_url": "http://127.0.0.1:8089/v1",
+        "reasoning_effort": "low",
+    })
+
+
+def test_ai_config_reasoning_effort_roundtrip():
+    """Тест сохранения и чтения reasoning_effort (off/low/medium/high)."""
+    r = _client.post("/api/ai/config", json={"reasoning_effort": "off"})
     assert r.status_code == 200
     cfg = _client.get("/api/ai/config").json()
-    assert cfg["provider"] == "gemini"
-    assert cfg["model_name"] == "gemini-2.5-flash"
+    assert cfg["reasoning_effort"] == "off"
+
+    r = _client.post("/api/ai/config", json={"reasoning_effort": "low"})
+    assert r.status_code == 200
+    cfg = _client.get("/api/ai/config").json()
+    assert cfg["reasoning_effort"] == "low"
 
 
 def test_match_analyze_strict_key_requirement_and_offline(monkeypatch):
@@ -513,11 +527,11 @@ def test_buy_sound_asset_served():
 
 
 def test_background_music_asset_served():
-    """Проверка отдачи фоновой музыки background_music.mp3 с MIME audio/mpeg."""
-    resp = _client.get("/assets/sounds/background_music.mp3")
+    """Проверка отдачи фоновой музыки background_music.opus с MIME audio/ogg."""
+    resp = _client.get("/assets/sounds/background_music.opus")
     assert resp.status_code == 200
-    assert resp.headers.get("content-type") == "audio/mpeg"
-    assert len(resp.content) == 28703808
+    assert resp.headers.get("content-type") == "audio/ogg"
+    assert len(resp.content) == 14051526
 
 
 
@@ -575,6 +589,219 @@ def test_draft_parse_screenshot_requires_key_or_handles_call():
     # Некорректный base64
     resp_bad = _client.post("/api/draft/parse-screenshot", json={"image_b64": "!!!not_base64!!!"})
     assert resp_bad.status_code in (422, 502)
+
+
+# --- V2.0: глубина разбора / переразбор / прогресс --------------------------
+
+
+def _make_raw_match(match_id):
+    return {
+        "match_id": match_id,
+        "match_info": {
+            "players": [
+                {"account_id": 11, "hero_id": 1, "team": 0, "kills": 5, "deaths": 2,
+                 "assists": 8, "level": 14, "net_worth": 18000,
+                 "stats": [{"time_stamp_s": 600, "net_worth": 4500}]},
+                {"account_id": 22, "hero_id": 2, "team": 1, "kills": 10, "deaths": 1,
+                 "assists": 4, "level": 16, "net_worth": 24000,
+                 "stats": [{"time_stamp_s": 600, "net_worth": 6200}]},
+            ],
+            "winning_team": 0,
+            "duration_s": 1500,
+        },
+    }
+
+
+def test_match_analyze_invalid_depth_422(monkeypatch):
+    """Неизвестная глубина -> 422 ещё до сети/LLM (offline тоже)."""
+    from deadlockforge.engine import match_loader as ml
+
+    raw = _make_raw_match("depth-bad-1")
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "")
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: raw)
+    monkeypatch.setattr(ml, "load_hero_map", lambda: {1: "infernus", 2: "seven"})
+    resp = _client.post(
+        "/api/match/analyze",
+        json={"match_id": "depth-bad-1", "account_id": 11,
+              "mode": "offline", "depth": "ultra"},
+    )
+    assert resp.status_code == 422
+    assert "Неизвестная глубина" in resp.json()["detail"]
+
+
+def test_match_reanalyze_invalid_depth_422(monkeypatch):
+    """Переразбор с неизвестной глубиной -> 422."""
+    from deadlockforge.engine import match_loader as ml
+
+    raw = _make_raw_match("depth-bad-2")
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "")
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: raw)
+    monkeypatch.setattr(ml, "load_hero_map", lambda: {1: "infernus", 2: "seven"})
+    first = _client.post("/api/match/analyze", json={
+        "match_id": "depth-bad-2", "account_id": 11, "mode": "offline",
+    })
+    assert first.status_code == 200
+    resp = _client.post(
+        "/api/match/reviews/depth-bad-2/reanalyze",
+        json={"mode": "offline", "depth": "insane"},
+    )
+    assert resp.status_code == 422
+    assert "Неизвестная глубина" in resp.json()["detail"]
+
+
+def test_match_analyze_offline_accepts_all_depths(monkeypatch):
+    """Все три глубины проходят offline-разбор и возвращают MatchReview."""
+    from deadlockforge.engine import match_loader as ml
+
+    raw = _make_raw_match("depth-offline-1")
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "")
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: raw)
+    monkeypatch.setattr(ml, "load_hero_map", lambda: {1: "infernus", 2: "seven"})
+    for depth in ("short", "medium", "deep"):
+        resp = _client.post(
+            "/api/match/analyze",
+            json={"match_id": "depth-offline-1", "account_id": 11,
+                  "mode": "offline", "depth": depth},
+        )
+        assert resp.status_code == 200, f"depth={depth}: {resp.text}"
+        review = resp.json()
+        assert review["match_id"] == "depth-offline-1"
+        assert review["hero_id"] == "infernus"
+        assert review["kda"] == "5/2/8"
+
+
+def test_match_analyze_ai_mode_passes_depth_and_player_context(monkeypatch):
+    """В AI-режиме depth и player_context доезжают до coach.analyze_match."""
+    from deadlockforge.engine import match_loader as ml
+    from deadlockforge.ai import coach as coach_mod
+    from deadlockforge.models import Benchmarks, CoachReport, KeyMistake
+
+    raw = _make_raw_match("depth-ai-1")
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "sk-test-ai-mode-12345678")
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: raw)
+    monkeypatch.setattr(ml, "load_hero_map", lambda: {1: "infernus", 2: "seven"})
+
+    report = CoachReport(
+        performance_grade="A",
+        key_mistake=KeyMistake(time="05:00", location="оранжевая линия",
+                               event="e", why_fatal="f", correct_play="c"),
+        coach_conclusion=["раз", "два", "три"],
+        benchmarks=Benchmarks(souls_at_10=1.1, lane_efficiency=1.0,
+                              fight_participation=0.5),
+    )
+    captured: dict = {}
+
+    def fake_analyze_match(match, account_id, client, **kwargs):
+        captured.update({"account_id": account_id, "kwargs": kwargs})
+        return report
+
+    monkeypatch.setattr(coach_mod, "analyze_match", fake_analyze_match)
+    resp = _client.post(
+        "/api/match/analyze",
+        json={"match_id": "depth-ai-1", "account_id": 11, "depth": "deep"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert captured["account_id"] == 11
+    assert captured["kwargs"]["depth"] == "deep"
+    assert isinstance(captured["kwargs"].get("player_context"), dict)
+    assert "trend" in captured["kwargs"]["player_context"]
+    review = resp.json()
+    assert review["match_id"] == "depth-ai-1"
+    assert review["performance_grade"] == "A"
+    # прогресс «с собой» приложен к ответу
+    assert isinstance(review.get("progress"), dict)
+    assert "trend" in review["progress"]
+
+
+def test_match_reanalyze_rebuilds_review(monkeypatch):
+    """Переразбор сохранённого матча: 200, разбор обновился и сохранился."""
+    from deadlockforge.engine import match_loader as ml
+
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "")
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: _make_raw_match(mid))
+    monkeypatch.setattr(ml, "load_hero_map", lambda: {1: "infernus", 2: "seven"})
+
+    # Первый разбор -> сохраняется в БД
+    r1 = _client.post("/api/match/analyze", json={
+        "match_id": "reanalyze-1", "account_id": 11,
+        "mode": "offline", "depth": "short",
+    })
+    assert r1.status_code == 200
+
+    # Переразбор с другой глубиной/точкой зрения
+    r2 = _client.post("/api/match/reviews/reanalyze-1/reanalyze", json={
+        "account_id": 11, "mode": "offline", "depth": "deep",
+    })
+    assert r2.status_code == 200, r2.text
+    review = r2.json()
+    assert review["match_id"] == "reanalyze-1"
+    assert review["hero_id"] == "infernus"
+    assert review["kda"] == "5/2/8"
+
+    # В БД лежит обновлённый разбор (upsert, а не дубль)
+    stored = _client.get("/api/match/reviews?limit=200").json()
+    versions = [r for r in stored if r["match_id"] == "reanalyze-1"]
+    assert len(versions) == 1
+    assert versions[0]["performance_grade"] == review["performance_grade"]
+
+
+def test_match_reanalyze_resolves_perspective_from_saved_hero(monkeypatch):
+    """Без account_id переразбор берёт точку зрения героя из сохранённого разбора."""
+    from deadlockforge.engine import match_loader as ml
+
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "")
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: _make_raw_match(mid))
+    monkeypatch.setattr(ml, "load_hero_map", lambda: {1: "infernus", 2: "seven"})
+
+    r1 = _client.post("/api/match/analyze", json={
+        "match_id": "reanalyze-2", "hero_slug": "seven", "mode": "offline",
+    })
+    assert r1.status_code == 200
+    assert r1.json()["hero_id"] == "seven"
+
+    r2 = _client.post("/api/match/reviews/reanalyze-2/reanalyze", json={
+        "mode": "offline", "depth": "deep",
+    })
+    assert r2.status_code == 200, r2.text
+    assert r2.json()["hero_id"] == "seven"
+    assert r2.json()["kda"] == "10/1/4"
+
+
+def test_match_reanalyze_unknown_match_404(monkeypatch):
+    """Неизвестный match_id -> 404 до сетевых вызовов."""
+    from deadlockforge.engine import match_loader as ml
+
+    called = {"fetch": 0}
+
+    def fake_fetch(mid, db=None):
+        called["fetch"] += 1
+        raise AssertionError("не должен идти в сеть")
+
+    monkeypatch.setattr(ml, "fetch_match", fake_fetch)
+    resp = _client.post(
+        "/api/match/reviews/no-such-match-xyz/reanalyze", json={"mode": "offline"})
+    assert resp.status_code == 404
+    assert called["fetch"] == 0
+
+
+def test_match_reanalyze_screenshot_rejected(monkeypatch):
+    """Скриншот-разборы (без телеметрии) переразобрать нельзя -> 404."""
+    from deadlockforge.engine import match_loader as ml
+
+    monkeypatch.setenv("DEADLOCKFORGE_AI_KEY", "")
+    monkeypatch.setattr(ml, "parse_screenshot", lambda img: {"mode": "screenshot"})
+    monkeypatch.setattr(ml, "fetch_match", lambda mid, db=None: {})
+
+    r = _client.post("/api/match/analyze", json={
+        "image_b64": "QUJD", "mode": "offline",
+    })
+    assert r.status_code == 200
+    mid = r.json()["match_id"]
+    assert mid.startswith("screenshot-")
+
+    rr = _client.post(f"/api/match/reviews/{mid}/reanalyze", json={"mode": "offline"})
+    assert rr.status_code == 404
+    assert "переразбор невозможен" in rr.json()["detail"]
 
 
 

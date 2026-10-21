@@ -68,6 +68,12 @@ def json_route(data) -> bytes:
     return json.dumps(data).encode("utf-8")
 
 
+@pytest.fixture(autouse=True)
+def _no_retry_sleep(monkeypatch):
+    """Мок time.sleep для всех ingest-тестов: retry-паузы _http_get не нужны."""
+    monkeypatch.setattr("time.sleep", lambda s: None)
+
+
 @pytest.fixture()
 def assets_dir(tmp_path) -> Path:
     return tmp_path / "web" / "assets"
@@ -139,7 +145,6 @@ def test_cdn_hero_all_404_goes_to_errors_with_retries(monkeypatch, assets_dir):
     monkeypatch.delenv("DEADLOCK_VPK", raising=False)
     loader = URLLoader(routes)
     monkeypatch.setattr(urllib.request, "urlopen", loader)
-    monkeypatch.setattr("time.sleep", lambda s: None)
     report = AssetIngest(assets_dir).sync(["inferno"])
 
     inferno_requests = [r for r in loader.requests

@@ -1,0 +1,33 @@
+{
+ "id": "nurse",
+ "name": "Медсестра Хэрроу",
+ "name_en": "Nurse Harrow",
+ "portrait": "assets/heroes/nurse.webp",
+ "intro": "Если она выпускает с лечением или спасением, стартовый план — давить на источник этой поддержки и атаковать, когда её защита недоступна.",
+ "roles": [],
+ "role_text": [],
+ "threats": [],
+ "groups": [],
+ "group_tags": [],
+ "glance": [],
+ "note": "",
+ "top": [],
+ "stages": {
+  "early": [],
+  "mid": [],
+  "late": []
+ },
+ "problems": [],
+ "why": {},
+ "stage_of": {},
+ "lane": [],
+ "fight": [],
+ "faq": [],
+ "related": [],
+ "related_guides": [],
+ "helper": {
+  "summary": "",
+  "sits": [],
+  "tip": ""
+ }
+}

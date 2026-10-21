@@ -1,13 +1,14 @@
 """Universal multi-model LLM client. stdlib urllib only, no SDK.
 
 Supported providers (see create_client):
-    deepseek, openai, gemini, anthropic.
+    deepseek, openai, anthropic.
+(Gemini убран полностью по решению владельца: недоступен по API.)
 
 All HTTP goes through urllib.request.Request + urlopen. Normal reports use
-the 120s LLM_TIMEOUT (long thinking models); test_connection() overrides the
-per-client request_timeout with the short TEST_TIMEOUT so a 'ping' can never
-hang the /api/ai/test endpoint. Errors raise LLMError with a readable message
-and, when available, the provider's JSON error body.
+the 100s LLM_TIMEOUT; test_connection() overrides the per-client
+request_timeout with the short TEST_TIMEOUT so a 'ping' can never hang the
+/api/ai/test endpoint. Errors raise LLMError with a readable message and,
+when available, the provider's JSON error body.
 """
 
 from __future__ import annotations
@@ -24,13 +25,20 @@ from typing import Optional
 
 from ..models import AIConfig
 
-LLM_TIMEOUT = 60
-TEST_TIMEOUT = 10  # /api/ai/test ping: bounded, never hangs the endpoint
+# V2.0 М4 + фикс «таймаут 200с»: glm-5.3-flash на роутере пользователя
+# стабильно разбирает тяжёлый матч за ~63.5 с (thinking disabled, валидный
+# CoachReport; замер match 113150202). glm-5.3 — 87.9 с (на грани).
+# Лимит 120 с утверждён владельцем. Старый лимит 60/65 с резал валидные разборы.
+# Потолок вывода LLM_MAX_TOKENS=8000: без него GLM пишет 7–10к токенов +
+# reasoning и генерация уходит за 100–200с (логи владельца). С лаконичным
+# промптом реальный ответ — 1–2к токенов (30–40с).
+LLM_TIMEOUT = 180  # 3 minutes for heavy reasoning / deep diving models
+LLM_MAX_TOKENS = 8000  # жёсткий потолок вывода: не даём раздувать ответ
+TEST_TIMEOUT = 180  # /api/ai/test ping: 180s (3m) for heavy reasoning models on failover router
 
 DEFAULT_BASE_URLS: dict[str, str] = {
     "deepseek": "https://api.deepseek.com",
     "openai": "https://api.openai.com/v1",
-    "gemini": "https://generativelanguage.googleapis.com/v1beta",
     "anthropic": "https://api.anthropic.com",
 }
 
@@ -38,6 +46,24 @@ DEFAULT_REQUEST_HEADERS: dict[str, str] = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) DeadlockForge/1.6",
     "Connection": "close",
 }
+
+# V2.0 М5 (фикс «разбор дольше 60с»): потолок вывода — функция от уровня
+# размышлений, а не константа. Жёсткие 16k токенов на reasoning-моделях
+# (glm/kimi/deepseek-v4) давали 70–120с генерации даже в «Коротком» режиме,
+# где thinking отключён. Лаконичный промпт реально даёт 1–2к токенов.
+OUTPUT_TOKEN_BUDGET: dict[str, int] = {
+    "off": 3000, "low": 6000, "medium": 10000, "high": 16000,
+}
+
+
+def output_token_budget(config) -> int:
+    """Потолок вывода под выбранный reasoning_effort / enable_thinking."""
+    effort = (getattr(config, "reasoning_effort", None) or "").strip().lower()
+    if effort in OUTPUT_TOKEN_BUDGET:
+        return OUTPUT_TOKEN_BUDGET[effort]
+    if not getattr(config, "enable_thinking", True):
+        return OUTPUT_TOKEN_BUDGET["off"]
+    return OUTPUT_TOKEN_BUDGET["medium"]
 
 TRANSIENT_EXCEPTIONS = (
     http.client.RemoteDisconnected,
@@ -81,6 +107,24 @@ def _is_transient_error(exc: BaseException, detail: str = "") -> bool:
             "eof occurred in violation of protocol", "10054", "10053", "10060",
         ))
     return False
+
+
+def _is_timeout_error(exc: BaseException) -> bool:
+    """True if the failure is a socket/reply timeout.
+
+    Timeouts of LLM generation mean the model is still writing (slow, big
+    output) — re-sending the very same request doubles the wall time (120+120
+    = 240s) instead of failing over to the next model. Retry must skip these.
+    """
+    if isinstance(exc, TimeoutError):
+        return True
+    if isinstance(exc, urllib.error.URLError):
+        reason = exc.reason
+        if isinstance(reason, BaseException):
+            return _is_timeout_error(reason)
+        return "timed out" in str(reason).lower()
+    msg = str(exc).lower()
+    return "timed out" in msg or "timeout" in msg
 
 
 class LLMError(RuntimeError):
@@ -141,7 +185,7 @@ def _post_json(url: str, headers: dict[str, str], payload: dict,
                 if "max_completion_tokens" in current_payload:
                     current_payload["max_completion_tokens"] = 2048
                 continue
-            if _is_transient_error(e, detail) and attempt < max_retries:
+            if _is_transient_error(e, detail) and not _is_timeout_error(e) and attempt < max_retries:
                 time.sleep(retry_delay)
                 continue
             friendly = _friendly_http_detail(e, detail)
@@ -151,7 +195,9 @@ def _post_json(url: str, headers: dict[str, str], payload: dict,
         except Exception as e:
             if isinstance(e, LLMError):
                 raise
-            if _is_transient_error(e) and attempt < max_retries:
+            # Таймаут НЕ ретраим: модель уже генерила и, скорее всего, снова
+            # упрётся в лимит; уходим на следующую модель из fallback-цепочки.
+            if _is_transient_error(e) and not _is_timeout_error(e) and attempt < max_retries:
                 time.sleep(retry_delay)
                 continue
             if isinstance(e, urllib.error.URLError):
@@ -204,11 +250,14 @@ def _stream_chat_completions(url: str, headers: dict[str, str],
                         continue
                     delta = (chunk.get("choices") or [{}])[0].get("delta", {})
                     piece = delta.get("content") or ""
+                    reasoning_piece = delta.get("reasoning_content") or ""
                     if piece:
                         parts.append(piece)
                         received += len(piece)
                         if on_chunk:
                             on_chunk(received)
+                    elif reasoning_piece and on_chunk:
+                        on_chunk(received + max(1, len(reasoning_piece) // 4))
 
             result_text = "".join(parts)
             if not result_text:
@@ -238,7 +287,7 @@ def _stream_chat_completions(url: str, headers: dict[str, str],
                     stream_payload["max_completion_tokens"] = 2048
                 body = json.dumps(stream_payload).encode("utf-8")
                 continue
-            if _is_transient_error(e, detail) and attempt < max_retries:
+            if _is_transient_error(e, detail) and not _is_timeout_error(e) and attempt < max_retries:
                 time.sleep(retry_delay)
                 continue
             friendly = _friendly_http_detail(e, detail)
@@ -248,7 +297,7 @@ def _stream_chat_completions(url: str, headers: dict[str, str],
         except Exception as e:
             if isinstance(e, LLMError):
                 raise
-            if _is_transient_error(e):
+            if _is_transient_error(e) and not _is_timeout_error(e):
                 if not parts and attempt < max_retries:
                     time.sleep(retry_delay)
                     continue
@@ -324,7 +373,7 @@ class LLMClient(ABC):
         payload: dict = {
             "model": model,
             "messages": messages,
-            "max_tokens": 8000,
+            "max_tokens": min(LLM_MAX_TOKENS, output_token_budget(self.config)),
             "response_format": {"type": "json_object"},
         }
         return payload, messages
@@ -378,15 +427,33 @@ class OpenAIClient(LLMClient):
 
     def _resolve_model(self) -> str:
         model = self.config.model_name
-        if "zexkora" in self.base_url:
-            if not model or model in ("default", "") or model == "gemini-3.8-flash" or model == "gemini-2.5-flash":
-                return "gemini-3.8-flash-low"
-        return model or "gpt-4o"
+        # V2.0 М4 (фикс «ИИ не работает после 65 секунд»): OpenAIClient
+        # обслуживает роутеры / v1-эндпоинты (локальный 127.0.0.1:8089,
+        # zexkora и т.п.). Легаси-gemini имена в БД (gemini-2.5-flash,
+        # gemini-3.8-flash*) — устаревшие остатки старых настроек: роутер их
+        # не знает и разбор падал по таймауту. На роутере резолвим их в
+        # рабочую модель glm-5.3 (бенчмарк: 67 с, валидный отчёт).
+        _LEGACY_BROKEN = ("default", "", "gemini-2.5-flash", "gemini-2.0-flash",
+                          "gemini-3.8-flash", "gemini-3.8-flash-low")
+        if "generativelanguage.googleapis.com" not in self.base_url:
+            if not model or model in _LEGACY_BROKEN:
+                return "glm-5.3-flash"
+        return model or "glm-5.3-flash"
 
     def _is_reasoning_model(self) -> bool:
         name = self._resolve_model().lower()
-        return name.startswith(("o1", "o3", "o4")) or bool(
-            name.startswith("o") and name[1:2].isdigit()
+        return (
+            name.startswith(("o1", "o3", "o4"))
+            or bool(name.startswith("o") and name[1:2].isdigit())
+            or "-reasoning" in name
+            or "-sol" in name
+            or "reasoner" in name
+            or "deepseek-v4" in name
+            or "deepseek-r1" in name
+            or "qwq" in name
+            or "glm" in name
+            or "kimi" in name
+            or "minimax" in name
         )
 
     def generate_coach_report(self, prompt: str, match_data: dict,
@@ -409,18 +476,45 @@ class OpenAIClient(LLMClient):
             "messages": messages,
             "response_format": {"type": "json_object"},
         }
+        effort = getattr(self.config, "reasoning_effort", None)
+        enable_thinking = getattr(self.config, "enable_thinking", True)
+        if effort in ("low", "medium", "high"):
+            enable_thinking = True
+        budget = output_token_budget(self.config)
+
         if self._is_reasoning_model():
-            # o-models: no temperature, max_completion_tokens instead.
-            payload["max_completion_tokens"] = 8000
+            # o-models / deepseek reasoning / glm / kimi / minimax: max_completion_tokens
+            payload["max_completion_tokens"] = budget
+            if effort in ("low", "medium", "high"):
+                payload["reasoning_effort"] = effort
+            elif not enable_thinking or effort == "off":
+                payload["reasoning_effort"] = "off"
+                payload["thinking"] = {"type": "disabled"}
         else:
             payload["temperature"] = self.config.temperature
-            payload["max_tokens"] = 8000
+            payload["max_tokens"] = min(LLM_MAX_TOKENS, budget)
+            if effort in ("low", "medium", "high"):
+                payload["reasoning_effort"] = effort
+            elif not enable_thinking or effort == "off":
+                payload["thinking"] = {"type": "disabled"}
+                payload["reasoning_effort"] = "off"
+
         headers = {}
         if self.config.api_key:
             headers["Authorization"] = f"Bearer {self.config.api_key}"
         data = _post_json(f"{self.base_url}/chat/completions", headers, payload,
                           timeout=self.request_timeout)
-        return _choice_content(data)
+        content = _choice_content(data)
+        if not content.strip():
+            # Пустой content на длинном JSON-промпте: ретрай без response_format
+            # и с отключённым thinking (лечит сбой роутера).
+            retry = dict(payload)
+            retry.pop("response_format", None)
+            retry["thinking"] = {"type": "disabled"}
+            data = _post_json(f"{self.base_url}/chat/completions", headers, retry,
+                              timeout=self.request_timeout)
+            content = _choice_content(data)
+        return content
 
     def generate_coach_report_stream(self, prompt: str, match_data: dict,
                                      image_bytes: bytes | None = None,
@@ -440,177 +534,34 @@ class OpenAIClient(LLMClient):
         payload = {"model": self._resolve_model(), "messages": messages,
                    "response_format": {"type": "json_object"},
                    "stream": True}
+        effort = getattr(self.config, "reasoning_effort", None)
+        enable_thinking = getattr(self.config, "enable_thinking", True)
+        if effort in ("low", "medium", "high"):
+            enable_thinking = True
+        budget = output_token_budget(self.config)
+
         if self._is_reasoning_model():
-            payload["max_completion_tokens"] = 8000
+            payload["max_completion_tokens"] = budget
+            if effort in ("low", "medium", "high"):
+                payload["reasoning_effort"] = effort
+            elif not enable_thinking or effort == "off":
+                payload["reasoning_effort"] = "off"
+                payload["thinking"] = {"type": "disabled"}
         else:
             payload["temperature"] = self.config.temperature
-            payload["max_tokens"] = 8000
+            payload["max_tokens"] = min(LLM_MAX_TOKENS, budget)
+            if effort in ("low", "medium", "high"):
+                payload["reasoning_effort"] = effort
+            elif not enable_thinking or effort == "off":
+                payload["thinking"] = {"type": "disabled"}
+                payload["reasoning_effort"] = "off"
+
         headers = {}
         if self.config.api_key:
             headers["Authorization"] = f"Bearer {self.config.api_key}"
         return _stream_chat_completions(
             f"{self.base_url}/chat/completions", headers, payload,
             timeout=self.request_timeout, on_chunk=on_chunk)
-
-
-class GeminiClient(LLMClient):
-    provider = "gemini"
-    supports_vision = True
-    supports_thinking = True
-
-    def __init__(self, config: AIConfig) -> None:
-        super().__init__(config)
-        if self.config.api_key.startswith("sk-") and (
-            not self.base_url or self.base_url == DEFAULT_BASE_URLS.get("gemini", "").rstrip("/")
-        ):
-            self.base_url = "https://api.zexkora.cc/v1"
-
-    def _resolve_model(self) -> str:
-        model = self.config.model_name
-        if "zexkora" in self.base_url:
-            # Zexkora proxy routes OpenAI-compatible Gemini calls only via gemini-3.8-flash-low.
-            # Any gemini variant or legacy model (e.g. 2.5-flash) must resolve to 3.8-flash-low.
-            if not model or model in ("default", ""):
-                return "gemini-3.8-flash-low"
-            return model
-        return model or "gemini-2.5-flash"
-
-    def generate_coach_report(self, prompt: str, match_data: dict,
-                              image_bytes: bytes | None = None) -> str:
-        if "zexkora" in self.base_url or self.base_url.endswith("/v1"):
-            payload, _ = self._chat_payload(prompt, match_data, image_bytes)
-            payload["temperature"] = self.config.temperature
-            payload["max_tokens"] = 2048
-            headers = {}
-            if self.config.api_key:
-                headers["Authorization"] = f"Bearer {self.config.api_key}"
-            timeout = min(self.request_timeout, 60) if "zexkora" in self.base_url else self.request_timeout
-            data = _post_json(f"{self.base_url}/chat/completions", headers, payload,
-                              timeout=timeout)
-            return _choice_content(data)
-
-        text = (prompt + "\n\nДанные матча (JSON):\n"
-                + json.dumps(match_data, ensure_ascii=False, default=str)[:60000])
-        parts: list[dict] = [{"text": text}]
-        b64 = self._image_b64(image_bytes)
-        if b64 is not None:
-            parts.append({
-                "inline_data": {"mime_type": "image/png", "data": b64},
-            })
-        payload: dict = {
-            "contents": [{"parts": parts}],
-            "generationConfig": {
-                "temperature": self.config.temperature,
-                "response_mime_type": "application/json",
-            },
-        }
-        if self.config.enable_thinking and not ("flash" in self.config.model_name.lower() and "zexkora" in self.base_url):
-            payload["generationConfig"]["thinkingConfig"] = {
-                "thinkingBudget": self.config.thinking_budget,
-            }
-
-        model = self._resolve_model()
-        url = (f"{self.base_url}/models/{model}"
-               f":generateContent?key={self.config.api_key}")
-        data = _post_json(url, {}, payload, timeout=self.request_timeout)
-        try:
-            parts_out = data["candidates"][0]["content"]["parts"]
-        except (KeyError, IndexError, TypeError) as e:
-            raise LLMError(f"unexpected gemini response: {json.dumps(data)[:300]}") from e
-        return "".join(p.get("text", "") for p in parts_out)
-
-    def generate_coach_report_stream(self, prompt: str, match_data: dict,
-                                     image_bytes: bytes | None = None,
-                                     on_chunk=None) -> str:
-        """SSE streaming для Gemini через :streamGenerateContent?alt=sse или /chat/completions."""
-        if "zexkora" in self.base_url:
-            # Zexkora proxies drop long-lived SSE connections mid-stream; fast POST completes in ~6s.
-            raw = self.generate_coach_report(prompt, match_data, image_bytes=image_bytes)
-            if on_chunk and raw:
-                on_chunk(len(raw))
-            return raw
-
-        if self.base_url.endswith("/v1"):
-            payload, _ = self._chat_payload(prompt, match_data, image_bytes)
-            payload["temperature"] = self.config.temperature
-            headers = {}
-            if self.config.api_key:
-                headers["Authorization"] = f"Bearer {self.config.api_key}"
-            return _stream_chat_completions(
-                f"{self.base_url}/chat/completions", headers, payload,
-                timeout=self.request_timeout, on_chunk=on_chunk)
-        text = (prompt + "\n\nДанные матча (JSON):\n"
-                + json.dumps(match_data, ensure_ascii=False, default=str)[:60000])
-        parts: list[dict] = [{"text": text}]
-        b64 = self._image_b64(image_bytes)
-        if b64 is not None:
-            parts.append({
-                "inline_data": {"mime_type": "image/png", "data": b64},
-            })
-        payload: dict = {
-            "contents": [{"parts": parts}],
-            "generationConfig": {
-                "temperature": self.config.temperature,
-                "response_mime_type": "application/json",
-            },
-        }
-        if self.config.enable_thinking and not ("flash" in self.config.model_name.lower() and "zexkora" in self.base_url):
-            payload["generationConfig"]["thinkingConfig"] = {
-                "thinkingBudget": self.config.thinking_budget,
-            }
-        model = self._resolve_model()
-        url = (f"{self.base_url}/models/{model}"
-               f":streamGenerateContent?alt=sse&key={self.config.api_key}")
-        body = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            url, data=body,
-            headers={"Content-Type": "application/json",
-                     "Accept": "text/event-stream",
-                     **DEFAULT_REQUEST_HEADERS},
-            method="POST",
-        )
-        received = 0
-        chunks: list[str] = []
-        try:
-            with urllib.request.urlopen(req, timeout=self.request_timeout) as resp:
-                for raw_line in resp:
-                    line = raw_line.decode("utf-8", "replace").strip()
-                    if not line.startswith("data:"):
-                        continue
-                    data_str = line[5:].strip()
-                    if not data_str or data_str == "[DONE]":
-                        continue
-                    try:
-                        chunk_data = json.loads(data_str)
-                    except json.JSONDecodeError:
-                        continue
-                    candidates = chunk_data.get("candidates") or []
-                    if candidates:
-                        parts_in = candidates[0].get("content", {}).get("parts", [])
-                        for p in parts_in:
-                            t = p.get("text", "")
-                            if t:
-                                chunks.append(t)
-                                received += len(t)
-                                if on_chunk:
-                                    on_chunk(received)
-        except urllib.error.HTTPError as e:
-            detail = ""
-            try:
-                detail = e.read().decode("utf-8", "replace")[:500]
-            except Exception:
-                pass
-            friendly = _friendly_http_detail(e, detail)
-            if friendly:
-                raise LLMError(friendly) from e
-        except urllib.error.URLError as e:
-            raise LLMError(f"LLM stream to {url} failed: {e.reason}") from e
-        except (TimeoutError, http.client.HTTPException, ConnectionError, OSError) as e:
-            raise LLMError(f"LLM stream to {url} failed ({type(e).__name__}): {e}") from e
-
-        if chunks:
-            return "".join(chunks)
-        return self.generate_coach_report(prompt, match_data, image_bytes=image_bytes)
 
 
 class AnthropicClient(LLMClient):
@@ -681,7 +632,6 @@ def _choice_content(data: dict) -> str:
 _CLIENT_CLASSES: dict[str, type[LLMClient]] = {
     "deepseek": DeepSeekClient,
     "openai": OpenAIClient,
-    "gemini": GeminiClient,
     "anthropic": AnthropicClient,
 }
 
@@ -691,7 +641,8 @@ def create_client(config: AIConfig) -> LLMClient:
     provider = config.provider.strip().lower()
     base_url = (config.base_url or "").rstrip("/")
 
-    # Любой кастомный роутер или эндпоинт со стандартным /v1 (api.zxc1x1.ru/v1, api.zexkora.cc/v1 и др.)
+    # Любой кастомный роутер или эндпоинт со стандартным /v1 (api.zxc1x1.ru/v1, api.zexkora.cc/v1,
+    # локальный failover 127.0.0.1:8089/v1 и др.)
     if base_url and "generativelanguage.googleapis.com" not in base_url:
         if (
             base_url.endswith("/v1")
@@ -741,12 +692,57 @@ def test_connection(config: AIConfig) -> dict:
         return {"ok": False, "latency_ms": latency, "detail": f"{type(e).__name__}: {e}"[:300]}
 
 
-def list_available_models(config: AIConfig, only_working: bool = True) -> list[str]:
-    """Fetch list of available models from provider/router API endpoint.
+def _extract_json_object(raw: str) -> dict | None:
+    """Первый полный JSON-объект из тела ответа.
 
-    When only_working=True, runs a fast parallel ping against each model
-    so that dead/cooling-down/404 models are filtered out and only working
-    models are returned to the user.
+    Регрессия (жалоба «Рабочие модели не найдены»): роутер zexkora отдаёт
+    валидный JSON, а СРАЗУ ЗА НИМ дописывает SSE-хвост:
+        {"data":[...],"object":"list","success":true}
+        data: {"choices":[...],"id":"chatcmpl-stream",...}
+        data: [DONE]
+    json.loads() падал с «Extra data: line 2 column 1», список моделей
+    оказывался пустым. Читаем объект по балансу скобок до первого мусора.
+    """
+    if not raw:
+        return None
+    start = raw.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    in_str = False
+    esc = False
+    for i in range(start, len(raw)):
+        ch = raw[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    parsed = json.loads(raw[start:i + 1])
+                except json.JSONDecodeError:
+                    return None
+                return parsed if isinstance(parsed, dict) else None
+    return None
+
+
+def list_available_models(config: AIConfig, only_working: bool = True) -> list[str]:
+    """Модели из /v1/models (router/OpenAI-compatible), устойчиво к SSE-хвосту.
+
+    Возвращает РАБОЧИЕ модели (латенси-проверка) впереди; если пинг не дал
+    ни одной живой (роутер «остыл», 429 у всех) — отдаём ВЕСЬ список, чтобы
+    пользователь мог сменить модель вручную. Пустой список означает, что
+    эндпоинт не ответил вовсе.
     """
     if not config.api_key:
         return []
@@ -756,50 +752,37 @@ def list_available_models(config: AIConfig, only_working: bool = True) -> list[s
 
     # Determine base url if not set
     if not base_url:
-        if provider == "gemini":
-            if config.api_key.startswith("sk-"):
-                base_url = "http://127.0.0.1:8089/v1"
-            else:
-                base_url = "https://generativelanguage.googleapis.com/v1beta"
-        else:
-            base_url = DEFAULT_BASE_URLS.get(provider, "https://api.openai.com/v1")
+        base_url = DEFAULT_BASE_URLS.get(provider, "https://api.openai.com/v1")
 
     headers = {**DEFAULT_REQUEST_HEADERS}
     models: list[str] = []
 
     try:
-        # Native Gemini API
-        if "generativelanguage.googleapis.com" in base_url:
-            url = f"{base_url}/models?key={config.api_key}"
-            req = urllib.request.Request(url, headers=headers, method="GET")
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                data = json.loads(resp.read().decode("utf-8", "replace"))
-            items = data.get("models") or []
-            for item in items:
-                name = item.get("name") or ""
-                if name.startswith("models/"):
-                    name = name[len("models/"):]
-                if name:
-                    models.append(name)
-        else:
-            # OpenAI-compatible / router (e.g. 127.0.0.1:8089/v1, zexkora, openrouter)
-            url = f"{base_url}/models"
-            if config.api_key:
-                headers["Authorization"] = f"Bearer {config.api_key}"
-            req = urllib.request.Request(url, headers=headers, method="GET")
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                data = json.loads(resp.read().decode("utf-8", "replace"))
-            items = data.get("data") or data.get("models") or []
-            for item in items:
-                mid = item.get("id") or item.get("name") if isinstance(item, dict) else str(item)
-                if mid:
-                    models.append(mid)
+        # OpenAI-compatible / router (e.g. 127.0.0.1:8089/v1, zexkora, openrouter)
+        url = f"{base_url}/models"
+        if config.api_key:
+            headers["Authorization"] = f"Bearer {config.api_key}"
+        req = urllib.request.Request(url, headers=headers, method="GET")
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            raw = resp.read().decode("utf-8", "replace")
+        data = _extract_json_object(raw)
+        if data is None:
+            # Классический json.loads как запасной путь (без SSE-хвоста)
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                return []
+        items = data.get("data") or data.get("models") or []
+        for item in items:
+            mid = item.get("id") or item.get("name") if isinstance(item, dict) else str(item)
+            if mid:
+                models.append(mid)
 
     except Exception:  # noqa: BLE001 - return empty on any network/format error
         return []
 
-    unique_models = sorted(list(set(models)))
-    if not only_working or not unique_models or "generativelanguage.googleapis.com" in base_url:
+    unique_models = sorted(set(models))
+    if not only_working or not unique_models:
         return unique_models
 
     # Fast parallel health-check for OpenAI-compatible models (max 14 parallel threads, 10s timeout)
@@ -832,10 +815,12 @@ def list_available_models(config: AIConfig, only_working: bool = True) -> list[s
         with ThreadPoolExecutor(max_workers=min(14, len(unique_models))) as executor:
             working_entries = [res for res in executor.map(probe_model, unique_models) if res]
         if working_entries:
-            # Sort by response latency: fast, cheap models (DeepSeek, Luna) appear first
+            # Sort by response latency: fast, cheap models appear first
             working_entries.sort(key=lambda x: x[1])
             return [m[0] for m in working_entries]
     except Exception:
         pass
 
+    # Ни одна модель не ответила (все «остывают») — отдаём полный список,
+    # иначе пользователь не сможет сменить модель вручную.
     return unique_models

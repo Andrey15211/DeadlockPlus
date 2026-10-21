@@ -63,11 +63,12 @@ CREATE TABLE IF NOT EXISTS user_profile (
 );
 CREATE TABLE IF NOT EXISTS ai_config (
     id INTEGER PRIMARY KEY CHECK (id = 1),
-    provider TEXT NOT NULL DEFAULT 'deepseek',
-    model_name TEXT NOT NULL DEFAULT 'deepseek-v4.1-flash',
+    provider TEXT NOT NULL DEFAULT 'openai',
+    model_name TEXT NOT NULL DEFAULT 'glm-5.3-flash',
     api_key TEXT NOT NULL DEFAULT '',
     base_url TEXT,
     enable_thinking BOOLEAN DEFAULT 1,
+    reasoning_effort TEXT DEFAULT 'low',
     thinking_budget INTEGER DEFAULT 2048,
     temperature REAL DEFAULT 0.2,
     system_prompt_override TEXT
@@ -97,6 +98,11 @@ CREATE TABLE IF NOT EXISTS match_reviews (
     coach_conclusion TEXT NOT NULL,
     stat_benchmarks TEXT NOT NULL,
     item_analysis TEXT NOT NULL,
+    teamfights TEXT,
+    purchase_timings TEXT,
+    death_breakdown TEXT,
+    lane_comparison TEXT,
+    account_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS api_cache (
@@ -122,13 +128,37 @@ _BUILD_COLUMNS = ("id", "hero_id", "title", "description", "weapon_slots",
 _REVIEW_COLUMNS = ("match_id", "hero_id", "duration_seconds", "result", "kda",
                    "souls_curve", "performance_grade", "key_mistake",
                    "coach_conclusion", "stat_benchmarks", "item_analysis",
-                   "created_at")
+                   "teamfights", "purchase_timings", "death_breakdown", "lane_comparison",
+                   "account_id", "created_at")
 _PROFILE_COLUMNS = ("id", "steam_id", "account_id", "player_name",
                     "rank_tier", "rank_subrank", "mmr",
                     "created_at", "updated_at")
 _AI_CONFIG_COLUMNS = ("id", "provider", "model_name", "api_key", "base_url",
-                      "enable_thinking", "thinking_budget", "temperature",
-                      "system_prompt_override")
+                      "enable_thinking", "reasoning_effort", "thinking_budget",
+                      "temperature", "system_prompt_override")
+
+
+def _mean(values: list[float]) -> float | None:
+    """Среднее или None для пустой выборки (без деления на ноль)."""
+    if not values:
+        return None
+    return round(sum(values) / len(values), 2)
+
+
+def _parse_kda(value: Any) -> tuple[int, int, int]:
+    """'14/3/9' или {'kills':..,'deaths':..,'assists':..} -> (k, d, a)."""
+    if isinstance(value, dict):
+        try:
+            return (int(value.get("kills") or 0), int(value.get("deaths") or 0),
+                    int(value.get("assists") or 0))
+        except (TypeError, ValueError):
+            return 0, 0, 0
+    parts = str(value or "").replace(" ", "").split("/")
+    parts = (parts + ["0", "0", "0"])[:3]
+    try:
+        return int(parts[0] or 0), int(parts[1] or 0), int(parts[2] or 0)
+    except (TypeError, ValueError):
+        return 0, 0, 0
 
 
 class Database:
@@ -150,6 +180,21 @@ class Database:
             self._conn.execute("PRAGMA temp_store = MEMORY")
             self._conn.execute("PRAGMA foreign_keys=ON")
             self._conn.executescript(_SCHEMA)
+            try:
+                self._conn.execute("ALTER TABLE ai_config ADD COLUMN reasoning_effort TEXT DEFAULT 'low'")
+            except sqlite3.OperationalError:
+                pass
+            # V2.0: точка зрения игрока (account_id) нужна для сравнения «с собой».
+            try:
+                self._conn.execute("ALTER TABLE match_reviews ADD COLUMN account_id INTEGER")
+            except sqlite3.OperationalError:
+                pass
+            # V2.0: расширенные аналитические блоки (teamfights, purchase_timings, death_breakdown, lane_comparison)
+            for col in ("teamfights", "purchase_timings", "death_breakdown", "lane_comparison"):
+                try:
+                    self._conn.execute(f"ALTER TABLE match_reviews ADD COLUMN {col} TEXT")
+                except sqlite3.OperationalError:
+                    pass
             self._conn.commit()
 
     # -- context manager ---------------------------------------------------
@@ -272,15 +317,24 @@ class Database:
             "coach_conclusion": self._dump(review["coach_conclusion"]),
             "stat_benchmarks": self._dump(review["stat_benchmarks"]),
             "item_analysis": self._dump(review["item_analysis"]),
+            "teamfights": self._dump(review.get("teamfights") or []),
+            "purchase_timings": self._dump(review.get("purchase_timings") or []),
+            "death_breakdown": self._dump(review.get("death_breakdown") or []),
+            "lane_comparison": self._dump(review.get("lane_comparison")),
+            "account_id": (int(review["account_id"])
+                           if review.get("account_id") is not None else None),
         }
         self._execute(
             """INSERT INTO match_reviews (match_id, hero_id, duration_seconds,
                    result, kda, souls_curve, performance_grade, key_mistake,
-                   coach_conclusion, stat_benchmarks, item_analysis, created_at)
+                   coach_conclusion, stat_benchmarks, item_analysis,
+                   teamfights, purchase_timings, death_breakdown, lane_comparison,
+                   account_id, created_at)
                VALUES (:match_id, :hero_id, :duration_seconds, :result, :kda,
                        :souls_curve, :performance_grade, :key_mistake,
                        :coach_conclusion, :stat_benchmarks, :item_analysis,
-                       CURRENT_TIMESTAMP)
+                       :teamfights, :purchase_timings, :death_breakdown, :lane_comparison,
+                       :account_id, CURRENT_TIMESTAMP)
                ON CONFLICT(match_id) DO UPDATE SET
                    hero_id=excluded.hero_id,
                    duration_seconds=excluded.duration_seconds,
@@ -290,7 +344,13 @@ class Database:
                    key_mistake=excluded.key_mistake,
                    coach_conclusion=excluded.coach_conclusion,
                    stat_benchmarks=excluded.stat_benchmarks,
-                   item_analysis=excluded.item_analysis""",
+                   item_analysis=excluded.item_analysis,
+                   teamfights=excluded.teamfights,
+                   purchase_timings=excluded.purchase_timings,
+                   death_breakdown=excluded.death_breakdown,
+                   lane_comparison=excluded.lane_comparison,
+                   account_id=COALESCE(excluded.account_id,
+                                       match_reviews.account_id)""",
             row,
         )
         return self.get_review(row["match_id"])  # type: ignore[return-value]
@@ -313,7 +373,64 @@ class Database:
         d = {k: row[k] for k in _REVIEW_COLUMNS}
         for col in REVIEW_JSON_COLUMNS:
             d[col] = self._load(d[col])
+        if d.get("teamfights") is None:
+            d["teamfights"] = []
+        if d.get("purchase_timings") is None:
+            d["purchase_timings"] = []
+        if d.get("death_breakdown") is None:
+            d["death_breakdown"] = []
         return d
+
+    def get_hero_player_trends(self, account_id: int | None, hero_slug: str,
+                               limit: int = 5,
+                               exclude_match_id: str | None = None) -> dict:
+        """V2.0 (ТЗ §4.1): средние показатели прошлых игр игрока на герое.
+
+        Источник — сохранённые разборы match_reviews (без сети и LLM):
+          - avg_souls_at_10: абсолютные души к 10:00 (stat_benchmarks.actual_souls);
+          - avg_early_deaths: смерти до 10-й минуты (stat_benchmarks.early_deaths);
+          - avg_kda: отношение (K+A)/D по строке kda.
+
+        Строки, разобранные до V2.0, не имеют ни account_id, ни early_deaths:
+        такие записи (account_id IS NULL) считаются своими и попадают в выборку,
+        но метрика, которой в них нет, просто не участвует в среднем.
+        """
+        sql = ("SELECT * FROM match_reviews WHERE lower(hero_id) = lower(?)")
+        params: list[Any] = [str(hero_slug)]
+        if account_id is not None:
+            sql += " AND (account_id = ? OR account_id IS NULL)"
+            params.append(int(account_id))
+        if exclude_match_id is not None:
+            sql += " AND match_id != ?"
+            params.append(str(exclude_match_id))
+        sql += " ORDER BY datetime(created_at) DESC, match_id DESC LIMIT ?"
+        params.append(int(limit))
+
+        rows = [self._review_row_to_dict(r) for r in self._query_all(sql, params)]
+
+        souls: list[float] = []
+        early: list[float] = []
+        kda_ratios: list[float] = []
+        for review in rows:
+            bm = review.get("stat_benchmarks")
+            bm = bm if isinstance(bm, dict) else {}
+            actual = bm.get("actual_souls")
+            if isinstance(actual, (int, float)):
+                souls.append(float(actual))
+            deaths = bm.get("early_deaths")
+            if isinstance(deaths, (int, float)):
+                early.append(float(deaths))
+            k, d, a = _parse_kda(review.get("kda"))
+            kda_ratios.append((k + a) / max(1, d))
+
+        return {
+            "games": len(rows),
+            "hero_id": str(hero_slug),
+            "avg_souls_at_10": _mean(souls),
+            "avg_early_deaths": _mean(early),
+            "avg_kda": _mean(kda_ratios),
+            "match_ids": [str(r.get("match_id")) for r in rows],
+        }
 
     # -- user profile -----------------------------------------------------------
 

@@ -53,11 +53,20 @@ function renderMetaDate() {
   node.textContent = `мета: ${d}.${m}.${y}`;
 }
 
+function matchesRole(hero, role) {
+  if (!role) return true;
+  const roles = Array.isArray(hero.roles) ? hero.roles : [];
+  if (role === 'support') {
+    return roles.includes('support') || roles.includes('controller');
+  }
+  return roles.includes(role);
+}
+
 function render() {
   const rows = document.getElementById('tier-rows');
   const filtered = heroes
     .filter((h) => !h.in_development)
-    .filter((h) => !activeRole || h.roles.includes(activeRole))
+    .filter((h) => matchesRole(h, activeRole))
     .sort((a, b) => (b.winrate ?? -1) - (a.winrate ?? -1));
 
   const topIds = new Set(

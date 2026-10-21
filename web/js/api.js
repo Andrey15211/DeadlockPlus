@@ -176,6 +176,9 @@ export const postImportBuild = (code) => postJson('/builds/import', { code });
 // --- драфт 6v6 ---
 export const postDraftAnalyze = (myTeam, enemyTeam, allowMirror) =>
   postJson('/draft/analyze', { my_team: myTeam, enemy_team: enemyTeam, allow_mirror: allowMirror });
+// S5: быстрые сборки по драфту (локальный движок, без LLM на основном пути).
+export const postDraftBuilds = (myHero, enemies, { role = null, mode = 'local' } = {}) =>
+  postJson('/draft/builds', { my_hero: myHero, enemies, role, mode });
 export const postDraftParseScreenshot = (imageB64) =>
   postJson('/draft/parse-screenshot', { image_b64: imageB64 });
 
@@ -202,6 +205,9 @@ export const postAITest = () => postJson('/ai/test', {});
 export const fetchMatchRoster = (matchId) => getJson(`/match/${encodeURIComponent(matchId)}/roster`);
 export const postMatchAnalyze = (payload) => postJson('/match/analyze', payload);
 export const fetchMatchReviews = (limit = 20) => getJson(`/match/reviews?limit=${limit}`);
+// V2.0 М1: переразбор сохранённого матча из кэша (без повторного запроса к API).
+export const postMatchReanalyze = (matchId, payload) =>
+  postJson(`/match/reviews/${encodeURIComponent(matchId)}/reanalyze`, payload);
 
 // TZ v1.4 D4/F: SSE-разбор с реальным прогрессом. События:
 // {"type":"progress","seconds":N} | {"type":"chunk","received":K,"estimated":M}
@@ -274,6 +280,11 @@ export async function postMatchAnalyzeStream(body, { onEvent } = {}) {
 
 // --- ассеты (статус только для диагностики; sync — CLI: python -m deadlockforge.assets.ingest) ---
 export const fetchAssetsStatus = () => getJson('/assets/status');
+
+// --- контрпики (экран 7) ---
+// Датасет большой (~700 КБ) и статичный, поэтому кэшируем в sessionStorage
+// с ревалидацией по ETag: второй заход на экран не тянет его заново.
+export const fetchCounterpicks = () => getJsonWithCache('/counterpicks', 'counterpicks');
 
 // --- утилиты UI ---
 export function toast(message, isError = false) {

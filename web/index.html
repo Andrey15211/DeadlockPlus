@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DeadlockForge — тактический комплекс</title>
+<title>Deadlock Plus — тактический комплекс</title>
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
 <link rel="apple-touch-icon" href="/assets/icons/deadlockforge_256.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +12,78 @@
 <link rel="stylesheet" href="./css/hud.css">
 <link rel="stylesheet" href="./css/styles.css">
 <link rel="stylesheet" href="./css/animations.css">
+<link rel="stylesheet" href="./css/counterpicks.css">
+<style>
+  /* V2.1 — кинематографичный фокус отчёта матча (Spotlight) */
+  .match-setup,
+  #recent-matches,
+  .hud-header,
+  #match-result {
+    transition: filter 0.5s ease, opacity 0.5s ease;
+  }
+
+  /* Затемнение панели ввода, архива матчей и верхнего интерфейса на время
+     показа ранга: внимание остаётся только на отчёте. */
+  .match-setup.is-dimmed,
+  #recent-matches.is-dimmed,
+  body.match-spotlight .hud-header {
+    filter: brightness(0.35);
+    opacity: 0.5;
+  }
+
+  .match-setup.is-dimmed { pointer-events: none; }
+
+  #match-result {
+    border-radius: 14px;
+    scroll-margin-top: 72px;
+  }
+
+  /* Появление отчёта: янтарное неоновое свечение контура без сдвигов и зума —
+     геометрия страницы не меняется, отчёт просто проявляется на месте. */
+  #match-result.is-revealing {
+    animation: dm-result-reveal 2000ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes dm-result-reveal {
+    0% {
+      opacity: 0;
+      box-shadow: 0 0 0 0 rgba(229, 169, 60, 0);
+    }
+    22% {
+      opacity: 1;
+      box-shadow: 0 0 46px 8px rgba(229, 169, 60, 0.55),
+                  inset 0 0 26px rgba(229, 169, 60, 0.1);
+    }
+    60% {
+      box-shadow: 0 0 32px 4px rgba(229, 169, 60, 0.4),
+                  inset 0 0 16px rgba(229, 169, 60, 0.07);
+    }
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 20px 2px rgba(229, 169, 60, 0.24),
+                  inset 0 0 10px rgba(229, 169, 60, 0.04);
+    }
+  }
+
+  /* Ранг стиля — верхняя акцентная позиция отчёта, без двойной рамки */
+  #match-result .dmc-rank-panel {
+    padding: 0;
+    background: none;
+    border-color: rgba(229, 169, 60, 0.3);
+    box-shadow: 0 0 28px rgba(229, 169, 60, 0.12);
+  }
+
+  #match-result .dmc-rank-panel .dmc-grade-block {
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .match-setup, #recent-matches, .hud-header, #match-result { transition: none; }
+    #match-result.is-revealing { animation: none; }
+  }
+</style>
 </head>
 <body class="bg-slate-950">
 
@@ -31,14 +103,15 @@
 <header class="hud-header">
   <div class="hud-brand">
     <div class="hud-gear"></div>
-    <h1 class="hud-title">DEADLOCK<span>FORGE</span></h1>
-    <span class="visually-hidden">DeadlockForge</span>
+    <h1 class="hud-title">DEADLOCK<span>PLUS</span></h1>
+    <span class="visually-hidden">Deadlock Plus</span>
   </div>
   <nav class="hud-nav" role="tablist" aria-label="Разделы">
     <button data-tab="hub"   class="hud-tab tab-active" role="tab">Хаб</button>
     <button data-tab="tier"  class="hud-tab" role="tab">Тир-лист</button>
     <button data-tab="draft" class="hud-tab" role="tab">Пик-ассистент 6v6</button>
     <button data-tab="match" class="hud-tab" role="tab" title="Разбор матча и матчап-аналитика">Deep Match (Матчап)</button>
+    <button data-tab="counterpicks" class="hud-tab" role="tab" title="Контр-предметы по героям и матчапам">Контрпики</button>
     <button data-tab="lab"   class="hud-tab" role="tab">Билд-лаб</button>
     <button data-tab="map"   class="hud-tab" role="tab">Карта</button>
     <button data-tab="profile" class="hud-tab" role="tab">Профиль</button>
@@ -57,17 +130,43 @@
           <span class="hub-mmr" id="hub-mmr">MMR 1600</span></div>
       </div>
       <div class="hub-user-actions">
-        <div id="hub-music-widget" class="hub-music-widget" title="Фоновая музыка Deadlock">
-          <button id="hub-music-toggle-btn" class="hub-music-btn" type="button" aria-label="Вкл/Выкл музыку">
+        <div id="hub-music-widget" class="hub-music-widget" title="Фоновая музыка Deadlock Plus">
+          <button id="hub-music-toggle-btn" class="hub-music-btn" type="button" aria-label="Играть / Пауза">
             <span id="hub-music-icon" class="hub-music-icon">🎵 ▶</span>
           </button>
+          <div class="hub-music-picker" id="hub-music-picker"><button id="hub-music-track" class="hub-music-track-btn" type="button" aria-haspopup="listbox" aria-expanded="false" title="Выбрать трек"><span id="hub-music-track-label" class="hub-music-track">background music</span><span id="hub-music-caret" class="hub-music-caret" aria-hidden="true">▾</span></button><ul id="hub-music-track-list" class="hub-music-track-list" role="listbox" aria-label="Плейлист" hidden></ul></div>
+          <div class="hub-music-controls">
+            <button id="hub-music-prev" class="hub-music-btn hub-music-btn-sm" type="button" title="Предыдущий трек" aria-label="Предыдущий трек">⏮</button>
+            <button id="hub-music-next" class="hub-music-btn hub-music-btn-sm" type="button" title="Следующий трек" aria-label="Следующий трек">⏭</button>
+            <button id="hub-music-shuffle" class="hub-music-btn hub-music-btn-sm" type="button" title="Перемешать: выкл" aria-label="Перемешать">🔀</button>
+            <button id="hub-music-repeat" class="hub-music-btn hub-music-btn-sm" type="button" title="Повтор: выкл" aria-label="Повтор">🔁</button>
+          </div>
           <div class="hub-music-slider-wrap">
             <span class="hub-music-label">МУЗЫКА</span>
-            <input type="range" id="hub-music-slider" class="volume-slider hub-music-slider" min="0" max="1" step="0.05" value="0.35" aria-label="Громкость музыки">
+            <input type="range" id="hub-music-slider" class="volume-slider hub-music-slider" min="0" max="1" step="0.01" value="0.35" aria-label="Громкость музыки">
             <span id="hub-music-val" class="volume-value hub-music-val">35%</span>
           </div>
         </div>
         <button class="btn-amber" id="hub-refresh">Обновить профиль</button>
+      </div>
+    </div>
+
+    <div class="hub-summary">
+      <div class="panel hub-summary-card">
+        <div class="hub-summary-head">
+          <span class="hub-summary-ico icon-amber">◈</span>
+          <span class="hub-summary-title">Последний матч</span>
+          <span class="hub-summary-hint">оценка · герой · главная ошибка</span>
+        </div>
+        <div class="hub-summary-body" id="hub-last-review">Загрузка разборов…</div>
+      </div>
+      <div class="panel hub-summary-card">
+        <div class="hub-summary-head">
+          <span class="hub-summary-ico icon-emerald">▲</span>
+          <span class="hub-summary-title">Сегодня хорошо заходят</span>
+          <span class="hub-summary-hint">по винрейту меты</span>
+        </div>
+        <div class="hub-summary-body" id="hub-meta-picks">Загрузка меты…</div>
       </div>
     </div>
 
@@ -254,12 +353,37 @@
           Скриншот статистики
           <input type="file" id="match-screenshot" accept="image/*" hidden>
         </label>
+        <div class="depth-selector" id="match-depth-selector" role="radiogroup" aria-label="Глубина разбора">
+          <button type="button" class="depth-btn" data-depth="short" role="radio" aria-checked="false"
+                  title="Только оценка, главная ошибка и 3 ключевых вывода (~15с)">
+            <span class="depth-name">Короткий</span>
+            <span class="depth-time">~15с</span>
+          </button>
+          <button type="button" class="depth-btn active" data-depth="medium" role="radio" aria-checked="true"
+                  title="Оценка, ошибка, выводы + аудит предметов и таймингов (~30с)">
+            <span class="depth-name">Стандартный</span>
+            <span class="depth-time">~30с</span>
+          </button>
+          <button type="button" class="depth-btn" data-depth="deep" role="radio" aria-checked="false"
+                  title="Максимальный разбор: тимфайты, все смерти, дуэль на линии (~90-120с)">
+            <span class="depth-name">Глубокий</span>
+            <span class="depth-time">~90-120с</span>
+          </button>
+        </div>
         <button class="btn-amber" id="btn-match-analyze">Разобрать матч</button>
         <button class="btn-ghost" id="btn-match-offline" title="Быстрый оффлайн-анализ без запросов к LLM">Быстрый оффлайн-анализ</button>
         <div class="match-progress hidden" id="match-progress">
-          <div class="match-progress-bar"><div class="match-progress-fill" id="match-progress-fill"></div></div>
-          <span class="match-progress-text" id="match-progress-text"></span>
-          <span class="match-busy-badge" id="match-busy-badge" title="В один момент времени обрабатывается ровно один матч">🔒 1 матч в обработке</span>
+          <div class="match-progress-video-wrapper">
+            <video id="match-progress-video" class="match-progress-cinema-video" autoplay loop muted playsinline preload="auto">
+              <source src="./assets/video/animation_ai_loading.mp4" type="video/mp4">
+              <source src="./assets/video/ai_loading_eye.webm" type="video/webm">
+            </video>
+            <div class="match-progress-cinema-overlay">
+              <span class="match-progress-cinema-timer" id="match-progress-text">Разбираю… 0с</span>
+            </div>
+          </div>
+          <div id="match-progress-fill" style="display: none;"></div>
+          <span id="match-busy-badge" style="display: none;"></span>
         </div>
       </div>
       <div id="ai-key-warning" class="match-key-warning hidden">
@@ -292,20 +416,62 @@
       <div class="match-error" id="match-error"></div>
       <span class="match-file-name" id="match-file-name"></span>
     </div>
-    <div id="recent-matches" class="panel hidden">
-      <div class="panel-header-row">
-        <h2 class="section-title">Последние матчи</h2>
-        <button id="btn-refresh-matches" class="btn-ghost btn-sm" type="button" title="Обновить историю матчей">
-          <span class="refresh-spinner">🔄</span> Обновить
+    <div id="match-result" class="hidden">
+      <div class="panel-header-row dm-result-header">
+        <h2 class="section-title">Отчёт по матчу</h2>
+        <button id="btn-match-reanalyze" class="btn-ghost btn-sm" type="button"
+                title="Разобрать этот матч заново с выбранной глубиной">
+          🔄 Переразобрать
         </button>
       </div>
-      <div id="recent-matches-list" class="recent-matches-list"></div>
-    </div>
-    <div id="match-result" class="hidden">
+      <!-- Ранг стиля — акцентная позиция: первое, что видит игрок в отчёте -->
+      <div class="panel dmc-rank-panel">
+        <div class="dmc-grade-block" id="dmc-grade-block">
+          <div class="dmc-gauge-wrapper">
+            <svg class="dmc-gauge-svg" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="dmc-gauge-track" cx="60" cy="60" r="50"></circle>
+              <circle class="dmc-gauge-fill" id="dmc-gauge-fill" cx="60" cy="60" r="50"></circle>
+            </svg>
+            <div class="grade-badge" id="grade-badge">C</div>
+          </div>
+          <div class="dmc-rank-meta">
+            <span class="dmc-rank-badge-title" id="dmc-rank-title">STYLE RANK</span>
+            <span class="dmc-rank-desc" id="dmc-rank-desc">Оценка тактики</span>
+          </div>
+        </div>
+      </div>
       <div class="panel">
         <h2 class="section-title">Кривая душ</h2>
         <canvas id="souls-chart" height="260"></canvas>
         <div id="souls-event-card" class="souls-event hidden"></div>
+      </div>
+      <div id="personal-trend-panel" class="panel trend-panel hidden">
+        <div class="trend-head">
+          <h2 class="section-title">Личный тренд на герое</h2>
+          <span class="trend-subtitle" id="trend-subtitle">По сравнению с вашей средней игрой</span>
+        </div>
+        <div class="trend-cards" id="trend-cards"></div>
+        <div class="trend-summary" id="trend-summary"></div>
+      </div>
+      <div id="lane-comparison-panel" class="panel lane-panel hidden">
+        <h2 class="section-title">⚔ Дуэль на линии</h2>
+        <div id="lane-comparison-content" class="lane-comparison-grid"></div>
+      </div>
+      <div id="death-map-panel" class="panel death-map-panel hidden">
+        <h2 class="section-title danger">Карта смертей</h2>
+        <div class="death-map-layout">
+          <div class="death-map-container" id="death-map-wrap">
+            <img src="./assets/map/cursed_apple_minimap.webp" class="death-minimap-img" alt="Minimap">
+            <div class="death-markers-layer" id="death-markers-layer"></div>
+          </div>
+          <div class="death-details-list" id="death-details-list">
+            <p class="section-hint">Кликните по маркеру смерти на карте для деталей.</p>
+          </div>
+        </div>
+      </div>
+      <div id="death-breakdown-panel" class="panel death-breakdown-panel hidden">
+        <h2 class="section-title danger">💀 Тактический разбор смертей</h2>
+        <div id="death-breakdown-list" class="death-breakdown-list"></div>
       </div>
       <div class="match-cards">
         <div class="panel mistake-card">
@@ -314,18 +480,39 @@
         </div>
         <div class="panel coach-card">
           <h2 class="section-title good">Вывод тренера</h2>
+          <div id="coach-memory-badge" class="coach-memory-badge hidden">
+            <span class="coach-memory-icon">🧠</span>
+            <span class="coach-memory-text" id="coach-memory-text"></span>
+          </div>
           <ol id="coach-conclusion" class="coach-list"></ol>
-          <div class="grade-badge" id="grade-badge">C</div>
         </div>
         <div class="panel bench-card">
           <h2 class="section-title">Бенчмарки</h2>
           <div id="benchmarks"></div>
         </div>
       </div>
+      <div id="teamfights-panel" class="panel teamfights-panel hidden">
+        <h2 class="section-title good">💥 Хроника ключевых тимфайтов</h2>
+        <div id="teamfights-list" class="teamfights-list"></div>
+      </div>
       <div class="panel">
         <h2 class="section-title">Коррекция предметов</h2>
         <div id="item-corrections"></div>
       </div>
+      <div id="purchase-timings-panel" class="panel purchase-timings-panel hidden">
+        <h2 class="section-title">⏱ Тайминги ключевых покупок</h2>
+        <div id="purchase-timings-list" class="purchase-timings-list"></div>
+      </div>
+    </div>
+    <!-- Архив: после анализа уезжает вниз, до анализа виден сразу под панелью ввода -->
+    <div id="recent-matches" class="panel">
+      <div class="panel-header-row">
+        <h2 class="section-title">Последние матчи</h2>
+        <button id="btn-refresh-matches" class="btn-ghost btn-sm" type="button" title="Обновить историю матчей">
+          <span class="refresh-spinner">🔄</span> Обновить
+        </button>
+      </div>
+      <div id="recent-matches-list" class="recent-matches-list"></div>
     </div>
   </section>
 
@@ -430,6 +617,29 @@
     </div>
   </section>
 
+  <!-- ============ Экран 7: КОНТРПИКИ ============ -->
+  <section id="tab-counterpicks" class="tab-panel hidden" role="tabpanel" aria-label="Контрпики">
+    <div class="cp-header panel">
+      <div class="cp-tabs" role="tablist" aria-label="Режим контрпиков">
+        <button type="button" class="cp-tab cp-tab-active" data-cp-tab="heroes" role="tab">Против героя</button>
+        <button type="button" class="cp-tab" data-cp-tab="team" role="tab">Против состава</button>
+        <button type="button" class="cp-tab" data-cp-tab="items" role="tab">Предметы</button>
+      </div>
+      <div class="cp-controls">
+        <input id="cp-search" class="text-input cp-search" type="search" placeholder="Поиск героев…" aria-label="Поиск">
+        <span id="cp-count" class="cp-count"></span>
+      </div>
+    </div>
+
+    <div id="cp-selection" class="panel cp-selection">
+      <div id="cp-selected" class="cp-selected"></div>
+    </div>
+
+    <div id="cp-grid" class="cp-grid" aria-label="Список"></div>
+
+    <div id="cp-guide" class="cp-guide-host"></div>
+  </section>
+
   <!-- ============ Экран 6: КАРТА ============ -->
   <section id="tab-map" class="tab-panel hidden" role="tabpanel" aria-label="Карта">
     <h2 class="section-title">The Cursed Apple — три линии</h2>
@@ -518,7 +728,7 @@
     </div>
 
     <div class="panel ai-panel">
-      <h2 class="section-title">Нейросеть (Gemini / OpenAI / Custom Router)</h2>
+      <h2 class="section-title">Нейросеть (роутер / OpenAI / Custom)</h2>
       <div class="ai-status-card hidden" id="ai-status-card">
         <span class="ai-dot" id="ai-status-dot"></span>
         <span id="ai-status-text">AI отключён</span>
@@ -534,10 +744,20 @@
           <label>Модель
             <div class="ai-model-select-wrap">
               <select id="ai-model-select" class="select-input">
-                <option value="deepseek-v4-flash">deepseek-v4-flash (по умолчанию)</option>
+                <option value="glm-5.3-flash">glm-5.3-flash (по умолчанию)</option>
+                <option value="glm-5.3">glm-5.3 (медленнее, но полный)</option>
               </select>
               <button type="button" class="btn-ghost btn-sm" id="btn-refresh-models" title="Выгрузить и проверить только рабочие модели">🔄 Модели</button>
             </div>
+          </label>
+          <label>Уровень рассуждений (Reasoning)
+            <select id="ai-reasoning-select" class="select-input">
+              <option value="auto">Авто (Короткий: без размышлений / Полный: low)</option>
+              <option value="off">Отключено (off — сверхбыстрый ~25-30с)</option>
+              <option value="low" selected>Низкий (low — глубокий тактический расчет ~40-45с)</option>
+              <option value="medium">Средний (medium — тяжелый анализ)</option>
+              <option value="high">Высокий (high — максимальный CoT)</option>
+            </select>
           </label>
         </div>
         <div class="ai-actions">
@@ -545,7 +765,7 @@
           <button class="btn-ghost" id="btn-test-ai">Проверить соединение</button>
         </div>
         <div class="ai-status" id="ai-status"></div>
-        <p class="section-hint">Поддерживаются стандартные ключи Gemini, OpenAI и любые роутеры (локальный failover http://127.0.0.1:8089/v1, Zexkora, OpenRouter). По кнопке «🔄 Модели» происходит мгновенный опрос шлюза и выводятся <strong>только проверенные рабочие модели</strong>.</p>
+        <p class="section-hint">Поддерживаются OpenAI-совместимые роутеры: локальный failover <strong>http://127.0.0.1:8089/v1</strong>, Zexkora, OpenRouter и др. По кнопке «🔄 Модели» происходит опрос шлюза и выводятся <strong>только проверенные рабочие модели</strong>.</p>
       </div>
     </div>
   </section>
@@ -560,7 +780,7 @@
     <span id="volume-icon" class="volume-icon">🔊</span>
   </button>
   <div class="volume-slider-wrap">
-    <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="0.5" aria-label="Громкость">
+    <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="0.5" aria-label="Громкость">
     <span id="volume-value" class="volume-value" title="Уровень громкости">50%</span>
   </div>
 </div>
@@ -601,5 +821,6 @@
   })();
 </script>
 <script type="module" src="./js/app.js"></script>
+<script type="module" src="./js/music_picker.js"></script>
 </body>
 </html>

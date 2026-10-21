@@ -1,4 +1,6 @@
-# DeadlockForge
+# Deadlock Plus
+
+> Переименован из DeadlockForge.
 
 Автономное desktop-приложение для Valve Deadlock (карта The Cursed Apple):
 полный ростер героев и предметов с оригинальными ассетами Valve, тир-лист,
@@ -87,8 +89,11 @@ Live-тесты AI (`tests/test_gemini_coach_live.py`) обращаются к �
 | GET/POST/DELETE | `/api/builds` | CRUD билдов в SQLite |
 | GET/POST | `/api/profile` | профиль игрока |
 | GET/POST | `/api/ai/config`, POST `/api/ai/test` | конфиг и пинг LLM |
-| POST | `/api/match/analyze` | разбор матча (Match ID или скриншот) |
+| POST | `/api/match/analyze` | разбор матча (Match ID или скриншот; `depth: short|medium|deep`) |
+| POST | `/api/match/analyze/stream` | SSE-разбор с прогрессом |
 | GET | `/api/match/reviews` | история разборов |
+| POST | `/api/match/reviews/{id}/reanalyze` | переразбор матча (новая глубина/инструкции) |
+| POST | `/api/draft/builds` | быстрые сборки по драфту (стартер + 3 варианта, <40 с) |
 | GET/POST | `/api/assets/status`, `/api/assets/sync` | состояние пайплайна ассетов |
 
 ## Данные и ассеты

@@ -30,6 +30,7 @@ from ..models import (
     AIConfig,
     BuildError,
     BuildSlots,
+    Counterpicks,
     Hero,
     Item,
     MapGuide,
@@ -153,12 +154,28 @@ class AIConfigUpdate(BaseModel):
     model_name: str | None = None
     api_key: str | None = None
     base_url: str | None = None
+    reasoning_effort: str | None = None
+    enable_thinking: bool | None = None
 
 
 class DraftScreenshotRequest(BaseModel):
     """POST /api/draft/parse-screenshot body: изображение экрана загрузки/матча."""
 
     image_b64: str
+
+
+class DraftBuildsRequest(BaseModel):
+    """POST /api/draft/builds body (S5: быстрые сборки по драфту).
+
+    mode — совместимость с UI/прошлыми вызовами: "local"/"offline" = только
+    локальный движок, "ai" = локальный движок + короткая LLM-надстройка
+    (никогда не блокирует ответ и не влияет на обязательные поля).
+    """
+
+    my_hero: str
+    enemies: list[str] = []
+    mode: str = "local"
+    role: str | None = None
 
 
 class MatchAnalyzeRequest(BaseModel):
@@ -169,6 +186,31 @@ class MatchAnalyzeRequest(BaseModel):
     account_id: int | None = None
     hero_slug: str | None = None
     mode: str = "ai"  # "ai" (requires api_key) or "offline" (heuristic)
+    depth: str = "medium"  # V2.0: short | medium | deep
+    model_name: str | None = None  # V2.0 М4: разовая смена модели разбора
+    reasoning_effort: str | None = None  # auto | off | low | medium | high
+
+
+class ReanalyzeRequest(BaseModel):
+    """POST /api/match/reviews/{match_id}/reanalyze body (V2.0 §3.5)."""
+
+    account_id: int | None = None
+    hero_slug: str | None = None
+    mode: str = "ai"
+    depth: str = "medium"
+
+
+class LiveStateRequest(BaseModel):
+    """POST /api/live/state + /api/live/advice body (M4 §6: ручной ввод оверлея).
+
+    Поля опциональны (оверлей позволяет не заполнять всё); невалидные
+    идентификаторы, которых нет в каталоге, отклоняются 404, >6 врагов и
+    дубликаты — 422.
+    """
+
+    my_hero: str = ""
+    enemies: list[str] = []
+    items: list[str] = []
 
 
 
@@ -238,6 +280,168 @@ def _update_llm_size_estimate(review) -> None:
         pass
 
 
+def _player_context() -> dict:
+    """V2.0: агрегированный контекст игрока из match_reviews (тренд + слабости)."""
+    from ..ai import progress as progress_mod
+
+    try:
+        reviews = _db().get_reviews(limit=200)
+        return progress_mod.build_player_context(reviews)
+    except Exception:  # noqa: BLE001 — контекст опционален
+        return {"trend": {}, "weaknesses": {}}
+
+
+def _validate_depth(depth: str | None) -> str:
+    """V2.0: валидация глубины разбора (short|medium|deep) -> 422 иначе."""
+    from ..ai.coach import VALID_DEPTHS, DEFAULT_DEPTH
+
+    d = (depth or DEFAULT_DEPTH).strip().lower()
+    if d not in VALID_DEPTHS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Неизвестная глубина разбора '{depth}'. "
+                   f"Допустимые значения: {', '.join(sorted(VALID_DEPTHS))}.",
+        )
+    return d
+
+
+def _resolve_view_player(nm, account_id: int | None, hero_slug: str | None):
+    """Точка зрения игрока: account_id -> hero_slug -> первый игрок."""
+    me = None
+    if account_id:
+        me = nm.player_by_account(int(account_id))
+    if me is None and hero_slug:
+        slug = str(hero_slug).strip().lower()
+        me = next((p for p in nm.players if p.hero_id_slug.lower() == slug), None)
+    if me is None and nm.players:
+        me = nm.players[0]
+    return me
+
+
+def _deaths_geo(nm, me) -> list[dict]:
+    """V2.0 §5.1: смерти игрока с нормализованными координатами 0..1.
+
+    Координаты считает match_loader._norm_coord (та же проекция, что у
+    маркеров карты), фронтенд просто раскладывает их в проценты.
+    Пустой список — разбор по скриншоту или отсутствие телеметрии.
+    """
+    if me is None:
+        return []
+    from ..ai.coach import _hero_ru
+
+    out: list[dict] = []
+    for d in sorted(me.deaths_timeline, key=lambda x: x.t):
+        out.append({
+            "t": int(d.t),
+            "time": f"{d.t // 60}:{d.t % 60:02d}",
+            "pos_x": round(float(d.pos_x), 4),
+            "pos_y": round(float(d.pos_y), 4),
+            "killer": _hero_ru(d.killer_hero) if d.killer_hero else "",
+        })
+    return out
+
+
+def _personal_benchmark(review, account_id: int | None) -> dict | None:
+    """V2.0 §4.1: сравнение матча со средней нормой игрока на этом герое."""
+    from ..ai import progress as progress_mod
+
+    if not account_id:
+        return None
+    try:
+        trend = _db().get_hero_player_trends(
+            int(account_id), review.hero_id,
+            exclude_match_id=review.match_id,
+        )
+    except Exception:  # noqa: BLE001 — сравнение опционально
+        return None
+    return progress_mod.personal_benchmark(review.model_dump(), trend)
+
+
+def _attach_match_extras(review, normalized, account_id: int | None,
+                         hero_slug: str | None = None):
+    """V2.0: добить ответ MatchReview точкой зрения, смертями и личным трендом."""
+    review.account_id = int(account_id) if account_id else None
+    review.progress = _player_context()
+    if normalized is not None and not isinstance(normalized, dict):
+        me = _resolve_view_player(normalized, account_id, hero_slug)
+        review.deaths_geo = _deaths_geo(normalized, me)
+    review.personal_benchmark = _personal_benchmark(review, account_id)
+    return review
+
+# Ключ SQLite-кэша для ручного ввода оверлея; живёт до следующего POST.
+LIVE_STATE_KEY = "live_state"
+LIVE_STATE_TTL = 365 * 86400
+
+# Справочные респавны объектов — захардкоженные константы из ТЗ §6
+# (честная рамка: без чтения памяти/экрана игры, только тайминги).
+LIVE_RESPAWNS = [
+    {
+        "name": "Soul Urn",
+        "first_open_minutes": 10.0,
+        "interval_minutes": 5.0,
+        "note": "Урна душ открывается в 10:00 и респавнится каждые 5 минут после сдачи.",
+    },
+    {
+        "name": "Midboss",
+        "respawn_minutes": [7.0, 6.0, 5.0],
+        "note": "Мидбосс после убийства респавнится по циклу 7/6/5 минут.",
+    },
+]
+
+
+def _mmss_to_minutes(value: str) -> float | None:
+    """'MM:SS' -> минуты float (10:00 -> 10.0, 3:30 -> 3.5). None — мусор."""
+    try:
+        m, s = value.strip().split(":", 1)
+        return int(m) + int(s) / 60.0
+    except (ValueError, AttributeError):
+        return None
+
+
+def _live_timeline() -> list[dict]:
+    """Тайминги объектов матча из data/map.json (timeline) + минуты float."""
+    events: list[dict] = []
+    for ev in dataset_mod.get_catalog().map_guide.timeline:
+        minutes = _mmss_to_minutes(ev.time)
+        if minutes is None:
+            continue
+        events.append({
+            "time": ev.time,
+            "title": ev.title,
+            "description": ev.description,
+            "minutes": round(minutes, 2),
+        })
+    return events
+
+
+def _resolve_live_payload(body: LiveStateRequest, catalog):
+    """Валидация ручного ввода -> (my_hero, foes: list[Hero], owned: list[Item]).
+
+    HTTPException: 404 на неизвестные id, 422 на >6 врагов и дубликаты.
+    """
+    my_hero = (body.my_hero or "").strip().lower()
+    if my_hero and my_hero not in catalog.by_id:
+        raise HTTPException(status_code=404, detail=f"Unknown hero id: {my_hero!r}.")
+    if len(body.enemies) > 6:
+        raise HTTPException(status_code=422, detail="At most 6 enemy heroes are allowed.")
+    if len(body.enemies) != len(set(body.enemies)):
+        raise HTTPException(
+            status_code=422, detail="Enemy list contains duplicate hero ids.")
+    foes: list[Hero] = []
+    for enemy_id in body.enemies:
+        hero = catalog.by_id.get(enemy_id)
+        if hero is None:
+            raise HTTPException(status_code=404, detail=f"Unknown hero id: {enemy_id!r}.")
+        foes.append(hero)
+    owned: list[Item] = []
+    for item_id in body.items:
+        item = catalog.item_by_id.get(item_id)
+        if item is None:
+            raise HTTPException(status_code=404, detail=f"Unknown item id: {item_id!r}.")
+        owned.append(item)
+    return my_hero, foes, owned
+
+
 def _to_review(normalized, report, account_id: int | None, hero_slug: str | None = None) -> MatchReview:
     """Merge a NormalizedMatch + CoachReport into the persisted MatchReview."""
     from ..engine import match_loader as ml_mod
@@ -248,6 +452,10 @@ def _to_review(normalized, report, account_id: int | None, hero_slug: str | None
     if isinstance(normalized, dict) and normalized.get("mode") == "screenshot":
         # screenshot path: no telemetry, LLM/vision report only
         r = report if isinstance(report, CoachReport) else None
+        tf_list = [c.model_dump() for c in r.teamfights] if (r and r.teamfights) else []
+        pt_list = [c.model_dump() for c in r.purchase_timings] if (r and r.purchase_timings) else []
+        db_list = [c.model_dump() for c in r.death_breakdown] if (r and r.death_breakdown) else []
+        lc_dict = r.lane_comparison.model_dump() if (r and r.lane_comparison) else None
         return MatchReview(
             match_id=f"screenshot-{int(time.time())}",
             hero_id=hero_slug or "unknown",
@@ -262,6 +470,10 @@ def _to_review(normalized, report, account_id: int | None, hero_slug: str | None
             item_analysis=(localize_report_dict({"corrections": [
                 c.model_dump() for c in r.item_corrections
             ]}) if r else {}),
+            teamfights=localize_report_dict(tf_list),
+            purchase_timings=localize_report_dict(pt_list),
+            death_breakdown=localize_report_dict(db_list),
+            lane_comparison=(localize_report_dict(lc_dict) if lc_dict else None),
         )
 
     nm = normalized  # NormalizedMatch
@@ -295,6 +507,11 @@ def _to_review(normalized, report, account_id: int | None, hero_slug: str | None
         if not bm_dict.get("souls_at_10"):
             bm_dict["souls_at_10"] = computed_bm["souls_at_10"]
 
+    tf_list = [c.model_dump() for c in r.teamfights] if (r and r.teamfights) else []
+    pt_list = [c.model_dump() for c in r.purchase_timings] if (r and r.purchase_timings) else []
+    db_list = [c.model_dump() for c in r.death_breakdown] if (r and r.death_breakdown) else []
+    lc_dict = r.lane_comparison.model_dump() if (r and r.lane_comparison) else None
+
     return MatchReview(
         match_id=str(nm.match_id),
         hero_id=me.hero_id_slug if me else "unknown",
@@ -309,6 +526,10 @@ def _to_review(normalized, report, account_id: int | None, hero_slug: str | None
         item_analysis=(localize_report_dict({"corrections": [
             c.model_dump() for c in r.item_corrections
         ]}) if r else {}),
+        teamfights=localize_report_dict(tf_list),
+        purchase_timings=localize_report_dict(pt_list),
+        death_breakdown=localize_report_dict(db_list),
+        lane_comparison=(localize_report_dict(lc_dict) if lc_dict else None),
     )
 
 
@@ -360,6 +581,56 @@ def create_app() -> FastAPI:
     @app.get("/api/map", response_model=MapGuide)
     def map_guide(request: Request) -> Response:
         return _catalog_response(request, _cached_map_json, _map_etag)
+
+    # --- Контрпики (экран 7) ---------------------------------------------
+    # Датасет грузится лениво: отсутствие counterpicks.json не должно мешать
+    # остальным экранам, а 503 честно сообщает, что данные не собраны.
+    _counterpicks_cache: dict[str, str | None] = {"json": None, "etag": None}
+
+    def _counterpicks_payload() -> tuple[str, str]:
+        import hashlib
+
+        if _counterpicks_cache["json"] is None:
+            data = dataset_mod.get_counterpicks()
+            content = json.dumps(data.model_dump(mode="json"), ensure_ascii=False)
+            _counterpicks_cache["json"] = content
+            _counterpicks_cache["etag"] = (
+                f'"{hashlib.md5(content.encode("utf-8")).hexdigest()}"'
+            )
+        return _counterpicks_cache["json"], _counterpicks_cache["etag"]  # type: ignore[return-value]
+
+    @app.get("/api/counterpicks", response_model=Counterpicks)
+    def counterpicks(request: Request) -> Response:
+        try:
+            content, etag = _counterpicks_payload()
+        except FileNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Датасет контрпиков не собран. Выполните "
+                    "python scripts/build_counterpicks.py --extract, затем переведите "
+                    "чанки и соберите их через --assemble."
+                ),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return _catalog_response(request, content, etag)
+
+    @app.get("/api/counterpicks/hero/{hero_id}")
+    def counterpicks_hero(hero_id: str):
+        data = dataset_mod.get_counterpicks()
+        for hero in data.heroes:
+            if hero.id == hero_id:
+                return hero.model_dump(mode="json")
+        raise HTTPException(status_code=404, detail=f"Unknown hero id: {hero_id!r}.")
+
+    @app.get("/api/counterpicks/item/{item_id}")
+    def counterpicks_item(item_id: str):
+        data = dataset_mod.get_counterpicks()
+        for item in data.items:
+            if item.id == item_id:
+                return item.model_dump(mode="json")
+        raise HTTPException(status_code=404, detail=f"Unknown item id: {item_id!r}.")
 
     @app.get("/api/advice", response_model=Advice)
     def advice(
@@ -641,6 +912,8 @@ def create_app() -> FastAPI:
             "provider": eff.provider,
             "model_name": eff.model_name,
             "base_url": eff.base_url,
+            "reasoning_effort": getattr(eff, "reasoning_effort", "low") or "low",
+            "enable_thinking": getattr(eff, "enable_thinking", True),
             "api_key_masked": masked,
             "has_key": bool(key),
             "key_source": "env" if env_key else ("db" if db_key else "none"),
@@ -714,6 +987,61 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         return analysis.model_dump()
 
+    @app.post("/api/draft/builds")
+    def draft_builds(body: DraftBuildsRequest) -> dict:
+        """S5: быстрые сборки по драфту (локальный движок, без LLM на пути).
+
+        Скорость — главное требование сценария «в матче» (30–40 с): весь план
+        считается локально (advisor/drafter/calculator). `mode="ai"` лишь
+        добавляет короткие текстовые обоснования, если ключ есть и модель
+        успела за 8 с; при любой ошибке/таймауте ответ остаётся локальным.
+        """
+        from ..engine import draft_builds as draft_builds_mod
+
+        catalog = dataset_mod.get_catalog()
+        drafter = _get_drafter()
+        if len(body.enemies) > 6:
+            raise HTTPException(status_code=422, detail="Teams are 6v6 maximum.")
+        if len(body.enemies) != len(set(body.enemies)):
+            raise HTTPException(
+                status_code=422, detail="Enemy list contains duplicate hero ids."
+            )
+        try:
+            plan = draft_builds_mod.build_plan(
+                body.my_hero, body.enemies, catalog,
+                role=body.role, mode=body.mode,
+            )
+        except ValueError as exc:
+            detail = str(exc)
+            status = 404 if detail.startswith("Unknown hero id") else 422
+            raise HTTPException(status_code=status, detail=detail) from exc
+
+        wants_llm = plan.engine.mode == "ai"
+        notes: dict[str, str] | None = None
+        llm_ms: float | None = None
+        if wants_llm and body.my_hero:
+            try:
+                cfg = effective_ai_config(_db().get_ai_config())
+            except Exception:  # noqa: BLE001 — хранилище недоступно: остаёмся локальными
+                cfg = None
+            if cfg is not None and cfg.api_key:
+                from ..ai import client as client_mod
+
+                start = time.monotonic()
+                try:
+                    client = client_mod.create_client(cfg)
+                    notes = draft_builds_mod.llm_notes(plan, client)
+                except Exception:  # noqa: BLE001 — LLM необязателен
+                    notes = None
+                llm_ms = round((time.monotonic() - start) * 1000, 1)
+
+        if notes:
+            for variant in plan.variants:
+                variant.llm_note = notes.get(variant.key)
+        plan.engine.llm_used = bool(notes)
+        plan.engine.llm_ms = llm_ms
+        return plan.model_dump()
+
     @app.post("/api/draft/parse-screenshot")
     def draft_parse_screenshot(body: DraftScreenshotRequest) -> dict:
         import base64 as b64mod
@@ -759,6 +1087,106 @@ def create_app() -> FastAPI:
             "my_hero": parsed.get("my_hero"),
             "tactics": parsed.get("tactics", {}),
             "heuristic": heuristic,
+        }
+
+    # --- Live In-Game Assistant (M4 §6) -----------------------------------
+
+    @app.get("/api/live/timers")
+    def live_timers() -> dict:
+        """Тайминги объектов матча из data/map.json timeline + справочные
+        респавны (Урна душ, Мидбосс). Всё локально, без внешних запросов."""
+        return {"timeline": _live_timeline(), "respawns": LIVE_RESPAWNS}
+
+    @app.get("/api/live/state")
+    def live_state_get() -> dict:
+        """Сохранённый ручной ввод оверлея (мой герой, враги, предметы)."""
+        state = _db().get_cached(LIVE_STATE_KEY, LIVE_STATE_TTL)
+        if not isinstance(state, dict):
+            state = {}
+        return {
+            "my_hero": str(state.get("my_hero") or ""),
+            "enemies": list(state.get("enemies") or []),
+            "items": list(state.get("items") or []),
+            "set": bool(state),
+        }
+
+    @app.post("/api/live/state")
+    def live_state_post(body: LiveStateRequest) -> dict:
+        """Сохранить ручной ввод оверлея в SQLite (kv-кэш api_cache)."""
+        catalog = dataset_mod.get_catalog()
+        my_hero, foes, owned = _resolve_live_payload(body, catalog)
+        state = {
+            "my_hero": my_hero,
+            "enemies": [f.id for f in foes],
+            "items": [i.id for i in owned],
+        }
+        _db().set_cached(LIVE_STATE_KEY, state)
+        return {**state, "set": True}
+
+    @app.post("/api/live/advice")
+    def live_advice(body: LiveStateRequest | None = None) -> dict:
+        """Мгновенные локальные советы «купи X против Y» (без LLM, без сети).
+
+        Тело {my_hero, enemies, items} — или сохранённое состояние, если тело
+        пустое. Движки: advisor.recommend (контр-предметы по тегам) +
+        drafter.analyze_draft (Red Flags). Цель — < 100 мс.
+        """
+        start = time.monotonic()
+        catalog = dataset_mod.get_catalog()
+        drafter = _get_drafter()
+        if body is None or not (body.my_hero or body.enemies or body.items):
+            saved = _db().get_cached(LIVE_STATE_KEY, LIVE_STATE_TTL)
+            body = LiveStateRequest(**(saved or {}))
+        my_hero, foes, _owned = _resolve_live_payload(body, catalog)
+        me = catalog.by_id.get(my_hero) if my_hero else None
+
+        # Red Flags: вражеский состав против моей команды (один герой).
+        red_flags: list[dict] = []
+        if foes:
+            try:
+                analysis = drafter.analyze_draft(
+                    [my_hero] if my_hero else [],
+                    [f.id for f in foes],
+                    catalog,
+                    allow_mirror=True,
+                )
+                red_flags = [f.model_dump() for f in analysis.red_flags]
+            except ValueError:
+                pass  # пустой/невалидный ввод — флагов нет
+
+        # Контр-предметы по тегам врагов (advisor.recommend, локально).
+        advice = advisor_mod.recommend(
+            me, foes, catalog.counter_rules, catalog.item_by_id)
+        counters: list[dict] = []
+        for rec in advice.recommendations:
+            counters.append({
+                "item_id": rec.item.id,
+                "name": rec.item.name,
+                "reason": rec.explanation,
+                "cost": rec.cost,
+                "tier": rec.tier,
+                "timing": rec.timing,
+            })
+
+        tips: list[str] = []
+        for flag in red_flags[:2]:
+            if flag.get("fix"):
+                tips.append(flag["fix"])
+        for rec in advice.recommendations[:3]:
+            covered = ", ".join(t.value for t in rec.item.counters)
+            tips.append(
+                f"Купи {rec.item.name} против {covered or 'угроз врага'}: "
+                f"{rec.explanation}")
+        if advice.threats and not tips:
+            top = advice.threats[0]
+            tips.append(
+                f"Главная угроза: {top.tag.value} от {', '.join(top.contributors)}.")
+
+        return {
+            "red_flags": red_flags,
+            "counters": counters,
+            "tips": tips,
+            "computed_ms": round((time.monotonic() - start) * 1000, 1),
         }
 
     # --- Deep Match -------------------------------------------------------------
@@ -814,9 +1242,27 @@ def create_app() -> FastAPI:
         except match_loader.MatchLoadError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
+        depth = _validate_depth(body.depth)  # V2.0: short|medium|deep
+
         from ..models import AIConfig  # noqa: F401 — re-exported seam
 
         cfg = effective_ai_config(_db().get_ai_config())
+        # V2.0 М4: разовая смена модели из UI (селект «Модель») — применяем к
+        # текущему разбору и сохраняем в БД, чтобы выбор запомнился.
+        if body.model_name:
+            cfg = cfg.model_copy(update={"model_name": body.model_name})
+            try:
+                _db().update_ai_config(model_name=body.model_name)
+            except Exception:  # noqa: BLE001 — необязательно, только запомнить
+                pass
+        # V2.0: Авто-настройка уровня размышлений (reasoning_effort)
+        if body.reasoning_effort and body.reasoning_effort != "auto":
+            cfg = cfg.model_copy(update={"reasoning_effort": body.reasoning_effort, "enable_thinking": True})
+        elif depth == "short":
+            cfg = cfg.model_copy(update={"reasoning_effort": "off", "enable_thinking": False})
+        elif not getattr(cfg, "reasoning_effort", None) or cfg.reasoning_effort == "auto":
+            cfg = cfg.model_copy(update={"reasoning_effort": "low", "enable_thinking": True})
+
         is_offline = (body.mode or "").lower() == "offline"
         if not is_offline and not cfg.api_key:
             raise HTTPException(
@@ -827,11 +1273,15 @@ def create_app() -> FastAPI:
         if is_offline:
             report = coach_mod.heuristic_report(normalized, body.account_id, hero_slug=body.hero_slug)
         else:
-            client = client_mod.create_client(cfg)
+            # V2.0 М4: автосмена модели при «остывании» (429) — разбор не
+            # падает из-за одного залипшего провайдера, а пробует следующие.
             try:
-                report = coach_mod.analyze_match(
-                    normalized, body.account_id, client, image_bytes=image_bytes, hero_slug=body.hero_slug
+                report, used_model = coach_mod.analyze_match_with_fallback(
+                    normalized, body.account_id, cfg, image_bytes=image_bytes,
+                    hero_slug=body.hero_slug, depth=depth,
+                    player_context=_player_context(),
                 )
+                cfg = cfg.model_copy(update={"model_name": used_model})
             except Exception as exc:
                 raise HTTPException(
                     status_code=502,
@@ -839,6 +1289,7 @@ def create_app() -> FastAPI:
                 ) from exc
 
         review = _to_review(normalized, report, body.account_id, hero_slug=body.hero_slug)
+        review.progress = _player_context()
         _db().save_review(review.model_dump())
         return review
 
@@ -866,6 +1317,11 @@ def create_app() -> FastAPI:
                            "detail": "Укажи Match ID или загрузи скриншот."})
                 return
             try:
+                depth = _validate_depth(body.depth)  # V2.0: short|medium|deep
+            except HTTPException as exc:
+                yield sse({"type": "error", "detail": str(exc.detail)})
+                return
+            try:
                 yield sse({"type": "stage", "stage": "fetch"})
                 normalized, image_bytes = await asyncio.to_thread(
                     _load_match_for_analysis, body, match_loader)
@@ -877,6 +1333,28 @@ def create_app() -> FastAPI:
                 return
 
             cfg = effective_ai_config(_db().get_ai_config())
+            # V2.0 М4: разовая смена модели из UI + запоминание в БД.
+            if body.model_name:
+                cfg = cfg.model_copy(update={"model_name": body.model_name})
+                try:
+                    _db().update_ai_config(model_name=body.model_name)
+                except Exception:  # noqa: BLE001 — необязательно
+                    pass
+            # V2.0: Авто-настройка уровня размышлений (reasoning_effort)
+            if body.reasoning_effort and body.reasoning_effort != "auto":
+                cfg = cfg.model_copy(update={"reasoning_effort": body.reasoning_effort, "enable_thinking": True})
+            elif depth == "short":
+                cfg = cfg.model_copy(update={"reasoning_effort": "off", "enable_thinking": False})
+            elif not getattr(cfg, "reasoning_effort", None) or cfg.reasoning_effort == "auto":
+                cfg = cfg.model_copy(update={"reasoning_effort": "low", "enable_thinking": True})
+
+            # V2.0 М5: короткий режим — это экспресс. Тяжёлые reasoning-модели
+            # в него физически не влезают (замер владельца: даже быстрый
+            # glm-5.3-flash ~63.5с при окне 60с), поэтому «Короткий» без явного
+            # выбора модели пинится на быструю модель пула.
+            if depth == "short" and not body.model_name:
+                cfg = cfg.model_copy(update={"model_name": "deepseek-v4-flash"})
+
             is_offline = (body.mode or "").lower() == "offline"
             if not is_offline and not cfg.api_key:
                 yield sse({
@@ -906,21 +1384,54 @@ def create_app() -> FastAPI:
 
             pending: list[dict] = []
             report = None
+            used_model = [cfg.model_name]
+            attempt_notes: list[dict] = []
+            # Адаптивный лимит под глубину разбора: short: 60с, medium: 120с,
+            # deep: 180с. Дедлайн считается от старта ВСЕЙ цепочки моделей, а не
+            # от попытки: раньше on_attempt сбрасывал счётчик, и разбор мог идти
+            # кратно дольше заявленного окна, а ошибка приходила с ложным числом.
+            timeout_limit = 180.0 if depth == "deep" else (120.0 if depth == "medium" else 60.0)
+            # Потолок одной модели: залипший провайдер не должен съесть всё окно,
+            # остаток идёт на failover.
+            attempt_budget = 90.0 if depth == "deep" else (60.0 if depth == "medium" else 30.0)
+            deadline = time.monotonic() + timeout_limit
+
+            def _remaining() -> float:
+                return deadline - time.monotonic()
+
+            def on_attempt(model: str, tried: list[str]) -> None:
+                if len(tried) > 1:
+                    attempt_notes.append({
+                        "type": "progress",
+                        "model": model,
+                        "detail": f"Модель «{tried[-2]}» остывает — пробую «{model}»…",
+                    })
+                else:
+                    attempt_notes.append({"type": "progress", "model": model,
+                                          "detail": f"Разбираю моделью «{model}»…"})
 
             def run_llm():
-                client = client_mod.create_client(cfg)
-                return coach_mod.analyze_match_stream(
-                    normalized, body.account_id, client,
-                    image_bytes=image_bytes, on_chunk=on_chunk,
-                    hero_slug=body.hero_slug)
+                # V2.0 М4: автосмена модели при «остывании» (429) — не падаем
+                # из-за одного залипшего провайдера.
+                rep, model = coach_mod.analyze_match_with_fallback(
+                    normalized, body.account_id, cfg,
+                    image_bytes=image_bytes,
+                    hero_slug=body.hero_slug, depth=depth,
+                    player_context=_player_context(),
+                    on_attempt=on_attempt,
+                    on_chunk=on_chunk,
+                    total_timeout=timeout_limit,
+                    attempt_timeout=attempt_budget,
+                )
+                used_model[0] = model
+                return rep
 
             yield sse({"type": "stage", "stage": "llm"})
             yield sse({"type": "progress", "seconds": 0})
             task = asyncio.get_running_loop().run_in_executor(None, run_llm)
-            timeout_limit = 65.0
             while not task.done():
                 elapsed = time.monotonic() - start
-                if elapsed > timeout_limit:
+                if _remaining() <= 0:
                     yield sse({
                         "type": "error",
                         "detail": f"Превышено время ожидания ответа модели ({int(timeout_limit)}с). Проверьте ключ и выбранную модель.",
@@ -929,6 +1440,8 @@ def create_app() -> FastAPI:
                 await asyncio.sleep(0.5)
                 yield sse({"type": "progress",
                            "seconds": int(elapsed)})
+                while attempt_notes:
+                    yield sse(attempt_notes.pop(0))
                 while pending:
                     yield sse(pending.pop(0))
             try:
@@ -966,6 +1479,78 @@ def create_app() -> FastAPI:
     @app.get("/api/match/reviews")
     def match_reviews(limit: int = 20) -> list[dict]:
         return _db().get_reviews(limit=limit)
+
+    @app.post("/api/match/reviews/{match_id}/reanalyze", response_model=MatchReview)
+    def match_reanalyze(match_id: str, body: ReanalyzeRequest) -> MatchReview:
+        """V2.0 (ТЗ §3.5): переразобрать сохранённый матч с новой глубиной/
+        обновлёнными инструкциями/моделью. Сырьё берётся из кэша match_raw
+        (fetch_match кэширует навсегда), повторного запроса к API нет.
+        """
+        match_loader, coach_mod, client_mod = _get_match_pipeline()
+        saved = _db().get_review(match_id)
+        if saved is None:
+            raise HTTPException(status_code=404, detail=f"Нет сохранённого разбора матча {match_id}")
+
+        # Скриншот-разборы не хранят сырой телеметрии — переразобрать их нельзя.
+        if str(match_id).startswith("screenshot-"):
+            raise HTTPException(
+                status_code=404,
+                detail="Разбор по скриншоту без данных матча — переразбор невозможен. "
+                       "Укажите Match ID и разберите матч заново.",
+            )
+
+        try:
+            raw = match_loader.fetch_match(match_id, db=_db())
+            hero_map = match_loader.load_hero_map()
+            normalized = match_loader.normalize_match(raw, hero_map)
+        except match_loader.RateLimitError as exc:
+            raise HTTPException(status_code=429, detail=str(exc)) from exc
+        except match_loader.MatchLoadError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+        from ..models import AIConfig  # noqa: F401 — re-exported seam
+
+        depth = _validate_depth(body.depth)  # V2.0: short|medium|deep
+        cfg = effective_ai_config(_db().get_ai_config())
+        is_offline = (body.mode or "").lower() == "offline"
+        if not is_offline and not cfg.api_key:
+            raise HTTPException(
+                status_code=422,
+                detail="Для анализа матча нейросетью укажите API-ключ в профиле",
+            )
+
+        # Точка зрения: явный account_id; иначе hero_id из сохранённого разбора
+        # (MatchReview не хранит account_id — резолвим его в нормализованном матче).
+        account_id = body.account_id
+        if account_id is None and isinstance(saved, dict):
+            hero_id = str(saved.get("hero_id") or "").strip().lower()
+            if hero_id:
+                for p in normalized.players:
+                    if p.hero_id_slug.lower() == hero_id:
+                        account_id = p.account_id
+                        break
+
+        if is_offline:
+            report = coach_mod.heuristic_report(normalized, account_id, hero_slug=body.hero_slug)
+        else:
+            client = client_mod.create_client(cfg)
+            try:
+                report = coach_mod.analyze_match(
+                    normalized, account_id, client, image_bytes=None,
+                    hero_slug=body.hero_slug, depth=depth,
+                    player_context=_player_context(),
+                    system_prompt_override=cfg.system_prompt_override,
+                )
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=502,
+                    detail=f"Ошибка анализа нейросетью: {exc}",
+                ) from exc
+
+        review = _to_review(normalized, report, account_id, hero_slug=body.hero_slug)
+        review.progress = _player_context()
+        _db().save_review(review.model_dump())
+        return review
 
     # --- Assets -------------------------------------------------------------------
 
@@ -1020,6 +1605,11 @@ def create_app() -> FastAPI:
     @app.get("/")
     def index():
         return FileResponse(WEB_DIR / "index.html", headers=_no_cache)
+
+    @app.get("/live.html")
+    def live_page():
+        """M4 §6: оверлей In-Game Assistant (отдельное окно PyWebView on_top)."""
+        return FileResponse(WEB_DIR / "live.html", headers=_no_cache)
 
     @app.get("/favicon.ico")
     def favicon():

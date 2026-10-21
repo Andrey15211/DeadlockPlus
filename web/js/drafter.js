@@ -1,7 +1,7 @@
 // drafter.js — экран 3: пик-ассистент 6v6 (Red Flags, синергии, контр-пики).
 // Импорт-безопасен: DOM трогается только внутри initDrafter.
 
-import { postDraftAnalyze, postDraftParseScreenshot, fetchItems } from './api.js';
+import { postDraftAnalyze, postDraftParseScreenshot, postDraftBuilds, fetchItems } from './api.js';
 import { TAG_LABEL, ROLE_LABEL } from './ui.js';
 
 const LANES = [
@@ -164,8 +164,12 @@ function renderHeroGrid() {
   const q = searchQuery.toLowerCase().trim();
   const filtered = heroes.filter((hero) => {
     if (hero.in_development) return false;
-    if (selectedRole && (!hero.roles || !hero.roles.includes(selectedRole))) {
-      return false;
+    if (selectedRole) {
+      const r = hero.roles || [];
+      const match = selectedRole === 'support'
+        ? (r.includes('support') || r.includes('controller'))
+        : r.includes(selectedRole);
+      if (!match) return false;
     }
     if (q) {
       const matchRu = (hero.name || '').toLowerCase().includes(q);
@@ -538,11 +542,173 @@ async function handleDraftScreenshot(fileOrBlob) {
   reader.readAsDataURL(fileOrBlob);
 }
 
+// --- S5: быстрые сборки по драфту (локальный движок, 30-40 с) ---------------
+
+function itemName(itemId, fallback) {
+  const item = itemById && itemById.get(itemId);
+  return item ? item.name : (fallback || itemId);
+}
+
+function renderDraftBuilds(plan) {
+  if (!dom.buildsPanel) return;
+
+  const blocks = [];
+
+  if (plan.starter && plan.starter.length) {
+    blocks.push(`
+      <div class="db-block">
+        <h3 class="db-block-title">🛒 Стартовый набор · <span class="db-cost">${esc(plan.starter_cost)} душ</span></h3>
+        <div class="db-starter">
+          ${plan.starter.map((s) => `
+            <div class="db-starter-item">
+              <span class="db-si-name">${esc(s.name)}</span>
+              <span class="db-si-cost">${esc(s.cost)}</span>
+              <span class="db-si-reason">${esc(s.reason)}</span>
+            </div>`).join('')}
+        </div>
+      </div>`);
+  }
+
+  if (plan.variants && plan.variants.length) {
+    blocks.push(`
+      <div class="db-block">
+        <h3 class="db-block-title">🧩 Варианты сборки</h3>
+        <div class="db-variants">
+          ${plan.variants.map((v) => `
+            <div class="db-variant">
+              <div class="db-v-head">
+                <span class="db-v-title">${esc(v.title)}</span>
+                <span class="db-v-cost">${esc(v.total_cost)} душ</span>
+              </div>
+              <div class="db-v-items">
+                ${v.items.map((i) => `
+                  <span class="db-item" title="Tier ${esc(i.tier)} · ${esc(i.tier_band)}">${esc(itemName(i.item_id, i.name))}</span>
+                `).join('')}
+              </div>
+              <div class="db-v-stats">
+                DPS ${esc(v.stats.weapon_dps)} · дух ${esc(v.stats.spirit_power)} ·
+                EHP пули ${esc(v.stats.effective_hp_bullet)} · EHP спирит ${esc(v.stats.effective_hp_spirit)}
+              </div>
+              <ul class="db-v-reasons">
+                ${(v.rationale || []).map((r) => `<li>${esc(r)}</li>`).join('')}
+                ${v.llm_note ? `<li class="db-v-llm">🤖 ${esc(v.llm_note)}</li>` : ''}
+              </ul>
+            </div>`).join('')}
+        </div>
+      </div>`);
+  }
+
+  if (plan.counters && plan.counters.length) {
+    blocks.push(`
+      <div class="db-block">
+        <h3 class="db-block-title">🛡 Контр-предметы под их драфт</h3>
+        <div class="db-counters">
+          ${plan.counters.map((c) => `
+            <div class="db-counter">
+              <span class="db-co-name">${esc(itemName(c.item_id, c.name))}</span>
+              <span class="db-co-when">${esc(c.timing)}</span>
+              <span class="db-co-tags">${(c.covered_tags || []).map((t) => esc(TAG_LABEL[t] || t)).join(', ')}</span>
+            </div>`).join('')}
+        </div>
+      </div>`);
+  }
+
+  if (plan.timing_hint && (plan.timing_hint.bands || []).length) {
+    blocks.push(`
+      <div class="db-block">
+        <h3 class="db-block-title">⏱ Тайминг покупок</h3>
+        <div class="db-timing">${esc(plan.timing_hint.summary || '')}</div>
+        <div class="db-timing-bands">
+          ${plan.timing_hint.bands.map((b) => `
+            <div class="db-band">
+              <span class="db-band-when">T${esc(b.tier)} · ${esc(b.window)}</span>
+              <span class="db-band-cost">${esc(b.cost_range)}</span>
+              <span class="db-band-items">${(b.item_ids || []).map((id) => esc(itemName(id))).join(', ')}</span>
+            </div>`).join('')}
+        </div>
+      </div>`);
+  }
+
+  if (plan.notes && plan.notes.length) {
+    blocks.push(`<ul class="db-notes">${plan.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`);
+  }
+
+  if (!blocks.length) {
+    dom.buildsPanel.classList.add('hidden');
+    return;
+  }
+  dom.buildsPanel.innerHTML = blocks.join('');
+  dom.buildsPanel.classList.remove('hidden');
+}
+
+async function buildForMe() {
+  const my = myTeam.filter(Boolean);
+  const enemy = enemyTeam.filter(Boolean);
+  setError('');
+  if (my.length === 0) {
+    setError('Выбери своего героя — сборка строится под конкретного персонажа.');
+    return;
+  }
+  if (enemy.length === 0) {
+    setError('Добавь хотя бы одного героя врага — без вражеского драфта сборка не нужна.');
+    return;
+  }
+  if (dom.buildsBtn) {
+    dom.buildsBtn.disabled = true;
+    dom.buildsBtn.textContent = 'Собираю…';
+  }
+  try {
+    // Сборка строится под первого героя вашей команды (в матче вы пикаете себя).
+    const plan = await postDraftBuilds(my[0], enemy, { role: selectedRole || null });
+    await ensureItems();
+    renderResults(plan);
+    renderDraftBuilds(plan);
+    dom.result.classList.remove('hidden');
+  } catch (e) {
+    setError(`Сборка не удалась: ${e.message}`);
+  } finally {
+    if (dom.buildsBtn) {
+      dom.buildsBtn.disabled = false;
+      dom.buildsBtn.textContent = '⚙️ Быстрая сборка';
+    }
+  }
+}
+
+// S5: элементы быстрых сборок живут в index.html, но модуль не должен
+// падать, если разметку ещё не добавили — создаём их сами как fallback.
+function ensureBuildsUi() {
+  let btn = document.getElementById('btn-draft-builds');
+  if (!btn) {
+    const actions = document.querySelector('.draft-actions');
+    if (actions) {
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-ghost btn-draft-builds';
+      btn.id = 'btn-draft-builds';
+      btn.textContent = '⚙️ Быстрая сборка';
+      actions.insertBefore(btn, actions.querySelector('#btn-draft-analyze')?.nextSibling || null);
+    }
+  }
+  let panel = document.getElementById('draft-builds-panel');
+  if (!panel) {
+    const result = document.getElementById('draft-result');
+    if (result && result.parentNode) {
+      panel = document.createElement('div');
+      panel.id = 'draft-builds-panel';
+      panel.className = 'panel draft-builds hidden';
+      result.parentNode.insertBefore(panel, result);
+    }
+  }
+  return { btn, panel };
+}
+
 // --- init ---------------------------------------------------------------------------------
 
 export function initDrafter(heroesData) {
   heroes = Array.isArray(heroesData) ? heroesData : [];
   heroById = new Map(heroes.map((h) => [h.id, h]));
+
+  const buildsUi = ensureBuildsUi();
 
   dom = {
     mySlots: document.getElementById('draft-my-slots'),
@@ -563,6 +729,8 @@ export function initDrafter(heroesData) {
     roleFilters: document.getElementById('draft-role-filters'),
     heroGrid: document.getElementById('draft-hero-grid'),
     analyzeBtn: document.getElementById('btn-draft-analyze'),
+    buildsBtn: buildsUi.btn || document.getElementById('btn-draft-builds'),
+    buildsPanel: buildsUi.panel || document.getElementById('draft-builds-panel'),
     mirror: document.getElementById('mirror-toggle'),
     error: document.getElementById('draft-error'),
     result: document.getElementById('draft-result'),
@@ -642,7 +810,13 @@ export function initDrafter(heroesData) {
         const q = searchQuery.toLowerCase().trim();
         const available = heroes.filter((h) => {
           if (h.in_development) return false;
-          if (selectedRole && (!h.roles || !h.roles.includes(selectedRole))) return false;
+          if (selectedRole) {
+            const r = h.roles || [];
+            const match = selectedRole === 'support'
+              ? (r.includes('support') || r.includes('controller'))
+              : r.includes(selectedRole);
+            if (!match) return false;
+          }
           if (q) {
             const matchRu = (h.name || '').toLowerCase().includes(q);
             const matchEn = (h.name_en || '').toLowerCase().includes(q);
@@ -685,6 +859,7 @@ export function initDrafter(heroesData) {
 
   if (dom.mirror) dom.mirror.addEventListener('change', renderAll);
   if (dom.analyzeBtn) dom.analyzeBtn.addEventListener('click', analyze);
+  if (dom.buildsBtn) dom.buildsBtn.addEventListener('click', buildForMe);
 
   if (dom.clearBtn) {
     dom.clearBtn.addEventListener('click', () => {
@@ -694,6 +869,10 @@ export function initDrafter(heroesData) {
       setError('');
       if (dom.result) dom.result.classList.add('hidden');
       if (dom.tacticsPanel) dom.tacticsPanel.classList.add('hidden');
+      if (dom.buildsPanel) {
+        dom.buildsPanel.classList.add('hidden');
+        dom.buildsPanel.replaceChildren();
+      }
       renderAll();
     });
   }

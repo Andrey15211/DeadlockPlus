@@ -10,7 +10,6 @@ from __future__ import annotations
 from .client import (
     AnthropicClient,
     DeepSeekClient,
-    GeminiClient,
     LLMClient,
     LLMError,
     OpenAIClient,
@@ -24,7 +23,6 @@ __all__ = [
     "LLMError",
     "DeepSeekClient",
     "OpenAIClient",
-    "GeminiClient",
     "AnthropicClient",
     "create_client",
     "test_connection",

@@ -166,7 +166,6 @@ class _StubClient:
 def test_create_client_dispatch():
     assert isinstance(cl.create_client(_cfg("deepseek")), cl.DeepSeekClient)
     assert isinstance(cl.create_client(_cfg("openai")), cl.OpenAIClient)
-    assert isinstance(cl.create_client(_cfg("gemini")), cl.GeminiClient)
     assert isinstance(cl.create_client(_cfg("anthropic")), cl.AnthropicClient)
 
 
@@ -188,7 +187,8 @@ def test_deepseek_payload_and_parse(monkeypatch):
     assert cap["req"].headers.get("Authorization") == "Bearer k-123"
     body = cap["body"]
     assert body["response_format"] == {"type": "json_object"}
-    assert body["max_tokens"] == 8000
+    # V2.0 М5: потолок вывода — от уровня размышлений (дефолт low → 6000)
+    assert body["max_tokens"] == cl.OUTPUT_TOKEN_BUDGET["low"]
     assert body["temperature"] == 0.2
     assert body["model"] == "deepseek-v4.1-flash"
     assert cap["timeout"] == cl.LLM_TIMEOUT
@@ -221,7 +221,9 @@ def test_openai_payload_plain_model(monkeypatch):
     body = cap["body"]
     assert body["response_format"] == {"type": "json_object"}
     assert body["temperature"] == 0.2
-    assert body["max_tokens"] == 8000
+    # V2.0 М5: потолок вывода — от reasoning_effort (дефолт low → 6000),
+    # а не константа 8000/16000: короткий режим не тянет лишнюю генерацию.
+    assert body["max_tokens"] == cl.OUTPUT_TOKEN_BUDGET["low"]
 
 
 def test_openai_reasoning_model_no_temperature(monkeypatch):
@@ -232,7 +234,8 @@ def test_openai_reasoning_model_no_temperature(monkeypatch):
     body = cap["body"]
     assert "temperature" not in body
     assert "max_tokens" not in body
-    assert body["max_completion_tokens"] == 8000
+    # V2.0 М5: reasoning-модели получают бюджет от effort, не жёсткие 16k.
+    assert body["max_completion_tokens"] == cl.OUTPUT_TOKEN_BUDGET["low"]
 
 
 def test_openai_vision_image(monkeypatch):
@@ -247,46 +250,6 @@ def test_openai_vision_image(monkeypatch):
         "type": "image_url",
         "image_url": {"url": f"data:image/png;base64,{b64}"},
     }
-
-
-# --- gemini ----------------------------------------------------------------
-
-
-def test_gemini_payload_url_and_thinking(monkeypatch):
-    cap: dict = {}
-    resp = {"candidates": [{"content": {"parts": [{"text": '{"ok":1}'}]}}]}
-    _mock_urlopen(monkeypatch, cap, response=resp)
-    client = cl.create_client(_cfg("gemini", model_name="gemini-3.8-flash"))
-    out = client.generate_coach_report("p", {})
-    assert out == '{"ok":1}'
-    assert cap["req"].full_url == (
-        "https://generativelanguage.googleapis.com/v1beta"
-        "/models/gemini-3.8-flash:generateContent?key=k-123"
-    )
-    gc = cap["body"]["generationConfig"]
-    assert gc["response_mime_type"] == "application/json"
-    assert gc["temperature"] == 0.2
-    assert gc["thinkingConfig"]["thinkingBudget"] == 2048
-
-
-def test_gemini_no_thinking_when_disabled(monkeypatch):
-    cap: dict = {}
-    resp = {"candidates": [{"content": {"parts": [{"text": "{}"}]}}]}
-    _mock_urlopen(monkeypatch, cap, response=resp)
-    client = cl.create_client(_cfg("gemini", enable_thinking=False))
-    client.generate_coach_report("p", {})
-    assert "thinkingConfig" not in cap["body"]["generationConfig"]
-
-
-def test_gemini_vision_inline_data(monkeypatch):
-    cap: dict = {}
-    resp = {"candidates": [{"content": {"parts": [{"text": "{}"}]}}]}
-    _mock_urlopen(monkeypatch, cap, response=resp)
-    client = cl.create_client(_cfg("gemini"))
-    client.generate_coach_report("p", {}, image_bytes=b"IMG")
-    parts = cap["body"]["contents"][0]["parts"]
-    assert parts[1]["inline_data"]["data"] == base64.b64encode(b"IMG").decode()
-    assert parts[1]["inline_data"]["mime_type"] == "image/png"
 
 
 # --- anthropic -------------------------------------------------------------
@@ -328,7 +291,7 @@ def test_anthropic_vision_base64_source(monkeypatch):
 def test_llm_http_errors_carry_body(monkeypatch, code):
     err = _FakeHTTPError(code, b'{"error": {"message": "quota exceeded"}}')
     _mock_urlopen(monkeypatch, {}, response=None, error=err)
-    for provider in ("deepseek", "openai", "gemini", "anthropic"):
+    for provider in ("deepseek", "openai", "anthropic"):
         client = cl.create_client(_cfg(provider))
         with pytest.raises(cl.LLMError) as ei:
             client.generate_coach_report("p", {})
@@ -391,6 +354,15 @@ def test_coach_invalid_schema_raises_llm_error():
         coach_mod.analyze_match(_normalized_match(), 111, stub)
 
 
+def test_coach_grade_out_of_vocab_is_clamped_not_failed():
+    """LLM вернул 'D' вне алфавита S+/S/A/B/C — клампим в 'C', отчёт живой."""
+    bad = dict(VALID_REPORT)
+    bad["performance_grade"] = "D"
+    stub = _StubClient(json.dumps(bad))
+    report = coach_mod.analyze_match(_normalized_match(), 111, stub)
+    assert report.performance_grade == "C"
+
+
 def test_coach_invalid_json_raises_llm_error():
     stub = _StubClient("это не JSON вообще")
     with pytest.raises(cl.LLMError, match="invalid JSON"):
@@ -425,6 +397,9 @@ def test_coach_accepts_dict_match():
 def test_coach_system_prompt_shape():
     assert "performance_grade" in coach_mod.COACH_SYSTEM_PROMPT
     assert "JSON" in coach_mod.COACH_SYSTEM_PROMPT
+    # Фикс «таймаут 200с»: жёсткое требование лаконичности в промпте
+    assert "ЛАКОНИЧНОСТЬ" in coach_mod.COACH_SYSTEM_PROMPT
+    assert "300–700 слов" in coach_mod.COACH_SYSTEM_PROMPT
 
 
 def test_heuristic_report_from_normalized():
@@ -493,6 +468,28 @@ def test_post_json_retry_on_502_error(monkeypatch):
     res = cl._post_json("https://fake", {}, {}, max_retries=2, retry_delay=0.01)
     assert res == {"ok": True}
     assert attempts[0] == 2
+
+
+def test_post_json_no_retry_on_socket_timeout(monkeypatch):
+    """Фикс «таймаут 200с»: таймаут генерации НЕ ретраим (иначе 120+120=240с
+    и упор в лимит эндпоинта) — сразу LLMError, fallback на следующую модель."""
+    attempts = [0]
+
+    def fake(req, timeout=None):
+        attempts[0] += 1
+        raise TimeoutError("timed out")
+
+    monkeypatch.setattr(cl.urllib.request, "urlopen", fake)
+    with pytest.raises(cl.LLMError, match="timed out"):
+        cl._post_json("https://fake", {}, {}, max_retries=2, retry_delay=0.01)
+    assert attempts[0] == 1
+
+
+def test_is_timeout_error_classification():
+    assert cl._is_timeout_error(TimeoutError("timed out")) is True
+    assert cl._is_timeout_error(urllib.error.URLError(TimeoutError("timed out"))) is True
+    assert cl._is_timeout_error(urllib.error.URLError("conn refused")) is False
+    assert cl._is_timeout_error(ConnectionResetError("reset")) is False
 
 
 def test_post_json_exhaust_retries_raises_llm_error(monkeypatch):
@@ -600,6 +597,97 @@ def test_compute_match_benchmarks():
     assert bm["souls_at_10"] == 3.4  # 17000 / 5000
     assert bm["fight_participation"] > 0
     assert bm["lane_efficiency"] >= 1.0
+
+
+# --- V2.0: три глубины разбора (ТЗ §3.1) -----------------------------------
+
+
+def test_coach_prompt_depth_short():
+    p = coach_mod.get_coach_prompt("short")
+    assert "«КОРОТКИЙ»" in p
+    # короткий режим требует ровно 3 пункта заключения
+    assert "РОВНО 3 пункта" in p
+
+
+def test_coach_prompt_depth_medium_is_default():
+    assert coach_mod.get_coach_prompt() == coach_mod.get_coach_prompt("medium")
+    assert "«СРЕДНИЙ»" in coach_mod.get_coach_prompt()
+    assert "purchase_timings" in coach_mod.get_coach_prompt("medium")
+
+
+def test_coach_prompt_depth_deep():
+    p = coach_mod.get_coach_prompt("deep")
+    assert "«МАКСИМАЛЬНЫЙ»" in p
+    assert "death_breakdown" in p
+    assert "lane_comparison" in p
+
+
+def test_coach_prompt_depth_case_insensitive():
+    assert "«СРЕДНИЙ»" in coach_mod.get_coach_prompt("MEDIUM")
+    assert "«КОРОТКИЙ»" in coach_mod.get_coach_prompt(" Short ")
+
+
+def test_coach_prompt_depth_invalid_raises():
+    with pytest.raises(ValueError, match="unknown depth"):
+        coach_mod.get_coach_prompt("ultra")
+    with pytest.raises(ValueError, match="unknown depth"):
+        coach_mod.analyze_match(_normalized_match(), 111, _StubClient("x"), depth="bogus")
+
+
+@pytest.mark.parametrize("depth", ["short", "medium", "deep"])
+def test_coach_analyze_depth_returns_valid_report(depth):
+    """Все три глубины дают валидный CoachReport (мок клиента)."""
+    stub = _StubClient(json.dumps(VALID_REPORT))
+    report = coach_mod.analyze_match(_normalized_match(), 111, stub, depth=depth)
+    assert isinstance(report, CoachReport)
+    assert report.performance_grade == "A"
+    assert report.coach_conclusion == ["раз", "два", "три"]
+    # промпт соответствует выбранной глубине
+    assert "«КОРОТКИЙ»" in stub.calls[0]["prompt"] or depth != "short"
+    assert "death_breakdown" in stub.calls[0]["prompt"] or depth != "deep"
+    # данные матча всё ещё компактные
+    assert stub.calls[0]["match_data"]["kda"] == "14/3/9"
+
+
+def test_coach_analyze_depth_default_medium():
+    stub = _StubClient(json.dumps(VALID_REPORT))
+    coach_mod.analyze_match(_normalized_match(), 111, stub)
+    assert "«СРЕДНИЙ»" in stub.calls[0]["prompt"]
+
+
+def test_coach_analyze_stream_depth_passed():
+    stub = _StubClient(json.dumps(VALID_REPORT))
+    coach_mod.analyze_match_stream(_normalized_match(), 111, stub, depth="deep")
+    assert "«МАКСИМАЛЬНЫЙ»" in stub.calls[0]["prompt"]
+
+
+def test_coach_dataset_includes_lane_opponent():
+    """В компактных данных матча есть эвристика соперника по линии."""
+    stub = _StubClient(json.dumps(VALID_REPORT))
+    coach_mod.analyze_match(_normalized_match(), 111, stub, depth="deep")
+    data = stub.calls[0]["match_data"]
+    assert isinstance(data.get("lane_opponent"), dict)
+    # игрока 111 (infernus) убивали из team 1 (abrams) — он и есть соперник линии
+    assert data["lane_opponent"]["hero"] == "Абрамс"
+
+
+def test_coach_prompt_player_context_and_override():
+    """Персональный контекст и правила пользователя попадают в промпт."""
+    stub = _StubClient(json.dumps(VALID_REPORT))
+    ctx = {
+        "trend": {"latest": {"match_id": "m1", "grade_label": "A", "kda": "14/3/9",
+                             "deaths": 3, "souls_at_10": 1.1, "win": True}},
+        "weaknesses": {"total_reviews": 1, "death_timing_buckets": {
+            "early_0_10": 0, "mid_10_20": 1, "late_20_plus": 0}},
+    }
+    coach_mod.analyze_match(
+        _normalized_match(), 111, stub,
+        player_context=ctx, system_prompt_override="Всегда покупай Нокдаун до 15:00.",
+    )
+    prompt = stub.calls[0]["prompt"]
+    assert "ИСТОРИЯ МАТЧЕЙ ИГРОКА" in prompt
+    assert "СЛАБОСТИ ИГРОКА" in prompt
+    assert "Нокдаун" in prompt
 
 
 

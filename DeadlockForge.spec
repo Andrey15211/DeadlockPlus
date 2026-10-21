@@ -16,16 +16,27 @@ ROOT = 'C:/Projects/DeadlockForge'
 # Имена, которые не должны попадать в сборку ни при каких условиях.
 BLOCKED_DATA_SUFFIXES = ('api.txt', 'secrets.txt', '.env')
 
+# Промежуточные файлы сборки контрпиков: сырой дамп сайта, английский источник,
+# чанки перевода и кэш нужны только на машине разработчика. В дистрибутив
+# уходит единственный data/counterpicks.json.
+BLOCKED_DATA_PARTS = ('counterpicks/', '\\counterpicks\\')
+
 
 def _strip_secrets(datas):
-    """Убрать из datas секреты и пользовательские БД рантайма."""
+    """Убрать из datas секреты, пользовательские БД и промежуточные данные контрпиков."""
     keep = []
-    for src, dest in datas:
+    for entry in datas:
+        if len(entry) == 3:
+            dest, src, type_ = entry
+        else:
+            src, dest = entry
         if src.lower().endswith(BLOCKED_DATA_SUFFIXES):
             continue
         if src.lower().endswith('.db'):  # SQLite создаётся на первом запуске
             continue
-        keep.append((src, dest))
+        if any(part in src for part in BLOCKED_DATA_PARTS):
+            continue
+        keep.append(entry)
     return keep
 
 
@@ -57,6 +68,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+a.datas = _strip_secrets(a.datas)
 pyz = PYZ(a.pure)
 
 exe = EXE(
