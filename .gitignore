@@ -47,3 +47,15 @@ desktop.ini
 .DS_Store
 .idea/
 .vscode/
+
+# Внутренние служебные файлы, инструкции и черновики разработки
+Правки/
+CODING_STANDARDS.md
+AGENTS.md
+.cursorrules
+SPEC.md
+*.bat
+
+# Исходные тяжелые медиа и дампы QA (всё рабочее лежит в web/assets)
+Assets/
+docs/
