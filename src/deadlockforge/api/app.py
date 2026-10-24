@@ -250,6 +250,13 @@ class TopmostRequest(BaseModel):
     enabled: bool
 
 
+class UpdateDownloadRequest(BaseModel):
+    """POST /api/updater/download body — скачивание обновления."""
+
+    asset_url: str
+    asset_name: str | None = None
+
+
 def _resolve_heroes(ids: list[str]) -> list[Hero]:
     catalog = dataset_mod.get_catalog()
     resolved: list[Hero] = []
@@ -1975,6 +1982,39 @@ def create_app() -> FastAPI:
         if not target.is_file():
             raise HTTPException(status_code=404, detail="Asset not found.")
         return FileResponse(target, headers=_assets_cache)
+
+    # =========================================================================
+    # Встроенное автообновление (GitHub Releases)
+    # =========================================================================
+
+    @app.get("/api/updater/version")
+    def updater_version():
+        from ..updater import CURRENT_VERSION, get_repo_slug
+        return {
+            "version": CURRENT_VERSION,
+            "app_name": "Deadlock Plus",
+            "repo": get_repo_slug(),
+        }
+
+    @app.get("/api/updater/check")
+    def updater_check(force: bool = False):
+        from ..updater import updater
+        return updater.check_for_updates(force=force)
+
+    @app.get("/api/updater/status")
+    def updater_status():
+        from ..updater import updater
+        return updater.get_download_status()
+
+    @app.post("/api/updater/download")
+    def updater_download(payload: UpdateDownloadRequest):
+        from ..updater import updater
+        return updater.start_download(payload.asset_url, payload.asset_name)
+
+    @app.post("/api/updater/apply")
+    def updater_apply():
+        from ..updater import updater
+        return updater.apply_update_and_restart()
 
     return app
 

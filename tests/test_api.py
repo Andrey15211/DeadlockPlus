@@ -804,5 +804,65 @@ def test_match_reanalyze_screenshot_rejected(monkeypatch):
     assert "переразбор невозможен" in rr.json()["detail"]
 
 
+def test_updater_api_endpoints(monkeypatch):
+    """Проверка REST-роутов автообновления (/api/updater/*)."""
+    # 1. /api/updater/version
+    r_ver = _client.get("/api/updater/version")
+    assert r_ver.status_code == 200
+    data_ver = r_ver.json()
+    assert data_ver["version"] == "1.0.0"
+    assert data_ver["app_name"] == "Deadlock Plus"
+
+    # 2. /api/updater/check (mocking check_for_updates)
+    from deadlockforge.updater import updater
+
+    monkeypatch.setattr(
+        updater,
+        "check_for_updates",
+        lambda force=False: {
+            "update_available": True,
+            "current_version": "1.0.0",
+            "latest_version": "1.1.0",
+            "release_name": "Deadlock Plus 1.1.0",
+            "release_notes": "Awesome updates",
+            "asset_url": "https://fake.url/app.exe",
+            "asset_name": "DeadlockPlus.exe",
+            "asset_size": 123456,
+            "error": None,
+        },
+    )
+
+    r_check = _client.get("/api/updater/check?force=true")
+    assert r_check.status_code == 200
+    assert r_check.json()["update_available"] is True
+    assert r_check.json()["latest_version"] == "1.1.0"
+
+    # 3. /api/updater/status
+    r_status = _client.get("/api/updater/status")
+    assert r_status.status_code == 200
+    assert "status" in r_status.json()
+
+    # 4. /api/updater/download mock
+    monkeypatch.setattr(
+        updater,
+        "start_download",
+        lambda url, name=None: {"status": "downloading", "progress_pct": 10},
+    )
+    r_down = _client.post("/api/updater/download", json={"asset_url": "https://fake.url/app.exe"})
+    assert r_down.status_code == 200
+    assert r_down.json()["status"] == "downloading"
+
+    # 5. /api/updater/apply mock
+    monkeypatch.setattr(
+        updater,
+        "apply_update_and_restart",
+        lambda: {"success": True, "dev_mode": True, "message": "OK"},
+    )
+    r_apply = _client.post("/api/updater/apply")
+    assert r_apply.status_code == 200
+    assert r_apply.json()["success"] is True
+
+
+
 
 

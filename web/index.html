@@ -131,6 +131,11 @@
     <img class="hud-logo" src="./assets/icons/deadlockforge_64.png" alt="" aria-hidden="true" decoding="async">
     <h1 class="hud-title">DEADLOCK<span>PLUS</span></h1>
     <span class="visually-hidden">Deadlock Plus</span>
+    <button id="btn-update-badge" class="hud-update-badge hidden" title="Доступна новая версия Deadlock Plus">
+      <span class="hud-update-pulse"></span>
+      <span class="hud-update-icon">⚡</span>
+      <span class="hud-update-text">Обновление</span>
+    </button>
   </div>
   <nav class="hud-nav" role="tablist" aria-label="Разделы">
     <button data-tab="hub"   class="hud-tab tab-active" role="tab">Хаб</button>
@@ -914,6 +919,37 @@
         <div class="ai-status" id="ai-status"></div>
         <p class="section-hint">Поддерживаются OpenAI-совместимые роутеры: локальный failover <strong>http://127.0.0.1:8089/v1</strong>, Zexkora, OpenRouter и др. По кнопке «🔄 Модели» каталог берётся из реального ответа <code>/v1/models</code> и каждая модель пингуется живым запросом — в списке остаются <strong>только отвечающие модели</strong>.</p>
       </div>
+
+      <!-- Блок обновления приложения (стиль Morphe) -->
+      <div class="panel update-panel">
+        <div class="update-header-row">
+          <div class="update-title-wrap">
+            <h2 class="section-title">Обновления и статус программы</h2>
+            <p class="section-hint">Автоматическая синхронизация релизов через GitHub Releases</p>
+          </div>
+          <div class="update-version-tag" id="profile-version-badge">v1.0.0</div>
+        </div>
+
+        <div class="update-card">
+          <div class="update-status-wrap">
+            <div class="update-status-indicator" id="update-status-dot"></div>
+            <div class="update-status-info">
+              <div class="update-status-title" id="update-status-text">Установлена актуальная версия</div>
+              <div class="update-status-sub" id="update-status-sub">Проверено: при запуске · Канал: GitHub Releases</div>
+            </div>
+          </div>
+
+          <div class="update-actions">
+            <button type="button" class="btn-amber" id="btn-check-updates">
+              <span id="btn-check-spinner" class="spinner-icon hidden">⟳</span>
+              <span id="btn-check-label">Проверить обновления</span>
+            </button>
+            <a href="https://github.com/Andrey15211/DeadlockPlus" target="_blank" rel="noopener" class="btn-ghost" id="btn-open-repo">
+              GitHub Репозиторий ↗
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1124,5 +1160,54 @@
 </script>
 <script type="module" src="./js/app.js"></script>
 <script type="module" src="./js/music_picker.js"></script>
+<script src="./js/updater.js"></script>
+
+<!-- ============ Модальное окно обновления в стиле Morphe ============ -->
+<div id="update-modal" class="hud-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="update-modal-title">
+  <div class="hud-modal-box update-modal-box">
+    <button type="button" class="hud-modal-close" id="btn-close-update-modal" aria-label="Закрыть">✕</button>
+    
+    <div class="update-modal-header">
+      <div class="update-modal-badge">
+        <span class="badge-icon">⚡</span>
+        <span>НОВЫЙ РЕЛИЗ</span>
+      </div>
+      <h2 id="update-modal-title" class="update-modal-title">Доступно обновление Deadlock Plus</h2>
+      <div class="update-version-row">
+        <span class="ver-pill ver-current" id="modal-current-ver">v1.0.0</span>
+        <span class="ver-arrow">→</span>
+        <span class="ver-pill ver-latest" id="modal-latest-ver">v1.1.0</span>
+        <span class="update-meta-info" id="modal-release-meta"></span>
+      </div>
+    </div>
+
+    <div class="update-modal-body">
+      <div class="update-changelog-title">Список изменений (Changelog):</div>
+      <div class="update-changelog-content" id="modal-changelog-content"></div>
+
+      <!-- Блок прогресса загрузки -->
+      <div class="update-progress-block hidden" id="modal-progress-block">
+        <div class="update-progress-header">
+          <span id="update-progress-label">Загрузка обновления...</span>
+          <span id="update-progress-stats" class="tabular-nums">0%</span>
+        </div>
+        <div class="update-progress-track">
+          <div class="update-progress-bar" id="modal-progress-bar" style="width: 0%;"></div>
+        </div>
+        <div class="update-progress-sub" id="update-progress-details">0 МБ / 0 МБ · 0 МБ/с</div>
+      </div>
+      
+      <div class="update-modal-msg hidden" id="modal-update-message"></div>
+    </div>
+
+    <div class="update-modal-footer">
+      <button type="button" class="btn-ghost" id="btn-cancel-update">Позже</button>
+      <button type="button" class="btn-amber" id="btn-start-update">
+        <span id="btn-update-icon">⬇</span>
+        <span id="btn-update-text">Обновить сейчас</span>
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
