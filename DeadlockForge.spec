@@ -9,9 +9,11 @@
   его и любые другие *.txt с ключом из datas;
 - web/ и data/ пакуются целиком, остальное тянет collect_all.
 """
+import os
+import pathlib
 from PyInstaller.utils.hooks import collect_all
 
-ROOT = 'C:/Projects/DeadlockForge'
+ROOT = str(pathlib.Path(SPECPATH).resolve()).replace('\\', '/')
 
 # Имена, которые не должны попадать в сборку ни при каких условиях.
 BLOCKED_DATA_SUFFIXES = ('api.txt', 'secrets.txt', '.env')
@@ -47,7 +49,7 @@ datas = [
 binaries = []
 hiddenimports = []
 
-for pkg in ('deadlockforge', 'pywebview'):
+for pkg in ('deadlockforge', 'webview'):
     pkg_datas, pkg_binaries, pkg_hidden = collect_all(pkg)
     datas += pkg_datas
     binaries += pkg_binaries
