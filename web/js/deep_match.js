@@ -945,7 +945,16 @@ function renderPersonalTrend(benchmark) {
 const DEATH_MARKER_LIMIT = 60;
 let currentDeaths = [];
 const killerNameCache = new Map(); // слаг героя -> отображаемое имя
+// Обратный индекс: русское имя -> слаг. Нужен там, где сервер прислал только
+// локализованное имя (AI-отчёт по линии), а для портрета требуется файл.
+const heroSlugByName = new Map();
 let killerNamesRequested = false;
+
+function slugForHeroName(name) {
+  const key = String(name ?? '').trim().toLowerCase();
+  if (!key) return '';
+  return heroSlugByName.get(key) || '';
+}
 
 // слаг убийцы ("haze") -> человекочитаемое имя, если каталог героев уже подгружен
 function prettyKiller(slug) {
@@ -970,7 +979,10 @@ function loadKillerNames() {
       for (const h of list) {
         const slug = h?.slug ?? h?.name_id ?? h?.id;
         const name = h?.name ?? h?.localized_name;
-        if (slug && name) killerNameCache.set(String(slug).toLowerCase(), String(name));
+        if (slug && name) {
+          killerNameCache.set(String(slug).toLowerCase(), String(name));
+          heroSlugByName.set(String(name).trim().toLowerCase(), String(slug));
+        }
       }
       if (killerNameCache.size) renderDeathMap(currentReview?.deaths_geo);
     })
@@ -1105,7 +1117,11 @@ function renderLaneComparison(lane) {
     return;
   }
   panel.classList.remove('hidden');
-  const heroSlug = String(lane.opponent_hero || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  // Портрет соперника: сервер отдаёт слаг героя (opponent_hero_id), а
+  // русское имя файла не даёт. Без слага буква «Х» вместо портрета.
+  const heroSlug = String(
+    lane.opponent_hero_id || slugForHeroName(lane.opponent_hero) || '',
+  ).toLowerCase().replace(/[^a-z0-9_-]/g, '');
   const souls10 = lane.opponent_souls_at_10 ? `${Math.round(lane.opponent_souls_at_10).toLocaleString('ru-RU')} душ` : '—';
   const nw = lane.opponent_net_worth ? `${Math.round(lane.opponent_net_worth).toLocaleString('ru-RU')} душ` : '—';
   box.innerHTML = `
@@ -1280,6 +1296,15 @@ function heroName(heroId, heroesCache) {
   return h?.name || h?.localized_name || `Герой ${heroId}`;
 }
 
+// Портрет героя из истории матчей: каталог отдаёт готовый путь (portrait),
+// слага достаточно как запасного варианта. Нет каталога — пустая строка,
+// строка матча покажет букву-заглушку.
+function heroPortrait(heroId, heroesCache) {
+  const h = heroesCache[heroId];
+  if (!h) return '';
+  return h.portrait || (h.id ? `./assets/heroes/${h.id}.webp` : '');
+}
+
 function fmtDate(unixSec) {
   const d = new Date(Number(unixSec) * 1000);
   if (Number.isNaN(d.getTime())) return '—';
@@ -1352,9 +1377,16 @@ function renderRecentMatches(payload, heroesCache) {
     const assists = Number(m.player_assists ?? 0);
     const won = Number(m.player_match_outcome) === 1;
     const hero = heroName(Number(m.hero_id), heroesCache);
+    const portrait = heroPortrait(Number(m.hero_id), heroesCache);
+    const initial = esc((hero || '?').trim().charAt(0).toUpperCase() || '?');
     return `<div class="rm-row" role="button" tabindex="0" data-match-id="${esc(mid)}">
       <span class="rm-result ${won ? 'rm-win' : 'rm-loss'}">${won ? 'W' : 'L'}</span>
       <span class="rm-kda">${kills}/${deaths}/${assists}</span>
+      <span class="rm-avatar">${portrait
+        ? `<img class="rm-avatar-img" src="${esc(portrait)}" alt="" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling?.classList.remove('hidden');">
+           <span class="rm-avatar-fallback hidden">${initial}</span>`
+        : `<span class="rm-avatar-fallback">${initial}</span>`}</span>
       <span class="rm-hero">${esc(hero)}</span>
       <span class="rm-date">${esc(fmtDate(m.start_time))}</span>
       <span class="rm-action">Разобрать</span>

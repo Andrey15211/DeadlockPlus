@@ -52,8 +52,15 @@ def test_schema_validates(counterpicks_payload: dict) -> None:
 
 
 def test_every_hero_has_content(counterpicks_payload: dict) -> None:
-    """У каждого героя должны быть заполнены ключевые блоки интерфейса."""
-    for hero in counterpicks_payload["heroes"]:
+    """У каждого героя должны быть заполнены ключевые блоки интерфейса.
+
+    Исключение — Медсестра Хэрроу: у источника ещё нет её гайда, в датасете
+    она есть только карточкой (id/имя/портрет), чтобы её можно было выбрать
+    противником. Наличие самой карточки проверяет отдельный тест.
+    """
+    heroes = counterpicks_payload["heroes"]
+    assert any(hero["id"] == "nurse" for hero in heroes), "нет карточки Медсестры Хэрроу"
+    for hero in heroes:
         if hero.get("in_development") or hero["id"] == "nurse":
             continue
         assert hero["intro"].strip(), f"{hero['id']}: пустое вступление"

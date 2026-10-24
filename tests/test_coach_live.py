@@ -211,7 +211,7 @@ def test_tactical_knowledge_prompt_pack_injection():
     prompt = deadlock_knowledge.get_tactical_knowledge_prompt()
     assert "The Cursed Apple" in prompt
     assert "0:00" in prompt and "3:00" in prompt and "10:00" in prompt
-    assert "12:00" in prompt and "15:00" in prompt and "18:00" in prompt
+    assert "12:00" in prompt and "18:00" in prompt and "20:00" in prompt
     assert "Soul Urn" in prompt
     assert "Midboss" in prompt
     assert "Healbane" in prompt and "Toxic Bullets" in prompt

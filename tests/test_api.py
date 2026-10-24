@@ -345,25 +345,25 @@ def test_import_valid_codec_unknown_item_id():
 
 def test_ai_config_multi_provider_roundtrip():
     """Тест поддержки мультивендорности в /api/ai/config (OpenAI, Anthropic, DeepSeek)."""
-    # 1. Смена на OpenAI: дефолтная модель glm-5.3-flash (V2.0 М4, роутер)
+    # 1. Смена на OpenAI: дефолтная модель deepseek-v4.1-flash (роутер)
     r = _client.post("/api/ai/config", json={"provider": "openai", "api_key": "sk-test12345678"})
     assert r.status_code == 200
     cfg = _client.get("/api/ai/config").json()
     assert cfg["provider"] == "openai"
-    assert cfg["model_name"] == "glm-5.3-flash"
+    assert cfg["model_name"] == "deepseek-v4.1-flash"
     assert cfg["has_key"] is True
 
-    # 2. Смена на Anthropic: дефолтная модель claude-3-7-sonnet-latest
+    # 2. Смена на Anthropic: дефолтная модель claude-4.8
     r = _client.post("/api/ai/config", json={"provider": "anthropic"})
     assert r.status_code == 200
     cfg = _client.get("/api/ai/config").json()
     assert cfg["provider"] == "anthropic"
-    assert cfg["model_name"] == "claude-3-7-sonnet-latest"
+    assert cfg["model_name"] == "claude-4.8"
 
-    # Возвращаем дефолт владельца (glm-5.3-flash, роутер) — тест не должен
-    # оставлять прод-БД на легаси-конфиге (V2.0 М4).
+    # Возвращаем дефолт владельца (deepseek-v4.1-flash, роутер) — тест не должен
+    # оставлять прод-БД на легаси-конфиге.
     _client.post("/api/ai/config", json={
-        "provider": "openai", "model_name": "glm-5.3-flash",
+        "provider": "openai", "model_name": "deepseek-v4.1-flash",
         "base_url": "http://127.0.0.1:8089/v1",
         "reasoning_effort": "low",
     })

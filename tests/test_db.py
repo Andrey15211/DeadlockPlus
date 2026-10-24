@@ -114,7 +114,7 @@ def test_ai_config_defaults_created_on_first_call(db):
     cfg = db.get_ai_config()
     assert cfg["id"] == 1
     assert cfg["provider"] == "openai"
-    assert cfg["model_name"] == "glm-5.3-flash"
+    assert cfg["model_name"] == "deepseek-v4.1-flash"
     assert cfg["api_key"] == ""
     assert cfg["enable_thinking"] in (1, True)
     assert cfg["thinking_budget"] == 2048

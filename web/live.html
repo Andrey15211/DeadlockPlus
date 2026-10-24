@@ -6,122 +6,408 @@
 <title>Deadlock Plus Live</title>
 <style>
   :root {
-    --bg: #070A0F; --card: #111622; --amber: #E5A93C; --violet: #8B5CF6;
-    --green: #10B981; --red: #ef4444; --text: #e6e9f0; --dim: #8a93a6;
+    --ink: #070A0F;
+    --surface: #0E131C;
+    --surface-2: #131926;
+    --hair: rgba(255, 255, 255, 0.07);
+    --hair-strong: rgba(255, 255, 255, 0.13);
+    --text: #E8ECF3;
+    --muted: #7C8798;
+    --amber: #E8B44A;
+    --mint: #5FD3A0;
+    --red: #E06C75;
+    --display: Bahnschrift, "DIN Alternate", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    --body: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --num: ui-monospace, "Cascadia Mono", "Consolas", monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   body {
-    background: rgba(7,10,15,0.92); color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px;
-    width: 420px; max-height: 640px; overflow-y: auto; padding: 10px;
+    width: 100%; min-height: 100%;
+    background:
+      radial-gradient(140% 60% at 50% -20%, #16203A 0%, rgba(7, 10, 15, 0) 62%),
+      var(--ink);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 10px 10px 14px;
+    display: flex; flex-direction: column; gap: 9px;
+    overflow-y: auto;
   }
-  h1 { font-size: 14px; letter-spacing: 2px; color: var(--amber); margin-bottom: 8px; text-transform: uppercase; }
-  .timer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  #match-timer { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #1E2634; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* ── верхняя строка ─────────────────────────────────────── */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 2px; }
+  .brand { display: flex; align-items: baseline; gap: 7px; font-family: var(--display); }
+  .brand b { font-size: 14px; font-weight: 700; letter-spacing: 0.4px; }
+  .brand span { font-size: 11px; color: var(--muted); letter-spacing: 0.6px; }
+  .mark { color: var(--amber); font-size: 12px; }
+  .status {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--muted); white-space: nowrap;
+  }
+  .status i { width: 6px; height: 6px; border-radius: 50%; background: #39445A; transition: background .2s, box-shadow .2s; }
+  .status.on i { background: var(--mint); box-shadow: 0 0 0 3px rgba(95, 211, 160, 0.16); }
+  .status.paused i { background: var(--amber); }
+  .topbar-right { display: flex; align-items: center; gap: 6px; }
+  .hotkey-hint {
+    font-family: var(--num); font-size: 10px; color: var(--muted); letter-spacing: 0.3px;
+  }
+
+  /* ── часы ───────────────────────────────────────────────── */
+  .clock-block { padding: 2px 2px 0; }
+  .clock-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+  .clock {
+    font-family: var(--display); font-size: 34px; font-weight: 700; line-height: 1;
+    letter-spacing: -0.5px; font-variant-numeric: tabular-nums; color: var(--text);
+  }
+  .clock.paused { color: var(--muted); }
+  .controls { display: flex; gap: 4px; align-items: center; }
   .btn {
-    background: var(--card); border: 1px solid rgba(255,255,255,0.15); color: var(--text);
-    padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;
+    font-family: var(--body); font-size: 12px; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--hair);
+    border-radius: 5px; padding: 4px 8px; cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
   }
-  .btn:hover { border-color: var(--amber); color: var(--amber); }
-  .btn.primary { background: var(--amber); color: #111; border: none; font-weight: 700; }
-  .section { background: var(--card); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
-  .section-title { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  #next-event { color: var(--amber); font-weight: 700; margin-bottom: 4px; }
-  .event-list { list-style: none; max-height: 130px; overflow-y: auto; }
-  .event-list li { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .event-list li.hl { color: var(--amber); font-weight: 700; }
-  .event-time { font-variant-numeric: tabular-nums; color: var(--dim); }
-  .event-list li.hl .event-time { color: var(--amber); }
-  select, input { width: 100%; background: #0d1119; color: var(--text); border: 1px solid rgba(255,255,255,0.12); border-radius: 5px; padding: 5px 8px; font-size: 12px; margin-bottom: 6px; }
-  label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 2px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
-  .chip { background: rgba(229,169,60,0.15); border: 1px solid rgba(229,169,60,0.4); color: var(--amber); padding: 2px 8px; border-radius: 10px; font-size: 11px; }
-  .chip.red { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
-  .chip.green { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.4); color: #6ee7b7; }
-  .toast { position: fixed; bottom: 10px; left: 10px; right: 10px; background: var(--card); border: 1px solid var(--amber); color: var(--amber); padding: 8px; border-radius: 6px; font-size: 12px; display: none; }
-  .row2 { display: flex; gap: 6px; } .row2 > * { flex: 1; }
-  #advice-ms { font-size: 10px; color: var(--dim); margin-top: 4px; }
+  .btn:hover { border-color: var(--hair-strong); background: #171E2C; }
+  .btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .btn.icon { min-width: 32px; padding: 4px 5px; text-align: center; font-family: var(--num); font-size: 11px; }
+  .btn.primary {
+    background: var(--amber); border-color: transparent; color: #1A1206; font-weight: 700;
+    min-width: 74px;
+  }
+  .btn.primary:hover { background: #F2C05A; }
+
+  .meter { height: 2px; margin: 8px 0 6px; background: var(--hair); border-radius: 2px; overflow: hidden; }
+  .meter > i {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, rgba(232, 180, 74, 0.3), var(--amber));
+    transition: width 0.9s linear;
+  }
+  .next-line { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 2px; }
+  #next-event { display: contents; }
+  .next-title { color: var(--text); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .next-eta {
+    font-family: var(--num); font-size: 13px; color: var(--amber);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .next-eta.done { color: var(--muted); font-family: var(--body); font-size: 12px; }
+
+  /* ── рельс таймлайна ────────────────────────────────────── */
+  .panel { background: var(--surface); border: 1px solid var(--hair); border-radius: 7px; padding: 7px 10px 8px; }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-size: 11px; color: var(--muted); margin-bottom: 5px;
+  }
+  .rail {
+    position: relative; list-style: none; padding-left: 16px;
+    max-height: 152px; overflow-y: auto;
+    mask-image: linear-gradient(180deg, #000 calc(100% - 18px), transparent);
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 18px), transparent);
+  }
+  .rail::before {
+    content: ''; position: absolute; left: 3.5px; top: 6px; bottom: 6px; width: 1px;
+    background: linear-gradient(180deg, var(--hair-strong), rgba(255, 255, 255, 0.04));
+  }
+  .rail li {
+    position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    padding: 3px 0; font-size: 12px; color: #B9C2D0;
+  }
+  .rail li::before {
+    content: ''; position: absolute; left: -16px; top: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #10151F; border: 1px solid var(--hair-strong);
+  }
+  .rail li.past { color: #58637A; }
+  .rail li.past::before { background: #0B0F16; border-color: rgba(255, 255, 255, 0.05); }
+  .rail li.hl { color: var(--amber); font-weight: 600; }
+  .rail li.hl::before { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 0 3px rgba(232, 180, 74, 0.16); }
+  .rail .t { font-family: var(--num); font-size: 11px; color: inherit; opacity: 0.75; font-variant-numeric: tabular-nums; }
+  .rail li.hl .t { opacity: 1; }
+
+  /* ── комментатор ────────────────────────────────────────── */
+  .feed { max-height: 86px; overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
+  .feed-row {
+    display: grid; grid-template-columns: 38px 1fr; gap: 8px;
+    padding: 4px 0; border-top: 1px solid var(--hair); font-size: 12px; line-height: 1.35;
+  }
+  .feed-row:first-child { border-top: none; }
+  .feed-t { font-family: var(--num); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .feed-row.pre .feed-x { color: var(--amber); }
+  .feed-row.now .feed-x { color: var(--mint); }
+  .feed-empty { color: var(--muted); font-size: 12px; padding: 3px 0; }
+  .sound { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); cursor: pointer; font-size: 11px; }
+  .sound input { accent-color: var(--amber); width: 12px; height: 12px; cursor: pointer; }
+
+  /* ── состав ─────────────────────────────────────────────── */
+  .field { margin-bottom: 7px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  select {
+    width: 100%; background: #0A0E15; color: var(--text); font-family: var(--body); font-size: 12px;
+    border: 1px solid var(--hair); border-radius: 5px; padding: 5px 7px; cursor: pointer;
+  }
+  select:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .foes { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; max-height: 74px; overflow-y: auto; padding-right: 2px; }
+  .foe {
+    font-family: var(--body); font-size: 11.5px; text-align: left; color: #A7B1C0;
+    background: #0A0E15; border: 1px solid var(--hair); border-radius: 5px;
+    padding: 3px 7px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: border-color .12s, color .12s, background .12s;
+  }
+  .foe:hover { border-color: var(--hair-strong); color: var(--text); }
+  .foe.on { border-color: rgba(232, 180, 74, 0.55); background: rgba(232, 180, 74, 0.1); color: var(--amber); }
+  .foe:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .advice { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip {
+    font-size: 11px; color: #C3CBD8; background: var(--surface-2);
+    border: 1px solid var(--hair); border-radius: 4px; padding: 3px 7px; line-height: 1.3;
+  }
+  .chip.red { border-color: rgba(224, 108, 117, 0.4); color: #F0A0A6; background: rgba(224, 108, 117, 0.08); }
+  .advice-empty { color: var(--muted); font-size: 12px; }
+  #advice-ms { font-size: 10px; color: #5A6478; margin-top: 5px; font-family: var(--num); }
+
+  /* ── уведомление ────────────────────────────────────────── */
+  .toast {
+    position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 9;
+    background: #1A1210; border: 1px solid rgba(224, 108, 117, 0.5); color: #F0A0A6;
+    border-radius: 6px; padding: 7px 10px; font-size: 12px;
+    opacity: 0; transform: translateY(6px); pointer-events: none;
+    transition: opacity .18s, transform .18s;
+  }
+  .toast.show { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+  @media (max-width: 380px) {
+    .clock { font-size: 34px; }
+    .foes { grid-template-columns: 1fr; }
+    .btn.primary { min-width: 64px; }
+  }
 </style>
 </head>
 <body>
-  <h1>⚡ Deadlock Plus Live</h1>
-
-  <div class="section">
-    <div class="timer-row">
-      <span id="match-timer">00:00</span>
-      <button class="btn" id="btn-start-pause" title="Старт/Пауза">▶ Старт</button>
-      <button class="btn" id="btn-reset" title="Сброс">⟲</button>
+  <div class="topbar">
+    <div class="brand"><span class="mark">◆</span><b>Deadlock</b><span>Live</span></div>
+    <div class="topbar-right">
+      <span class="hotkey-hint" title="Хоткей оверлея">Ctrl+F2</span>
+      <div class="status" id="status"><i></i><span id="status-text">ждёт старта</span></div>
+      <button class="btn icon" id="btn-hide-overlay" type="button"
+              title="Скрыть оверлей (Ctrl+F2)">✕</button>
     </div>
-    <div id="next-event">—</div>
-    <ul class="event-list" id="event-list"></ul>
   </div>
 
-  <div class="section">
-    <div class="section-title">Состав (ручной ввод)</div>
-    <div class="row2">
-      <div><label>Мой герой</label><select id="my-hero"></select></div>
+  <div class="clock-block">
+    <div class="clock-row">
+      <div class="clock" id="match-timer">00:00</div>
+      <div class="controls">
+        <button class="btn primary" id="btn-start-pause" title="Старт / пауза, пробел">▶ Старт</button>
+        <button class="btn icon" id="btn-reset" title="Сброс таймера">⟲</button>
+        <button class="btn icon" id="btn-minus" title="Таймер спешит: −10 с">−10</button>
+        <button class="btn icon" id="btn-plus" title="Таймер отстаёт: +10 с">+10</button>
+      </div>
     </div>
-    <div class="row2">
-      <div><label>Враги (до 6)</label><select id="enemies" multiple size="3"></select></div>
+    <div class="meter"><i id="next-bar"></i></div>
+    <div class="next-line">
+      <span id="next-event"><span class="next-title">Загрузка таймингов…</span><span class="next-eta"></span></span>
     </div>
-    <button class="btn primary" id="btn-advice" style="width:100%;margin-top:2px;">⚡ Обновить советы</button>
-    <div style="margin-top:6px;"><label>Советы</label>
-      <div class="chips" id="advice-chips"><span style="color:var(--dim)">—</span></div>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head"><span>Тайминги карты</span><span id="rail-progress"></span></div>
+    <ul class="rail" id="event-list"></ul>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <span>Комментатор</span>
+      <label class="sound"><input type="checkbox" id="sound"> озвучка</label>
+    </div>
+    <div class="feed" id="comment-feed"><div class="feed-empty">Пойдёт с началом матча.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><span>Состав</span><span id="foes-count">0 / 6</span></div>
+    <div class="field">
+      <label for="my-hero">Мой герой</label>
+      <select id="my-hero"></select>
+    </div>
+    <div class="field">
+      <label>Враги</label>
+      <div class="foes" id="enemies" role="group" aria-label="Вражеские герои"></div>
+    </div>
+    <button class="btn primary" id="btn-advice" style="width:100%;margin-top:2px;">Обновить советы</button>
+    <div style="margin-top:7px;">
+      <div class="advice" id="advice-chips"><span class="advice-empty">— выберите героя и врагов</span></div>
     </div>
     <div id="advice-ms"></div>
-  </div>
+  </section>
 
-  <div id="toast" class="toast"></div>
+  <div id="toast" class="toast" role="status"></div>
 
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
+  const MAX_FOES = 6;
   let heroes = [], timerSec = 0, timerRunning = false, timerInt = null;
-  let timeline = [], respawns = {}, lastToast = '';
+  let timeline = [], respawns = {}, schedule = [], fired = new Set(), feed = [];
+  let nextId = null, toastTimer = null;
 
-  // --- Таймер матча ---
-  function fmt(sec) { const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+  function fmt(sec) {
+    const s = Math.max(0, Math.floor(sec));
+    const m = Math.floor(s / 60);
+    return `${String(m).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+  }
+
+  function setStatus() {
+    const el = $('#status');
+    el.classList.toggle('on', timerRunning);
+    el.classList.toggle('paused', !timerRunning && timerSec > 0);
+    $('#status-text').textContent = timerRunning ? 'идёт матч' : (timerSec > 0 ? 'пауза' : 'ждёт старта');
+    $('#match-timer').classList.toggle('paused', !timerRunning && timerSec > 0);
+  }
+
+  // --- Комментатор ---
+  function push(text, kind) {
+    feed.unshift({ sec: timerSec, text, kind });
+    if (feed.length > 30) feed.pop();
+    renderFeed();
+    speak(text);
+  }
+
+  function renderFeed() {
+    const box = $('#comment-feed');
+    if (!feed.length) {
+      box.innerHTML = '<div class="feed-empty">Пойдёт с началом матча.</div>';
+      return;
+    }
+    box.innerHTML = '';
+    for (const item of feed.slice(0, 8)) {
+      const row = document.createElement('div');
+      row.className = 'feed-row ' + item.kind;
+      const t = document.createElement('span'); t.className = 'feed-t'; t.textContent = fmt(item.sec);
+      const x = document.createElement('span'); x.className = 'feed-x'; x.textContent = item.text;
+      row.append(t, x);
+      box.appendChild(row);
+    }
+  }
+
+  function speak(text) {
+    if (!$('#sound').checked || !('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text.replace(/[—±]/g, ' '));
+    u.lang = 'ru-RU'; u.rate = 1.05;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
+
+  function announce() {
+    for (const ev of schedule) {
+      const preKey = ev.id + ':pre', nowKey = ev.id + ':now';
+      if (ev.at - ev.lead > 0 && timerSec >= ev.at - ev.lead && !fired.has(preKey)) {
+        fired.add(preKey); push(ev.pre, 'pre');
+      }
+      if (timerSec >= ev.at && !fired.has(nowKey)) {
+        fired.add(nowKey); push(ev.now, 'now');
+      }
+    }
+  }
+
+  // --- Часы, шкала, рельс ---
+  // Точка отсчёта для сервера: плашки поверх игры (overlay.html) читают
+  // GET /api/live/clock и живут, даже когда эта панель закрыта.
+  let clockSyncAt = 0, clockSig = '';
+  function syncClock() {
+    const sig = `${Math.round(timerSec)}|${timerRunning}`;
+    const now = Date.now();
+    if (timerRunning ? now - clockSyncAt < 5000 : sig === clockSig) return;
+    clockSig = sig; clockSyncAt = now;
+    fetch('/api/live/clock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seconds: timerSec, running: timerRunning }),
+    }).catch(() => {});
+  }
+
   function renderTimer() {
     $('#match-timer').textContent = fmt(timerSec);
-    // ближайшее событие
-    let next = null;
-    for (const ev of timeline) {
-      if (ev.minutes * 60 > timerSec + 0.5) { next = ev; break; }
-    }
+    setStatus();
+
+    const next = schedule.find(ev => ev.at > timerSec);
+    const titleEl = $('#next-event .next-title');
+    const etaEl = $('#next-event .next-eta');
+    const bar = $('#next-bar');
+
     if (next) {
-      const left = Math.max(0, Math.round(next.minutes * 60 - timerSec));
-      $('#next-event').textContent = `⏳ ${next.title} — через ${fmt(left)}`;
-      if (left <= 30 && left > 0 && lastToast !== next.title) {
-        lastToast = next.title;
-        showToast(`${next.title} через ${left} сек!`);
+      const left = Math.max(0, Math.round(next.at - timerSec));
+      titleEl.textContent = next.title;
+      etaEl.textContent = `через ${fmt(left)}`;
+      etaEl.classList.remove('done');
+      const lead = Math.max(1, next.lead);
+      const frac = Math.min(1, Math.max(0, 1 - left / lead));
+      bar.style.width = `${(frac * 100).toFixed(1)}%`;
+      if (next.id !== nextId) {
+        nextId = next.id;
+        const el = document.querySelector(`#event-list li[data-id="${next.id}"]`);
+        if (el) el.scrollIntoView({ block: 'nearest' });
       }
-      if (left > 30) lastToast = '';
     } else {
-      $('#next-event').textContent = '⏳ Все события прошли';
+      titleEl.textContent = schedule.length ? 'Все события прошли' : 'Загрузка таймингов…';
+      etaEl.textContent = '';
+      etaEl.classList.add('done');
+      bar.style.width = '100%';
     }
-    // подсветка в списке
+
+    let passed = 0;
     document.querySelectorAll('#event-list li').forEach(li => {
-      const min = parseFloat(li.dataset.min);
-      li.classList.toggle('hl', next && min === next.minutes);
+      const at = parseFloat(li.dataset.at);
+      const isNext = !!next && Math.abs(at - next.at) < 1;
+      li.classList.toggle('hl', isNext);
+      li.classList.toggle('past', at <= timerSec);
+      if (at <= timerSec) passed++;
     });
+    $('#rail-progress').textContent = timeline.length ? `${passed} из ${timeline.length}` : '';
+    syncClock();
   }
+
+  function tick() {
+    timerSec++;
+    announce();
+    renderTimer();
+  }
+
   $('#btn-start-pause').addEventListener('click', () => {
     timerRunning = !timerRunning;
     $('#btn-start-pause').textContent = timerRunning ? '⏸ Пауза' : '▶ Старт';
     if (timerRunning) {
-      timerInt = setInterval(() => { timerSec++; renderTimer(); }, 1000);
+      announce();
+      timerInt = setInterval(tick, 1000);
     } else if (timerInt) { clearInterval(timerInt); timerInt = null; }
     localStorage.setItem('live.timer', String(timerSec));
     localStorage.setItem('live.running', String(timerRunning));
+    renderTimer();
   });
   $('#btn-reset').addEventListener('click', () => {
-    timerSec = 0; lastToast = '';
-    if (timerRunning) { clearInterval(timerInt); timerRunning = false; $('#btn-start-pause').textContent = '▶ Старт'; }
-    renderTimer();
+    timerSec = 0; fired.clear(); feed = []; nextId = null;
+    if (timerRunning) { clearInterval(timerInt); timerInt = null; timerRunning = false; $('#btn-start-pause').textContent = '▶ Старт'; }
+    renderFeed(); renderTimer();
     localStorage.setItem('live.timer', '0'); localStorage.setItem('live.running', 'false');
   });
+  $('#btn-minus').addEventListener('click', () => { timerSec = Math.max(0, timerSec - 10); renderTimer(); });
+  $('#btn-plus').addEventListener('click', () => { timerSec += 10; renderTimer(); });
 
-  // --- Тайминги ---
+  document.addEventListener('keydown', (e) => {
+    if (e.code !== 'Space') return;
+    const tag = (e.target.tagName || '').toUpperCase();
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON') return;
+    e.preventDefault();
+    $('#btn-start-pause').click();
+  });
+
+  // --- Данные ---
   async function loadTimers() {
     try {
       const r = await fetch('/api/live/timers');
@@ -132,40 +418,85 @@
       ul.innerHTML = '';
       for (const ev of timeline) {
         const li = document.createElement('li');
-        li.dataset.min = ev.minutes;
-        li.innerHTML = `<span>${ev.title}</span><span class="event-time">${ev.time}</span>`;
+        li.dataset.at = Math.round(ev.minutes * 60);
+        const name = document.createElement('span'); name.textContent = ev.title;
+        const time = document.createElement('span'); time.className = 't'; time.textContent = ev.time;
+        li.append(name, time);
         ul.appendChild(li);
       }
       renderTimer();
     } catch (e) { showToast('Тайминги не загружены'); }
   }
 
-  // --- Герои / враги ---
+  async function loadSchedule() {
+    try {
+      const r = await fetch('/api/live/schedule');
+      const d = await r.json();
+      schedule = d.events || [];
+      for (const ev of schedule) {
+        if (ev.at <= timerSec) { fired.add(ev.id + ':pre'); fired.add(ev.id + ':now'); }
+      }
+      renderTimer();
+    } catch (e) { showToast('Расписание не загружено'); }
+  }
+
+  // --- Состав ---
+  function selectedFoes() {
+    return Array.from(document.querySelectorAll('#enemies .foe.on')).map(b => b.dataset.id);
+  }
+  function updateFoeCount() {
+    const n = selectedFoes().length;
+    $('#foes-count').textContent = `${n} / ${MAX_FOES}`;
+  }
+
+  function renderFoes() {
+    const box = $('#enemies');
+    box.innerHTML = '';
+    for (const h of heroes) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'foe';
+      b.dataset.id = h.id;
+      b.textContent = h.name;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => {
+        const on = b.classList.contains('on');
+        if (!on && selectedFoes().length >= MAX_FOES) {
+          showToast(`Не больше ${MAX_FOES} врагов — снимите одного.`);
+          return;
+        }
+        b.classList.toggle('on', !on);
+        b.setAttribute('aria-pressed', String(!on));
+        updateFoeCount();
+      });
+      box.appendChild(b);
+    }
+    updateFoeCount();
+  }
+
   async function loadHeroes() {
     try {
       const r = await fetch('/api/heroes');
       heroes = await r.json();
-      const meSel = $('#my-hero'), enSel = $('#enemies');
+      const meSel = $('#my-hero');
       meSel.innerHTML = '<option value="">— не выбран —</option>';
-      enSel.innerHTML = '';
-      for (const h of heroes) {
-        meSel.appendChild(new Option(h.name, h.id));
-        enSel.appendChild(new Option(h.name, h.id));
-      }
+      for (const h of heroes) meSel.appendChild(new Option(h.name, h.id));
+      renderFoes();
     } catch (e) { showToast('Герои не загружены'); }
   }
 
   function showToast(msg) {
     const t = $('#toast');
-    t.textContent = msg; t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, 3500);
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
   }
 
   // --- Советы ---
   async function refreshAdvice() {
     const body = {
       my_hero: $('#my-hero').value || '',
-      enemies: Array.from($('#enemies').selectedOptions).map(o => o.value),
+      enemies: selectedFoes(),
       items: [],
     };
     const t0 = performance.now();
@@ -174,24 +505,62 @@
       const d = await r.json();
       const box = $('#advice-chips');
       box.innerHTML = '';
-      const add = (txt, cls='') => { const s=document.createElement('span'); s.className='chip '+cls; s.textContent=txt; box.appendChild(s); };
+      const add = (txt, cls='') => { const s = document.createElement('span'); s.className = 'chip ' + cls; s.textContent = txt; box.appendChild(s); };
       (d.tips || []).slice(0, 8).forEach(t => add(t, ''));
       (d.red_flags || []).forEach(f => add('⚠ ' + f.title, 'red'));
-      if (!d.tips?.length && !d.red_flags?.length) box.innerHTML = '<span style="color:var(--dim)">— (пусто, выберите героя/врагов)</span>';
-      $('#advice-ms').textContent = `⚡ ${Math.round(performance.now()-t0)} мс`;
+      if (!d.tips?.length && !d.red_flags?.length) box.innerHTML = '<span class="advice-empty">— пусто, выберите героя и врагов</span>';
+      $('#advice-ms').textContent = `${Math.round(performance.now() - t0)} мс · локально`;
     } catch (e) { showToast('Ошибка советов: ' + e.message); }
   }
   $('#btn-advice').addEventListener('click', refreshAdvice);
 
+  // --- Оверлей ---
+  // Окно живёт скрытым между показами, а WebView2 троттлит таймеры скрытого
+  // окна: при показе часы подтягиваются из серверного состояния, а не из
+  // локальной переменной, которая успела отстать.
+  window.dfSyncClock = async function () {
+    try {
+      const d = await (await fetch('/api/live/clock')).json();
+      timerSec = Math.max(0, Math.round(Number(d.seconds) || 0));
+      timerRunning = !!d.running;
+      $('#btn-start-pause').textContent = timerRunning ? '⏸ Пауза' : '▶ Старт';
+      if (timerRunning && !timerInt) {
+        timerInt = setInterval(tick, 1000);
+      } else if (!timerRunning && timerInt) {
+        clearInterval(timerInt);
+        timerInt = null;
+      }
+      renderTimer();
+    } catch (e) { /* сервер недоступен — остаёмся на локальном таймере */ }
+    return true;
+  };
+
+  $('#btn-hide-overlay').addEventListener('click', () => {
+    fetch('/api/desktop/overlay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visible: false }),
+    }).catch(() => {});
+  });
+
   // --- restore ---
   timerSec = parseInt(localStorage.getItem('live.timer') || '0', 10) || 0;
-  if (localStorage.getItem('live.running') === 'true') $('#btn-start-pause').click();
-  loadTimers(); loadHeroes();
-  // автозагрузка сохранённого состояния
+  $('#sound').checked = localStorage.getItem('live.sound') === 'true';
+  $('#sound').addEventListener('change', () => localStorage.setItem('live.sound', String($('#sound').checked)));
+  loadTimers();
+  loadSchedule().then(() => {
+    if (localStorage.getItem('live.running') === 'true') $('#btn-start-pause').click();
+  });
+  loadHeroes();
   fetch('/api/live/state').then(r => r.json()).then(s => {
     if (s.my_hero) $('#my-hero').value = s.my_hero;
     if (s.enemies?.length) {
-      Array.from($('#enemies').options).forEach(o => { if (s.enemies.includes(o.value)) o.selected = true; });
+      document.querySelectorAll('#enemies .foe').forEach(b => {
+        const on = s.enemies.includes(b.dataset.id);
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      updateFoeCount();
     }
   }).catch(() => {});
 })();

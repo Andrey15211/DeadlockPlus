@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="./css/styles.css">
 <link rel="stylesheet" href="./css/animations.css">
 <link rel="stylesheet" href="./css/counterpicks.css">
+<link rel="stylesheet" href="./css/synergies.css">
 <style>
   /* V2.1 — кинематографичный фокус отчёта матча (Spotlight) */
   .match-setup,
@@ -83,6 +84,31 @@
     .match-setup, #recent-matches, .hud-header, #match-result { transition: none; }
     #match-result.is-revealing { animation: none; }
   }
+
+  /* Тумблер плашек поверх игры */
+  .live-switch {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-left: 14px; padding: 6px 10px 6px 8px;
+    background: rgba(19, 25, 38, 0.72); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 7px; cursor: pointer; color: #8B95A6;
+    font-size: 12px; font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    transition: border-color .15s, color .15s;
+  }
+  .live-switch:hover { border-color: rgba(255, 255, 255, 0.16); color: #C6CEDA; }
+  .live-switch:focus-visible { outline: 2px solid #E8B44A; outline-offset: 2px; }
+  .live-switch .track {
+    position: relative; width: 28px; height: 15px; flex: none;
+    background: #1E2634; border-radius: 999px; transition: background .18s;
+  }
+  .live-switch .track::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #6B7688; transition: transform .18s, background .18s;
+  }
+  .live-switch[aria-checked="true"] { color: #E8ECF3; border-color: rgba(232, 180, 74, 0.45); }
+  .live-switch[aria-checked="true"] .track { background: rgba(232, 180, 74, 0.28); }
+  .live-switch[aria-checked="true"] .track::after { transform: translateX(13px); background: #E8B44A; }
+  .live-switch[disabled] { opacity: 0.45; cursor: default; }
 </style>
 </head>
 <body class="bg-slate-950">
@@ -102,13 +128,14 @@
 
 <header class="hud-header">
   <div class="hud-brand">
-    <div class="hud-gear"></div>
+    <img class="hud-logo" src="./assets/icons/deadlockforge_64.png" alt="" aria-hidden="true" decoding="async">
     <h1 class="hud-title">DEADLOCK<span>PLUS</span></h1>
     <span class="visually-hidden">Deadlock Plus</span>
   </div>
   <nav class="hud-nav" role="tablist" aria-label="Разделы">
     <button data-tab="hub"   class="hud-tab tab-active" role="tab">Хаб</button>
     <button data-tab="tier"  class="hud-tab" role="tab">Тир-лист</button>
+    <button data-tab="synergies" class="hud-tab" role="tab" title="Сила связок двух героев на одной линии">Синергии</button>
     <button data-tab="draft" class="hud-tab" role="tab">Пик-ассистент 6v6</button>
     <button data-tab="match" class="hud-tab" role="tab" title="Разбор матча и матчап-аналитика">Deep Match (Матчап)</button>
     <button data-tab="counterpicks" class="hud-tab" role="tab" title="Контр-предметы по героям и матчапам">Контрпики</button>
@@ -130,21 +157,59 @@
           <span class="hub-mmr" id="hub-mmr">MMR 1600</span></div>
       </div>
       <div class="hub-user-actions">
-        <div id="hub-music-widget" class="hub-music-widget" title="Фоновая музыка Deadlock Plus">
-          <button id="hub-music-toggle-btn" class="hub-music-btn" type="button" aria-label="Играть / Пауза">
-            <span id="hub-music-icon" class="hub-music-icon">🎵 ▶</span>
-          </button>
-          <div class="hub-music-picker" id="hub-music-picker"><button id="hub-music-track" class="hub-music-track-btn" type="button" aria-haspopup="listbox" aria-expanded="false" title="Выбрать трек"><span id="hub-music-track-label" class="hub-music-track">background music</span><span id="hub-music-caret" class="hub-music-caret" aria-hidden="true">▾</span></button><ul id="hub-music-track-list" class="hub-music-track-list" role="listbox" aria-label="Плейлист" hidden></ul></div>
-          <div class="hub-music-controls">
-            <button id="hub-music-prev" class="hub-music-btn hub-music-btn-sm" type="button" title="Предыдущий трек" aria-label="Предыдущий трек">⏮</button>
-            <button id="hub-music-next" class="hub-music-btn hub-music-btn-sm" type="button" title="Следующий трек" aria-label="Следующий трек">⏭</button>
-            <button id="hub-music-shuffle" class="hub-music-btn hub-music-btn-sm" type="button" title="Перемешать: выкл" aria-label="Перемешать">🔀</button>
-            <button id="hub-music-repeat" class="hub-music-btn hub-music-btn-sm" type="button" title="Повтор: выкл" aria-label="Повтор">🔁</button>
+        <div id="hub-music-widget" class="mp" data-playing="false" data-muted="false" title="Плеер Deadlock Plus">
+          <div class="mp-top">
+            <span class="mp-badge" aria-hidden="true">
+              <span class="mp-eq"><i></i><i></i><i></i><i></i></span>
+            </span>
+            <div class="mp-meta">
+              <div class="mp-kicker"><span>САУНДТРЕК</span><span id="mp-counter" class="mp-counter">01 / 12</span></div>
+              <div class="mp-picker" id="hub-music-picker">
+                <button id="hub-music-track" class="mp-title-btn" type="button" aria-haspopup="listbox" aria-expanded="false" title="Выбрать трек — полный плейлист">
+                  <span id="hub-music-track-label" class="mp-title">background music</span>
+                  <svg class="mp-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <ul id="hub-music-track-list" class="mp-list" role="listbox" aria-label="Плейлист" hidden></ul>
+              </div>
+            </div>
+            <div class="mp-transport">
+              <button id="hub-music-prev" class="mp-btn" type="button" title="Предыдущий трек" aria-label="Предыдущий трек">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="19 20 9 12 19 4 19 20"/><rect x="5" y="4" width="2" height="16" rx="1"/></svg>
+              </button>
+              <button id="hub-music-toggle-btn" class="mp-btn mp-play" type="button" title="Играть" aria-label="Играть / Пауза">
+                <svg class="mp-ico-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg>
+                <svg class="mp-ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4.5" height="16" rx="1"/><rect x="13.5" y="4" width="4.5" height="16" rx="1"/></svg>
+              </button>
+              <button id="hub-music-next" class="mp-btn" type="button" title="Следующий трек" aria-label="Следующий трек">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
+              </button>
+            </div>
           </div>
-          <div class="hub-music-slider-wrap">
-            <span class="hub-music-label">МУЗЫКА</span>
-            <input type="range" id="hub-music-slider" class="volume-slider hub-music-slider" min="0" max="1" step="0.01" value="0.35" aria-label="Громкость музыки">
-            <span id="hub-music-val" class="volume-value hub-music-val">35%</span>
+          <div class="mp-progress">
+            <span id="mp-time" class="mp-time">0:00</span>
+            <div id="mp-seek" class="mp-seek" role="slider" tabindex="0" aria-label="Позиция трека" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span class="mp-seek-track"><span id="mp-seek-fill" class="mp-seek-fill"></span></span>
+              <span id="mp-seek-knob" class="mp-seek-knob" aria-hidden="true"></span>
+            </div>
+            <span id="mp-dur" class="mp-time">--:--</span>
+          </div>
+          <div class="mp-foot">
+            <div class="mp-modes">
+              <button id="hub-music-shuffle" class="mp-toggle" type="button" aria-pressed="false" title="Перемешать: выкл" aria-label="Перемешать">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+              </button>
+              <button id="hub-music-repeat" class="mp-toggle" type="button" aria-pressed="false" data-mode="off" title="Повтор: выкл" aria-label="Повтор">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              </button>
+            </div>
+            <div class="mp-vol">
+              <button id="hub-music-mute" class="mp-vol-btn" type="button" aria-pressed="false" title="Выключить музыку" aria-label="Выключить музыку">
+                <svg class="mp-ico-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <svg class="mp-ico-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              </button>
+              <input type="range" id="hub-music-slider" class="volume-slider mp-slider" min="0" max="1" step="0.01" value="0.35" aria-label="Громкость музыки">
+              <span id="hub-music-val" class="mp-val">35%</span>
+            </div>
           </div>
         </div>
         <button class="btn-amber" id="hub-refresh">Обновить профиль</button>
@@ -223,6 +288,70 @@
       <span class="th-col th-actions"></span>
     </div>
     <div id="tier-rows" class="tier-rows"></div>
+  </section>
+
+  <!-- ============ Экран «СИНЕРГИИ» ============ -->
+  <section id="tab-synergies" class="tab-panel hidden" role="tabpanel" aria-label="Синергии">
+    <div class="panel syn-head">
+      <div class="syn-head-main">
+        <h2 class="syn-title">Синергии дуо</h2>
+        <p class="syn-sub">Сила связок на одной линии: винрейт пары, WRF и экономика линии.
+          Данные собираются с матчей и обновляются раз в неделю.</p>
+      </div>
+      <div class="syn-head-meta">
+        <span class="syn-chip" id="syn-count">—</span>
+        <span class="syn-chip" id="syn-meta-date">данные: —</span>
+        <a class="syn-source" id="syn-source"
+           href="https://mobalytics.gg/deadlock/tier-list/synergies"
+           target="_blank" rel="noopener noreferrer">Mobalytics ↗</a>
+      </div>
+    </div>
+
+    <div class="panel syn-controls">
+      <input id="syn-search" class="text-input syn-search" type="search"
+             placeholder="Поиск героя: Грейвс, Кельвин…" aria-label="Поиск героя">
+      <div class="syn-tier-filter" role="group" aria-label="Сорт связки">
+        <button type="button" class="syn-tier-btn syn-tier-btn-active" data-syn-tier="">Все</button>
+        <button type="button" class="syn-tier-btn" data-syn-tier="S">S</button>
+        <button type="button" class="syn-tier-btn" data-syn-tier="A">A</button>
+        <button type="button" class="syn-tier-btn" data-syn-tier="B">B</button>
+        <button type="button" class="syn-tier-btn" data-syn-tier="C">C</button>
+      </div>
+      <select id="syn-sort" class="select-input syn-sort" aria-label="Сортировка">
+        <option value="winrate">По винрейту</option>
+        <option value="wrf">По WRF</option>
+        <option value="pickrate">По пикрейту</option>
+        <option value="cs_per_min">По CS/мин</option>
+        <option value="denies">По дени</option>
+        <option value="nw_per_min">По сети/мин</option>
+        <option value="kda">По KDA</option>
+      </select>
+      <span class="syn-visible" id="syn-visible"></span>
+    </div>
+
+    <div class="syn-table" role="table" aria-label="Синергии дуо">
+      <div class="syn-table-head" role="row">
+        <span class="syn-th">#</span>
+        <span class="syn-th">Сорт</span>
+        <span class="syn-th syn-th-duo">Дуо</span>
+        <span class="syn-th" title="Доля побед пары на линии">% побед</span>
+        <span class="syn-th" title="Win Rate Factor — прирост винрейта дуо относительно среднего винрейта героев">WRF</span>
+        <span class="syn-th">Пикрейт</span>
+        <span class="syn-th" title="Средние добивания крипов в минуту">CS/мин</span>
+        <span class="syn-th" title="Средние денаи в минуту">Дени</span>
+        <span class="syn-th" title="Средняя сеть в минуту">Сеть/мин</span>
+        <span class="syn-th">KDA</span>
+      </div>
+      <div id="syn-rows" class="syn-rows"></div>
+    </div>
+
+    <div class="syn-footer">
+      <button type="button" id="syn-more" class="btn-ghost syn-more hidden">Показать ещё</button>
+      <details class="syn-method">
+        <summary>Как считаются данные</summary>
+        <ul id="syn-method-list"></ul>
+      </details>
+    </div>
   </section>
 
   <!-- ============ Экран 3: ПИК-АССИСТЕНТ ============ -->
@@ -716,6 +845,20 @@
           <label>MMR <input id="profile-mmr" type="number" class="text-input"></label>
           <button class="btn-amber" id="btn-save-profile">Сохранить профиль</button>
         </div>
+
+        <div class="profile-basic-row">
+          <label>Хоткей панели
+            <input id="hotkey-input" type="text" class="text-input" readonly
+                   placeholder="Ctrl+F1" title="Нажмите комбинацию в поле, затем «Сохранить хоткей»">
+          </label>
+          <button class="btn-ghost" id="btn-save-hotkey">Сохранить хоткей</button>
+          <button class="live-switch" id="topmost-switch" type="button" role="switch" aria-checked="true"
+                  title="По хоткею окно закрепляется поверх игры. Выключено — программа работает как обычное окно, хоткей не перехватывается.">
+            <span class="track" aria-hidden="true"></span>
+            <span class="live-switch-label">Поверх других окон</span>
+          </button>
+          <span id="hotkey-status" class="section-hint"></span>
+        </div>
         <details class="profile-advanced">
           <summary>Расширенные (ручной ввод ID)</summary>
           <div class="profile-form">
@@ -744,8 +887,12 @@
           <label>Модель
             <div class="ai-model-select-wrap">
               <select id="ai-model-select" class="select-input">
-                <option value="glm-5.3-flash">glm-5.3-flash (по умолчанию)</option>
-                <option value="glm-5.3">glm-5.3 (медленнее, но полный)</option>
+                <option value="deepseek-v4.1-flash">deepseek-v4.1-flash (по умолчанию)</option>
+                <option value="deepseek-v4-flash">deepseek-v4-flash (быстрый)</option>
+                <option value="deepseek-v4-pro">deepseek-v4-pro (глубокий)</option>
+                <option value="glm-5.3-flash">glm-5.3-flash</option>
+                <option value="kimi-k3">kimi-k3</option>
+                <option value="mimo-v2.6-flash">mimo-v2.6-flash</option>
               </select>
               <button type="button" class="btn-ghost btn-sm" id="btn-refresh-models" title="Выгрузить и проверить только рабочие модели">🔄 Модели</button>
             </div>
@@ -765,7 +912,7 @@
           <button class="btn-ghost" id="btn-test-ai">Проверить соединение</button>
         </div>
         <div class="ai-status" id="ai-status"></div>
-        <p class="section-hint">Поддерживаются OpenAI-совместимые роутеры: локальный failover <strong>http://127.0.0.1:8089/v1</strong>, Zexkora, OpenRouter и др. По кнопке «🔄 Модели» происходит опрос шлюза и выводятся <strong>только проверенные рабочие модели</strong>.</p>
+        <p class="section-hint">Поддерживаются OpenAI-совместимые роутеры: локальный failover <strong>http://127.0.0.1:8089/v1</strong>, Zexkora, OpenRouter и др. По кнопке «🔄 Модели» каталог берётся из реального ответа <code>/v1/models</code> и каждая модель пингуется живым запросом — в списке остаются <strong>только отвечающие модели</strong>.</p>
       </div>
     </div>
   </section>
@@ -819,6 +966,161 @@
       }
     });
   })();
+</script>
+<script>
+// Глобальная горячая клавиша панели: комбинацию регистрирует оболочка
+// (run_desktop.py); в браузере /api/desktop/hotkey вернёт supported: false.
+// Тумблер «Поверх других окон» выключает и перехват клавиш, и закреп окна.
+(function () {
+  var input = document.getElementById('hotkey-input');
+  var btn = document.getElementById('btn-save-hotkey');
+  var status = document.getElementById('hotkey-status');
+  var topmost = document.getElementById('topmost-switch');
+  var topmostLabel = topmost ? topmost.querySelector('.live-switch-label') : null;
+  if (!input || !btn || !status) return;
+  var captured = null;
+  var topmostOn = true;
+  var topmostSupported = true;
+
+  function setStatus(text, bad) {
+    status.textContent = text || '';
+    status.style.color = bad ? '#E06C75' : '';
+  }
+
+  function paintTopmost(d) {
+    if (!d) return;
+    topmostSupported = !!d.supported;
+    topmostOn = !!d.enabled;
+    if (!topmost) return;
+    topmost.setAttribute('aria-checked', topmostOn ? 'true' : 'false');
+    if (!topmostSupported) {
+      topmost.disabled = true;
+      if (topmostLabel) topmostLabel.textContent = 'Поверх окон: только в приложении';
+    }
+  }
+
+  function paint(d) {
+    if (!d) return;
+    input.value = d.hotkey || '';
+    if (typeof d.always_on_top === 'boolean') {
+      topmostOn = d.always_on_top;
+      if (topmost) topmost.setAttribute('aria-checked', topmostOn ? 'true' : 'false');
+    }
+    if (!d.supported) { btn.disabled = true; setStatus('Хоткей: только в приложении', false); return; }
+    if (!topmostOn) { setStatus('Хоткей сохранён · включите «Поверх других окон»', false); return; }
+    if (d.error) { setStatus('Не зарегистрирован: ' + d.error, true); return; }
+    setStatus(d.active ? 'Активен: ' + (d.hotkey || '') + ' — панель поверх игры' : 'Не зарегистрирован', !d.active);
+  }
+
+  function loadHotkey() {
+    return fetch('/api/desktop/hotkey')
+      .then(function (r) { return r.json(); })
+      .then(paint);
+  }
+
+  input.addEventListener('keydown', function (e) {
+    e.preventDefault();
+    var key = e.key;
+    if (key === 'Control' || key === 'Alt' || key === 'Shift' || key === 'Meta') return;
+    var mods = [];
+    if (e.ctrlKey) mods.push('Ctrl');
+    if (e.altKey) mods.push('Alt');
+    if (e.shiftKey) mods.push('Shift');
+    if (e.metaKey) mods.push('Win');
+    if (!mods.length) { setStatus('Нужен хотя бы один модификатор (Ctrl/Alt/Shift/Win)', true); return; }
+    if (/^F([1-9]|1[0-9]|2[0-4])$/.test(key)) {
+      captured = mods.join('+') + '+' + key;
+    } else if (key.length === 1) {
+      captured = mods.join('+') + '+' + key.toUpperCase();
+    } else {
+      return;
+    }
+    input.value = captured;
+    setStatus('Нажмите «Сохранить хоткей»', false);
+  });
+
+  btn.addEventListener('click', function () {
+    // После загрузки и после успешного сохранения captured пуст, а в поле
+    // лежит действующая комбинация. Повторное нажатие должно применить её,
+    // а не отвечать «сначала нажмите комбинацию» на заполненное поле.
+    var spec = captured || String(input.value || '').trim();
+    if (!spec) { setStatus('Сначала нажмите комбинацию в поле', true); return; }
+    btn.disabled = true;
+    fetch('/api/desktop/hotkey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hotkey: spec })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+    }).then(function (res) {
+      if (!res.ok) { setStatus((res.d && res.d.detail) || 'Не удалось сохранить', true); return; }
+      captured = null;
+      paint(res.d);
+    }).catch(function () {
+      setStatus('Сервер недоступен', true);
+    }).then(function () {
+      btn.disabled = false;
+    });
+  });
+
+  if (topmost) {
+    topmost.addEventListener('click', function () {
+      if (!topmostSupported) return;
+      var next = topmost.getAttribute('aria-checked') !== 'true';
+      topmost.setAttribute('aria-checked', next ? 'true' : 'false');
+      fetch('/api/desktop/topmost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: next })
+      }).then(function (r) { return r.json(); })
+        .then(function (d) {
+          paintTopmost(d);
+          if (d && d.error) setStatus('Не зарегистрирован: ' + d.error, true);
+          return loadHotkey();
+        })
+        .catch(function () {
+          topmostOn = !next;
+          topmost.setAttribute('aria-checked', topmostOn ? 'true' : 'false');
+          setStatus('Сервер недоступен', true);
+        });
+    });
+  }
+
+  Promise.all([
+    fetch('/api/desktop/topmost').then(function (r) { return r.json(); }),
+    fetch('/api/desktop/hotkey').then(function (r) { return r.json(); })
+  ]).then(function (res) {
+    paintTopmost(res[0]);
+    paint(res[1]);
+  }).catch(function () { setStatus('Сервер недоступен', true); });
+})();
+</script>
+<script>
+// Esc закрывает панель, открытую хоткеем, и возвращает фокус игре. Состояние
+// берём у оболочки: обычное окно Esc не прячет (там Esc нужен диалогам).
+(function () {
+  var panelOpen = false;
+
+  function refresh() {
+    fetch('/api/desktop/panel')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { panelOpen = !!(d && d.supported && d.visible && d.by_hotkey); })
+      .catch(function () { panelOpen = false; });
+  }
+
+  window.addEventListener('focus', refresh);
+  refresh();
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || !panelOpen) return;
+    panelOpen = false;
+    fetch('/api/desktop/panel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visible: false })
+    }).catch(function () { panelOpen = true; });
+  });
+})();
 </script>
 <script type="module" src="./js/app.js"></script>
 <script type="module" src="./js/music_picker.js"></script>

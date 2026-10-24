@@ -43,8 +43,11 @@ export class SoundEngine {
     this.playlist = DEFAULT_TRACKS.slice();
     this.trackIndex = 0;
     this._currentFile = null;
-    this.shuffle = false;
-    this.repeat = 'off'; // 'off' | 'all' | 'one'
+    // Режимы запоминаются между запусками: выключил перемешивание — оно не вернётся.
+    this.shuffle = localStorage.getItem('audio.shuffle') === 'true';
+    const savedRepeat = localStorage.getItem('audio.repeat');
+    this.repeat = REPEAT_CYCLE.includes(savedRepeat) ? savedRepeat : 'off'; // 'off' | 'all' | 'one'
+    this.history = []; // индексы для «назад» в режиме перемешивания
 
     this.musicStarted = false;
     this.userPaused = localStorage.getItem('audio.userPaused') === 'true';
@@ -179,6 +182,9 @@ export class SoundEngine {
       return;
     }
     this.loadCurrentTrack();
+    // Трек мог дойти до конца в repeat=off: play() тогда стартует с начала,
+    // но WebView2 оставляет позицию на конце — сбрасываем её явно.
+    if (this.bgMusic.ended) this.bgMusic.currentTime = 0;
     this.bgMusic.play().then(() => {
       this.musicStarted = true;
       this.notify();
@@ -212,6 +218,8 @@ export class SoundEngine {
       while (ni === this.trackIndex) {
         ni = Math.floor(Math.random() * this.playlist.length);
       }
+      this.history.push(this.trackIndex);
+      if (this.history.length > 50) this.history.shift();
       return ni;
     }
     return (this.trackIndex + 1) % this.playlist.length;
@@ -221,13 +229,15 @@ export class SoundEngine {
     if (!this.playlist.length) return;
     this.trackIndex = this.pickNextIndex();
     this.loadCurrentTrack();
-    this.playMusic();
-    this.notify();
+    // Пауза — это состояние пользователя: смена трека её не снимает.
+    if (this.userPaused) this.notify(); else this.playMusic();
   }
 
   prevTrack() {
     if (!this.playlist.length) return;
-    if (this.shuffle) {
+    if (this.shuffle && this.history.length) {
+      this.trackIndex = this.history.pop();
+    } else if (this.shuffle && this.playlist.length > 1) {
       let ni = this.trackIndex;
       while (ni === this.trackIndex) {
         ni = Math.floor(Math.random() * this.playlist.length);
@@ -237,12 +247,13 @@ export class SoundEngine {
       this.trackIndex = (this.trackIndex - 1 + this.playlist.length) % this.playlist.length;
     }
     this.loadCurrentTrack();
-    this.playMusic();
-    this.notify();
+    if (this.userPaused) this.notify(); else this.playMusic();
   }
 
   toggleShuffle() {
     this.shuffle = !this.shuffle;
+    if (!this.shuffle) this.history.length = 0;
+    try { localStorage.setItem('audio.shuffle', String(this.shuffle)); } catch (_) {}
     this.notify();
     return this.shuffle;
   }
@@ -250,8 +261,29 @@ export class SoundEngine {
   cycleRepeat() {
     const i = REPEAT_CYCLE.indexOf(this.repeat);
     this.repeat = REPEAT_CYCLE[(i + 1) % REPEAT_CYCLE.length];
+    try { localStorage.setItem('audio.repeat', this.repeat); } catch (_) {}
     this.notify();
     return this.repeat;
+  }
+
+  /** Перемотка на долю длительности трека (0..1). Без notify: перерисовывает полосу виджет. */
+  seek(ratio) {
+    const dur = this.bgMusic.duration;
+    if (!Number.isFinite(dur) || dur <= 0) return false;
+    const r = Math.max(0, Math.min(1, Number(ratio) || 0));
+    try {
+      this.bgMusic.currentTime = r * dur;
+    } catch (_) {
+      return false;
+    }
+    return true;
+  }
+
+  /** Перемотка на ±delta секунд. */
+  seekBy(delta) {
+    const dur = this.bgMusic.duration;
+    if (!Number.isFinite(dur) || dur <= 0) return false;
+    return this.seek((this.bgMusic.currentTime + Number(delta || 0)) / dur);
   }
 
   /**
@@ -460,73 +492,125 @@ export function initVolumeWidget() {
 }
 
 /**
- * Инициализация виджета фоновой музыки на вкладке «Хаб»:
- * play/pause, Prev/Next, Shuffle, Repeat (off/all/one), трек, громкость 1%.
+ * Инициализация плеера фоновой музыки на вкладке «Хаб»:
+ * play/pause, перемотка по полосе, Prev/Next, Shuffle, Repeat (off/all/one),
+ * mute и громкость. Состояние режимов живёт в SoundEngine, виджет только
+ * рисует его и отдаёт команды — поэтому кнопки не «врут» после перезапуска.
  */
 export function initHubMusicWidget() {
   const container = document.getElementById('hub-music-widget');
   if (!container) return;
 
-  const toggleBtn = container.querySelector('#hub-music-toggle-btn');
-  const icon = container.querySelector('#hub-music-icon');
-  const trackEl = container.querySelector('#hub-music-track-label') || container.querySelector('#hub-music-track');
-  const slider = container.querySelector('#hub-music-slider');
-  const valLabel = container.querySelector('#hub-music-val');
-  const prevBtn = container.querySelector('#hub-music-prev');
-  const nextBtn = container.querySelector('#hub-music-next');
-  const shuffleBtn = container.querySelector('#hub-music-shuffle');
-  const repeatBtn = container.querySelector('#hub-music-repeat');
+  const byId = (id) => container.querySelector(`#${id}`);
+  const toggleBtn = byId('hub-music-toggle-btn');
+  const trackEl = byId('hub-music-track-label');
+  const slider = byId('hub-music-slider');
+  const valLabel = byId('hub-music-val');
+  const prevBtn = byId('hub-music-prev');
+  const nextBtn = byId('hub-music-next');
+  const shuffleBtn = byId('hub-music-shuffle');
+  const repeatBtn = byId('hub-music-repeat');
+  const muteBtn = byId('hub-music-mute');
+  const counterEl = byId('mp-counter');
+  const timeEl = byId('mp-time');
+  const durEl = byId('mp-dur');
+  const seekEl = byId('mp-seek');
+  const seekFill = byId('mp-seek-fill');
+  const seekKnob = byId('mp-seek-knob');
+  const audio = soundEngine.bgMusic;
+
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const clock = (sec) => {
+    if (!Number.isFinite(sec) || sec < 0) return '--:--';
+    const total = Math.floor(sec);
+    return `${Math.floor(total / 60)}:${pad2(total % 60)}`;
+  };
+
+  let dragging = false;
+
+  function drawProgress(force) {
+    if (dragging && !force) return;
+    const dur = audio.duration;
+    const hasDur = Number.isFinite(dur) && dur > 0;
+    const pos = hasDur ? Math.max(0, Math.min(1, audio.currentTime / dur)) : 0;
+    const pct = pos * 100;
+    if (seekFill) seekFill.style.width = `${pct}%`;
+    if (seekKnob) seekKnob.style.left = `${pct}%`;
+    if (timeEl) timeEl.textContent = hasDur ? clock(audio.currentTime) : '0:00';
+    if (durEl) durEl.textContent = hasDur ? clock(dur) : '--:--';
+    if (seekEl) {
+      seekEl.setAttribute('aria-valuenow', String(Math.round(pct)));
+      seekEl.setAttribute(
+        'aria-valuetext',
+        hasDur ? `${clock(audio.currentTime)} / ${clock(dur)}` : 'не загружено',
+      );
+    }
+  }
 
   function renderHub(engine) {
     const isPlaying = engine.isPlaying();
-    const isMuted = engine.musicMuted || engine.musicVolume <= 0 || engine.muted;
+    const isMuted = engine.musicMuted || engine.muted || engine.musicVolume <= 0;
 
-    if (icon) {
-      icon.textContent = isPlaying ? '🎵 ⏸' : '🎵 ▶';
-    }
-    if (toggleBtn) {
-      toggleBtn.title = isPlaying ? 'Пауза' : 'Играть';
-    }
+    container.dataset.playing = String(isPlaying);
+    container.dataset.muted = String(isMuted);
+
+    if (toggleBtn) toggleBtn.title = isPlaying ? 'Пауза' : 'Играть';
 
     if (trackEl) {
-      const title = trackTitle(engine.currentTrack());
+      const title = trackTitle(engine.currentTrack()) || 'Плейлист пуст';
       trackEl.textContent = title;
       trackEl.title = title;
     }
 
+    if (counterEl) {
+      const total = engine.playlist.length;
+      counterEl.textContent = total
+        ? `${pad2(Math.min(engine.trackIndex + 1, total))} / ${pad2(total)}`
+        : '00 / 00';
+    }
+
     if (slider) {
       slider.value = String(engine.musicVolume);
-      const pct = Math.round(engine.musicVolume * 100);
-      slider.style.setProperty('--vol-fill', `${pct}%`);
+      slider.style.setProperty('--vol-fill', `${Math.round(engine.musicVolume * 100)}%`);
     }
 
     if (valLabel) {
-      if (isMuted) {
-        valLabel.textContent = 'ВЫКЛ';
-      } else {
-        valLabel.textContent = `${Math.round(engine.musicVolume * 100)}%`;
-      }
+      valLabel.textContent = isMuted ? 'ВЫКЛ' : `${Math.round(engine.musicVolume * 100)}%`;
+    }
+
+    if (muteBtn) {
+      muteBtn.setAttribute('aria-pressed', String(isMuted));
+      muteBtn.title = isMuted ? 'Включить музыку' : 'Выключить музыку';
+      muteBtn.setAttribute('aria-label', isMuted ? 'Включить музыку' : 'Выключить музыку');
     }
 
     if (shuffleBtn) {
       shuffleBtn.classList.toggle('active', engine.shuffle);
-      shuffleBtn.title = engine.shuffle ? 'Перемешать: вкл' : 'Перемешать: выкл';
+      shuffleBtn.setAttribute('aria-pressed', String(engine.shuffle));
+      shuffleBtn.title = engine.shuffle ? 'Перемешивание: вкл' : 'Перемешивание: выкл';
     }
 
     if (repeatBtn) {
       const active = engine.repeat !== 'off';
+      const label = engine.repeat === 'off'
+        ? 'выкл'
+        : (engine.repeat === 'all' ? 'весь плейлист' : 'один трек');
       repeatBtn.classList.toggle('active', active);
+      repeatBtn.setAttribute('aria-pressed', String(active));
       repeatBtn.dataset.mode = engine.repeat;
-      repeatBtn.textContent = engine.repeat === 'one' ? '🔂' : '🔁';
-      const label = engine.repeat === 'off' ? 'выкл' : (engine.repeat === 'all' ? 'все' : 'один');
       repeatBtn.title = `Повтор: ${label}`;
+      repeatBtn.setAttribute('aria-label', `Повтор: ${label}`);
     }
+
+    drawProgress();
   }
+
+  const stopClick = (e) => e.stopPropagation();
 
   if (toggleBtn && !toggleBtn.dataset.wired) {
     toggleBtn.dataset.wired = '1';
     toggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+      stopClick(e);
       soundEngine.togglePlay();
     });
   }
@@ -534,7 +618,7 @@ export function initHubMusicWidget() {
   if (prevBtn && !prevBtn.dataset.wired) {
     prevBtn.dataset.wired = '1';
     prevBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+      stopClick(e);
       soundEngine.prevTrack();
     });
   }
@@ -542,7 +626,7 @@ export function initHubMusicWidget() {
   if (nextBtn && !nextBtn.dataset.wired) {
     nextBtn.dataset.wired = '1';
     nextBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+      stopClick(e);
       soundEngine.nextTrack();
     });
   }
@@ -550,7 +634,7 @@ export function initHubMusicWidget() {
   if (shuffleBtn && !shuffleBtn.dataset.wired) {
     shuffleBtn.dataset.wired = '1';
     shuffleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+      stopClick(e);
       soundEngine.toggleShuffle();
     });
   }
@@ -558,8 +642,19 @@ export function initHubMusicWidget() {
   if (repeatBtn && !repeatBtn.dataset.wired) {
     repeatBtn.dataset.wired = '1';
     repeatBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+      stopClick(e);
       soundEngine.cycleRepeat();
+    });
+  }
+
+  if (muteBtn && !muteBtn.dataset.wired) {
+    muteBtn.dataset.wired = '1';
+    muteBtn.addEventListener('click', (e) => {
+      stopClick(e);
+      const wasMuted = soundEngine.musicMuted;
+      soundEngine.toggleMusicMute();
+      // Вышли из mute, но громкость осталась нулевой — иначе кнопка «молчит».
+      if (wasMuted && soundEngine.musicVolume <= 0) soundEngine.setMusicVolume(0.35);
     });
   }
 
@@ -567,12 +662,73 @@ export function initHubMusicWidget() {
     slider.dataset.wired = '1';
     slider.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
-      if (soundEngine.musicMuted && val > 0) {
-        soundEngine.musicMuted = false;
-        try { localStorage.setItem('df_music_muted', 'false'); } catch (_) {}
-      }
+      if (soundEngine.musicMuted && val > 0) soundEngine.toggleMusicMute();
       soundEngine.setMusicVolume(val);
     });
+  }
+
+  if (seekEl && !seekEl.dataset.wired) {
+    seekEl.dataset.wired = '1';
+    const ratioAt = (clientX) => {
+      const rect = seekEl.getBoundingClientRect();
+      return rect.width > 0 ? (clientX - rect.left) / rect.width : 0;
+    };
+    const seekAt = (clientX) => {
+      soundEngine.seek(ratioAt(clientX));
+      drawProgress(true);
+    };
+
+    seekEl.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      e.preventDefault();
+      dragging = true;
+      container.classList.add('is-seeking');
+      if (seekEl.setPointerCapture) {
+        try { seekEl.setPointerCapture(e.pointerId); } catch (_) {}
+      }
+      seekAt(e.clientX);
+    });
+
+    seekEl.addEventListener('pointermove', (e) => {
+      if (dragging) seekAt(e.clientX);
+    });
+
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      container.classList.remove('is-seeking');
+      if (seekEl.releasePointerCapture) {
+        try { seekEl.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+      drawProgress(true);
+    };
+    seekEl.addEventListener('pointerup', endDrag);
+    seekEl.addEventListener('pointercancel', endDrag);
+
+    seekEl.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        soundEngine.seekBy(-5);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        soundEngine.seekBy(5);
+      } else if (e.key === 'Home') {
+        soundEngine.seek(0);
+      } else if (e.key === 'End') {
+        soundEngine.seek(1);
+      } else {
+        return;
+      }
+      e.preventDefault();
+      drawProgress(true);
+    });
+  }
+
+  // Прогресс не идёт через notify(): timeupdate срабатывает 4 раза в секунду
+  // и перерисовывал бы весь виджет и список плейлиста.
+  if (!container.dataset.progressWired) {
+    container.dataset.progressWired = '1';
+    for (const ev of ['timeupdate', 'durationchange', 'loadedmetadata', 'seeked', 'emptied', 'ended']) {
+      audio.addEventListener(ev, () => drawProgress());
+    }
   }
 
   soundEngine.subscribe(renderHub);

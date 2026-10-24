@@ -18,7 +18,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
 
 AI_CONFIG_DEFAULTS: dict[str, Any] = {
     "provider": "openai",
-    "model_name": "glm-5.3-flash",
+    "model_name": "deepseek-v4.1-flash",
     "api_key": "",
     "base_url": None,
     "enable_thinking": True,

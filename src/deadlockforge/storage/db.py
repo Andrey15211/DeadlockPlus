@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS user_profile (
 CREATE TABLE IF NOT EXISTS ai_config (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     provider TEXT NOT NULL DEFAULT 'openai',
-    model_name TEXT NOT NULL DEFAULT 'glm-5.3-flash',
+    model_name TEXT NOT NULL DEFAULT 'deepseek-v4.1-flash',
     api_key TEXT NOT NULL DEFAULT '',
     base_url TEXT,
     enable_thinking BOOLEAN DEFAULT 1,
@@ -114,6 +114,10 @@ CREATE TABLE IF NOT EXISTS match_raw (
     match_id TEXT PRIMARY KEY,
     payload TEXT NOT NULL,
     fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_builds_hero ON builds(hero_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_created ON match_reviews(created_at DESC);
@@ -547,6 +551,21 @@ class Database:
                    payload=excluded.payload,
                    updated_at=CURRENT_TIMESTAMP""",
             (cache_key, json.dumps(payload, ensure_ascii=False)),
+        )
+
+    # -- настройки приложения (глобальный хоткей и пр.) ----------------------
+
+    def get_setting(self, key: str, default: str | None = None) -> str | None:
+        """Строковая настройка по ключу; None, если ключа нет."""
+        row = self._query_one("SELECT value FROM app_settings WHERE key = ?", (key,))
+        return str(row["value"]) if row is not None else default
+
+    def set_setting(self, key: str, value: str) -> None:
+        """Записать настройку (upsert); пустое значение допустимо."""
+        self._execute(
+            "INSERT INTO app_settings (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (key, str(value)),
         )
 
 

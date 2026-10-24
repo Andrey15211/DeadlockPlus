@@ -21,6 +21,7 @@ import { initTierList } from './tierlist.js';
 import { initDrafter } from './drafter.js';
 import { initDeepMatch } from './deep_match.js';
 import { initCounterpicks } from './counterpicks.js';
+import { initSynergies } from './synergies.js';
 import { loadMapView } from './map_view.js';
 import { soundEngine, initVolumeWidget, initHubMusicWidget } from './audio.js';
 
@@ -79,6 +80,9 @@ async function boot() {
 
   // 1b. Контрпики не зависят от каталога — стартуют сразу.
   initCounterpicksOnce();
+
+  // 1c. Синергии тоже самодостаточны: имена и портреты уже в датасете.
+  try { initSynergies(); } catch (e) { console.error('initSynergies error:', e); }
 
   // 2. Мгновенная инициализация из кэша (0 мс), если справочники сохранены в sessionStorage
   const cachedHeroes = getCachedReference('heroes');
@@ -1010,7 +1014,7 @@ async function loadAIConfig() {
   const fromEnv = cfg?.key_source === 'env';
   if (statusCard) statusCard.classList.remove('hidden');
 
-  const curModel = cfg?.model_name || 'glm-5.3-flash';
+  const curModel = cfg?.model_name || 'deepseek-v4.1-flash';
   const curReasoning = cfg?.reasoning_effort || 'low';
   if (reasoningSelect && curReasoning) {
     reasoningSelect.value = curReasoning;

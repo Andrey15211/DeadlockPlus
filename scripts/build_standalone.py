@@ -23,6 +23,23 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 ENTRY = ROOT / "run_desktop.py"
 
 
+def refresh_icons() -> None:
+    """Перегенерировать иконки из мастер-арта в Assets/ перед упаковкой.
+
+    Спека берёт готовый web/assets/icons/deadlockforge.ico, поэтому без этого
+    шага в exe уезжает иконка от прошлой сборки: положил новый арт — получил
+    старый ярлык. make_icon сам выбирает источник (.ico заказчика, иначе PNG)
+    и нарезает 256/64/48/32/16 — одноразмерный .ico Windows мылит.
+    """
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import make_icon
+
+        make_icon.main()
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+
+
 def ensure_pyinstaller() -> str:
     """Import-check pyinstaller, pip-install it if missing. Returns command."""
     try:
@@ -48,6 +65,7 @@ def build() -> int:
     if not spec.is_file():
         print(f"[build] не найдена спека: {spec}", file=sys.stderr)
         return 1
+    refresh_icons()
     cmd = [python, "-m", "PyInstaller", "--noconfirm", "--clean", str(spec)]
     print("[build] " + " ".join(cmd))
     return subprocess.run(cmd, cwd=str(ROOT)).returncode

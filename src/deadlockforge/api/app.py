@@ -37,6 +37,7 @@ from ..models import (
     MatchReview,
     RedFlag,
     StatsSnapshot,
+    Synergies,
     effective_ai_config,
 )
 
@@ -212,6 +213,41 @@ class LiveStateRequest(BaseModel):
     enemies: list[str] = []
     items: list[str] = []
 
+
+class LiveClockSync(BaseModel):
+    """POST /api/live/clock body — точка отсчёта игровых часов.
+
+    Панель live.html присылает своё время на старте/паузе/правке, сервер
+    запоминает точку и дальше считает сам. Нужно, чтобы оверлей-плашки
+    знали время даже когда панель закрыта.
+    """
+
+    seconds: float = 0.0
+    running: bool = False
+
+
+class LiveOverlayRequest(BaseModel):
+    """POST /api/live/overlay body — тумблер плашек поверх игры."""
+
+    enabled: bool
+
+
+class HotkeyRequest(BaseModel):
+    """POST /api/desktop/hotkey body — комбинация вида 'ctrl+f1'."""
+
+    hotkey: str
+
+
+class PanelRequest(BaseModel):
+    """POST /api/desktop/panel body — показать или скрыть панель поверх игры."""
+
+    visible: bool
+
+
+class TopmostRequest(BaseModel):
+    """POST /api/desktop/topmost body — тумблер «Поверх других окон»."""
+
+    enabled: bool
 
 
 def _resolve_heroes(ids: list[str]) -> list[Hero]:
@@ -411,6 +447,88 @@ def _live_timeline() -> list[dict]:
             "description": ev.description,
             "minutes": round(minutes, 2),
         })
+    return events
+
+
+# За сколько секунд до события оверлей пишет «через N секунд».
+LIVE_ANNOUNCE_LEAD = 20
+# Горизонт раскрытия повторяющихся событий, секунды матча.
+LIVE_SCHEDULE_HORIZON = 45 * 60
+# Обрезка текста события в фиде комментатора.
+LIVE_TEXT_LIMIT = 150
+
+# Повторяющиеся циклы, которых нет в timeline (первое появление там уже описано,
+# поэтому раскрываются со второго). Источник: deadlock.wiki — Soul Urn, Powerup,
+# Unstable Rift; статичные спавны берутся из data/map.json.
+LIVE_CYCLES = [
+    {
+        "id": "urn",
+        "title": "Урна душ",
+        "first_seconds": 600,
+        "every_seconds": 300,
+        "pre": "Урна душ через {lead} секунд — линия чередуется, приземление 12.5 с.",
+        "now": "Урна душ заспавнилась: забрать ударом в ближнем бою, сдавать на противоположной линии.",
+    },
+    {
+        "id": "bridge-buffs",
+        "title": "Баффы мостов",
+        "first_seconds": 300,
+        "every_seconds": 300,
+        "pre": "Баффы на мостах через {lead} секунд — не копятся, забирать сразу.",
+        "now": "Баффы мостов заспавнились: держатся 160 с после разбития.",
+    },
+    {
+        "id": "rift",
+        "title": "Unstable Rift",
+        "first_seconds": 660,
+        "every_seconds": 420,
+        "pre": "Unstable Rift примерно через {lead} секунд (±1 мин) — готовь состав на боковой мост.",
+        "now": "Unstable Rift: захват на мосту боковой линии, окно 60 с, при равенстве — ничья.",
+    },
+]
+
+
+def _short(text: str, title: str = "") -> str:
+    """Первое предложение описания без дубля заголовка, до LIVE_TEXT_LIMIT."""
+    head = (text or "").split(". ")[0].strip().rstrip(".")
+    if title and head.lower().startswith(title.lower()):
+        head = head[len(title):].lstrip(" :—–-") or head
+    return head if len(head) <= LIVE_TEXT_LIMIT else head[:LIVE_TEXT_LIMIT - 1] + "…"
+
+
+def _live_schedule(lead: int = LIVE_ANNOUNCE_LEAD,
+                   horizon: int = LIVE_SCHEDULE_HORIZON) -> list[dict]:
+    """Расписание комментатора: [{id, kind, at, lead, title, pre, now}].
+
+    Раскрыто по секундам матча до horizon, отсортировано по времени. Считается
+    локально из data/map.json + LIVE_CYCLES, без сети и без LLM.
+    """
+    events: list[dict] = []
+    for ev in _live_timeline():
+        at = int(round(ev["minutes"] * 60))
+        events.append({
+            "id": f"map:{at}",
+            "kind": "map",
+            "at": at,
+            "lead": lead,
+            "title": ev["title"],
+            "pre": f"Через {lead} секунд — {ev['title']}.",
+            "now": f"{ev['title']}: {_short(ev['description'], ev['title'])}",
+        })
+    for cyc in LIVE_CYCLES:
+        at = int(cyc["first_seconds"]) + int(cyc["every_seconds"])
+        while at <= horizon:
+            events.append({
+                "id": f"{cyc['id']}:{at}",
+                "kind": "cycle",
+                "at": at,
+                "lead": lead,
+                "title": cyc["title"],
+                "pre": cyc["pre"].format(lead=lead),
+                "now": cyc["now"],
+            })
+            at += int(cyc["every_seconds"])
+    events.sort(key=lambda e: (e["at"], e["id"]))
     return events
 
 
@@ -631,6 +749,38 @@ def create_app() -> FastAPI:
             if item.id == item_id:
                 return item.model_dump(mode="json")
         raise HTTPException(status_code=404, detail=f"Unknown item id: {item_id!r}.")
+
+    # --- Синергии (экран «Синергии») -------------------------------------
+    # Как и контрпики, датасет грузится лениво и не мешает остальным экранам.
+    _synergies_cache: dict[str, str | None] = {"json": None, "etag": None}
+
+    def _synergies_payload() -> tuple[str, str]:
+        import hashlib
+
+        if _synergies_cache["json"] is None:
+            data = dataset_mod.get_synergies()
+            content = json.dumps(data.model_dump(mode="json"), ensure_ascii=False)
+            _synergies_cache["json"] = content
+            _synergies_cache["etag"] = (
+                f'"{hashlib.md5(content.encode("utf-8")).hexdigest()}"'
+            )
+        return _synergies_cache["json"], _synergies_cache["etag"]  # type: ignore[return-value]
+
+    @app.get("/api/synergies", response_model=Synergies)
+    def synergies(request: Request) -> Response:
+        try:
+            content, etag = _synergies_payload()
+        except FileNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Датасет синергий не собран. Выполните "
+                    "python scripts/build_synergies.py."
+                ),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return _catalog_response(request, content, etag)
 
     @app.get("/api/advice", response_model=Advice)
     def advice(
@@ -1091,11 +1241,193 @@ def create_app() -> FastAPI:
 
     # --- Live In-Game Assistant (M4 §6) -----------------------------------
 
+    # Часы матча: панель присылает точку отсчёта, дальше сервер считает сам.
+    # Нужно, чтобы плашки поверх игры шли и при закрытой панели. Список
+    # заменяется срезом целиком — это атомарно в CPython, блокировка не нужна.
+    _clock: list = [0.0, time.monotonic(), False]
+
+    def _clock_now() -> dict:
+        base, at, running = _clock
+        secs = base + (time.monotonic() - at) if running else base
+        return {"seconds": round(secs, 1), "running": running}
+
+    @app.get("/api/live/clock")
+    def live_clock_get() -> dict:
+        """Текущее игровое время по часам сервера (см. POST /api/live/clock)."""
+        return _clock_now()
+
+    @app.post("/api/live/clock")
+    def live_clock_post(body: LiveClockSync) -> dict:
+        """Точка отсчёта от панели: старт, пауза, правка ±10 с, сброс."""
+        _clock[:] = [max(0.0, float(body.seconds)), time.monotonic(), bool(body.running)]
+        return _clock_now()
+
+    @app.get("/api/live/overlay")
+    def live_overlay_get() -> dict:
+        """Состояние тумблера плашек. В браузере (без pywebview) — unsupported."""
+        ctl = getattr(app.state, "overlay_ctl", None)
+        return {"supported": ctl is not None, "enabled": bool(ctl and ctl(None))}
+
+    @app.post("/api/live/overlay")
+    def live_overlay_post(body: LiveOverlayRequest) -> dict:
+        """Тумблер плашек поверх игры; окно живёт в run_desktop.py."""
+        ctl = getattr(app.state, "overlay_ctl", None)
+        if ctl is None:
+            return {"supported": False, "enabled": False}
+        return {"supported": True, "enabled": bool(ctl(body.enabled))}
+
+    # --- Глобальная горячая клавиша панели (десктопная оболочка) -----------
+    # Комбинация живёт в app_settings и регистрируется в run_desktop.py.
+    # В браузере hotkey_ctl отсутствует, поэтому supported=False.
+    HOTKEY_KEY = "hotkey"
+    DEFAULT_HOTKEY = "ctrl+f1"
+    TOPMOST_KEY = "always_on_top"
+
+    def _setting_bool(key: str, default: bool) -> bool:
+        raw = _db().get_setting(key, "1" if default else "0")
+        return str(raw).strip().lower() not in {"0", "false", "off", "no", ""}
+
+    def _topmost_state() -> dict:
+        ctl = getattr(app.state, "topmost_ctl", None)
+        state = ctl(None) if ctl is not None else {
+            "enabled": _setting_bool(TOPMOST_KEY, True), "error": None,
+        }
+        return {
+            "supported": ctl is not None,
+            "enabled": bool(state.get("enabled")),
+            "error": state.get("error"),
+        }
+
+    def _hotkey_state() -> dict:
+        ctl = getattr(app.state, "hotkey_ctl", None)
+        spec = _db().get_setting(HOTKEY_KEY, DEFAULT_HOTKEY) or DEFAULT_HOTKEY
+        state = ctl(None) if ctl is not None else {"active": False, "error": None}
+        return {
+            "supported": ctl is not None,
+            "hotkey": spec,
+            "active": bool(state.get("active")),
+            "error": state.get("error"),
+            "always_on_top": _topmost_state()["enabled"],
+        }
+
+    @app.get("/api/desktop/hotkey")
+    def hotkey_get() -> dict:
+        """Комбинация панели и состояние регистрации; в браузере supported: False."""
+        return _hotkey_state()
+
+    @app.post("/api/desktop/hotkey")
+    def hotkey_post(body: HotkeyRequest) -> dict:
+        """Сохранить и применить комбинацию: 422 — невалидная, 409 — занята."""
+        from ..desktop.hotkey import HotkeyError, format_hotkey
+
+        try:
+            canonical = format_hotkey(body.hotkey)
+        except HotkeyError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        ctl = getattr(app.state, "hotkey_ctl", None)
+        if ctl is not None:
+            state = ctl(canonical)
+            if state.get("error"):
+                raise HTTPException(status_code=409, detail=str(state["error"]))
+        _db().set_setting(HOTKEY_KEY, canonical)
+        return _hotkey_state()
+
+    # Панель поверх игры: Esc в UI прячет окно и возвращает фокус игре.
+    def _panel_state() -> dict:
+        ctl = getattr(app.state, "panel_ctl", None)
+        state = ctl(None) if ctl is not None else {"active": False, "by_hotkey": False}
+        return {
+            "supported": ctl is not None,
+            "visible": bool(state.get("active")),
+            "by_hotkey": bool(state.get("by_hotkey")),
+        }
+
+    @app.get("/api/desktop/panel")
+    def panel_get() -> dict:
+        """Видима ли панель и открыта ли она хоткеем (тогда Esc её прячет)."""
+        return _panel_state()
+
+    @app.post("/api/desktop/panel")
+    def panel_post(body: PanelRequest) -> dict:
+        """Показать/скрыть панель по запросу UI; окно живёт в run_desktop.py."""
+        ctl = getattr(app.state, "panel_ctl", None)
+        if ctl is None:
+            return {"supported": False, "visible": False, "by_hotkey": False}
+        ctl(body.visible)
+        return _panel_state()
+
+    # Окно-оверлей (live.html) на CTRL+F2: кликабельно, но фокус у игры не
+    # забирает (WS_EX_NOACTIVATE), поэтому управление персонажем не страдает.
+    # Окно живёт в run_desktop.py; здесь — только состояние и показ/скрытие.
+    def _overlay_panel_state() -> dict:
+        ctl = getattr(app.state, "overlay_panel_ctl", None)
+        state = ctl(None) if ctl is not None else {"visible": False}
+        return {
+            "supported": ctl is not None,
+            "visible": bool(state.get("visible")),
+        }
+
+    @app.get("/api/desktop/overlay")
+    def overlay_panel_get() -> dict:
+        """Виден ли оверлей; в браузере без pywebview — supported: False."""
+        return _overlay_panel_state()
+
+    @app.post("/api/desktop/overlay")
+    def overlay_panel_post(body: PanelRequest) -> dict:
+        """Показать/скрыть оверлей (кнопка ✕ в live.html); в браузере no-op."""
+        ctl = getattr(app.state, "overlay_panel_ctl", None)
+        if ctl is None:
+            return {"supported": False, "visible": False}
+        ctl(body.visible)
+        return _overlay_panel_state()
+
+    # Тумблер «Поверх других окон»: включает перехват хоткея и закреп окна над
+    # игрой. Выключен — приложение ведёт себя как обычное окно.
+    @app.get("/api/desktop/topmost")
+    def topmost_get() -> dict:
+        """Состояние тумблера; в браузере supported: False."""
+        return _topmost_state()
+
+    @app.post("/api/desktop/topmost")
+    def topmost_post(body: TopmostRequest) -> dict:
+        """Включить/выключить закреп; выключение снимает перехват хоткея."""
+        _db().set_setting(TOPMOST_KEY, "1" if body.enabled else "0")
+        ctl = getattr(app.state, "topmost_ctl", None)
+        if ctl is None:
+            return {"supported": False, "enabled": body.enabled, "error": None}
+        state = ctl(body.enabled)
+        return {
+            "supported": True,
+            "enabled": bool(state.get("enabled")),
+            "error": state.get("error"),
+        }
+
+    # Драйвер плашек в run_desktop.py берёт часы и расписание отсюда, чтобы
+    # не дублировать логику: окно-плашка не опрашивает HTTP из JS (WebView2
+    # троттлит таймеры скрытого окна и плашка опаздывала бы).
+    app.state.live_clock = _clock_now
+    app.state.live_schedule = _live_schedule
+    app.state.live_lead = LIVE_ANNOUNCE_LEAD
+    app.state.db = _db
+
     @app.get("/api/live/timers")
     def live_timers() -> dict:
         """Тайминги объектов матча из data/map.json timeline + справочные
         респавны (Урна душ, Мидбосс). Всё локально, без внешних запросов."""
         return {"timeline": _live_timeline(), "respawns": LIVE_RESPAWNS}
+
+    @app.get("/api/live/schedule")
+    def live_schedule() -> dict:
+        """Расписание комментатора: что и за сколько секунд до события писать.
+
+        Раскрыто до 45 минут матча (статические спавны из data/map.json +
+        повторяющиеся циклы LIVE_CYCLES). Локально, без LLM и без сети.
+        """
+        return {
+            "lead": LIVE_ANNOUNCE_LEAD,
+            "horizon": LIVE_SCHEDULE_HORIZON,
+            "events": _live_schedule(),
+        }
 
     @app.get("/api/live/state")
     def live_state_get() -> dict:
@@ -1610,6 +1942,11 @@ def create_app() -> FastAPI:
     def live_page():
         """M4 §6: оверлей In-Game Assistant (отдельное окно PyWebView on_top)."""
         return FileResponse(WEB_DIR / "live.html", headers=_no_cache)
+
+    @app.get("/overlay.html")
+    def overlay_page():
+        """Прозрачное окно плашек поверх игры (frameless + click-through)."""
+        return FileResponse(WEB_DIR / "overlay.html", headers=_no_cache)
 
     @app.get("/favicon.ico")
     def favicon():

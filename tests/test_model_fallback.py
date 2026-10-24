@@ -59,7 +59,7 @@ def _real_match():
 
 
 def test_fallback_switches_to_working_model():
-    """Первая модель «остыла» (429) → цепочка переходит на glm-5.3-flash."""
+    """Первая модель «остыла» (429) → цепочка переходит на deepseek-v4.1-flash."""
     import deadlockforge.ai.client as client_mod
 
     match = _real_match()
@@ -67,7 +67,7 @@ def test_fallback_switches_to_working_model():
 
     def fake_factory(cfg):
         calls.append(cfg.model_name)
-        return _FakeClient(fail=cfg.model_name != "glm-5.3-flash")
+        return _FakeClient(fail=cfg.model_name != "deepseek-v4.1-flash")
 
     cfg = AIConfig(provider="openai", model_name="kimi-k3", api_key="sk-x",
                    base_url="http://127.0.0.1:8089/v1")
@@ -75,9 +75,9 @@ def test_fallback_switches_to_working_model():
         report, used = coach_mod.analyze_match_with_fallback(
             match, match.players[0].account_id, cfg, depth="short")
 
-    assert used == "glm-5.3-flash", calls
+    assert used == "deepseek-v4.1-flash", calls
     assert calls[0] == "kimi-k3"
-    assert calls[1] == "glm-5.3-flash"
+    assert calls[1] == "deepseek-v4.1-flash"
     assert report.performance_grade == "A"
 
 
@@ -92,13 +92,13 @@ def test_fallback_first_model_ok_no_retry():
         calls.append(cfg.model_name)
         return _FakeClient(fail=False)
 
-    cfg = AIConfig(provider="openai", model_name="glm-5.3-flash", api_key="sk-x",
+    cfg = AIConfig(provider="openai", model_name="deepseek-v4.1-flash", api_key="sk-x",
                    base_url="http://127.0.0.1:8089/v1")
     with um.patch.object(client_mod, "create_client", fake_factory):
         report, used = coach_mod.analyze_match_with_fallback(
             match, match.players[0].account_id, cfg, depth="short")
 
-    assert used == "glm-5.3-flash"
+    assert used == "deepseek-v4.1-flash"
     assert len(calls) == 1
 
 

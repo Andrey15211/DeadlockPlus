@@ -243,10 +243,12 @@ def analyze_match(match: NormalizedMatch | dict, my_account_id: int | None,
 # Модели-дублёры: если выбранная «остывает» (429) или отдаёт пустой ответ,
 # разбор автоматически пробует следующую рабочую — фича не должна падать
 # из-за одного залипшего провайдера.
-# deepseek-v4-flash — быстрый пул каналов владельца (лог: «куда бодрее идет»).
+# Живой пинг шлюза 2026-10-22: claude-4.8 / gpt-6-sol / gpt-5.6-* отдают 503,
+# deepseek-v4.1-flash периодически висит на тех. работах провайдера, поэтому
+# цепочка собрана из моделей, которые реально отвечают в разное время.
 FALLBACK_MODELS: tuple[str, ...] = (
-    "glm-5.3-flash", "deepseek-v4-flash", "glm-5.3", "kimi-k3",
-    "GLM-5.3", "GLM-5.3-flash", "Kimi-K3", "MiniMax-M3", "mimo-3",
+    "deepseek-v4.1-flash", "glm-5.3-flash", "kimi-k3",
+    "deepseek-v4-flash", "minimax-m3", "deepseek-v4-pro",
 )
 
 
@@ -702,6 +704,8 @@ def _lane_opponent(match: NormalizedMatch, me) -> Optional[dict]:
             souls_10 = float(pt.networth)
     return {
         "hero": _hero_ru(foe.hero_id_slug),
+        # Слаг нужен фронтенду для портрета: по русскому имени файла нет.
+        "hero_id": foe.hero_id_slug,
         "kda": f"{foe.kills}/{foe.deaths}/{foe.assists}",
         "souls_at_10": souls_10,
         "net_worth": foe.net_worth,

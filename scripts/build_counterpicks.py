@@ -397,6 +397,37 @@ def extract() -> None:
             "alts": alts,
         }
 
+    # Герои, которых нет на сайте-источнике (свежий релиз), всё равно нужны
+    # в датасете: иначе их нельзя выбрать противником в разборе состава.
+    # Карточка без гайда — интерфейс сам сообщает, что разбор не собран.
+    for hero in heroes:
+        if hero["id"] in counter_heroes:
+            continue
+        counter_heroes[hero["id"]] = {
+            "id": hero["id"],
+            "name": hero["name"],
+            "name_en": hero.get("name_en", ""),
+            "portrait": hero.get("portrait", ""),
+            "intro": "",
+            "roles": [],
+            "role_text": [],
+            "threats": [],
+            "groups": [],
+            "group_tags": [],
+            "glance": {},
+            "note": "",
+            "top": [],
+            "stages": {stage: [] for stage in STAGES},
+            "problems": [],
+            "why": {},
+            "lane": [],
+            "fight": [],
+            "faq": [],
+            "related": [],
+            "helper": {"summary": "", "tip": "", "sits": []},
+        }
+        log(f"  без гайда на источнике: {hero['id']} ({hero.get('name_en', '')})")
+
     groups = {
         key: {"name": val["name"], "items": [item_id(i) for i in val.get("items", [])]}
         for key, val in db["groups"].items()

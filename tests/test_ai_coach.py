@@ -599,6 +599,20 @@ def test_compute_match_benchmarks():
     assert bm["lane_efficiency"] >= 1.0
 
 
+def test_lane_opponent_carries_hero_slug_for_portrait():
+    """Соперник по линии отдаёт и русское имя, и слаг.
+
+    По русскому имени портрет не находится (файл — assets/heroes/<slug>.webp),
+    поэтому Deep Match рисует букву вместо картинки.
+    """
+    match = _normalized_match()
+    me = match.players[0]
+    lane = coach_mod._lane_opponent(match, me)
+    assert lane is not None
+    assert lane["hero_id"] == "abrams"
+    assert lane["hero"] == "Абрамс"
+
+
 # --- V2.0: три глубины разбора (ТЗ §3.1) -----------------------------------
 
 

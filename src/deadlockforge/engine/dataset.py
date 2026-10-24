@@ -23,6 +23,7 @@ from ..models import (
     Hero,
     Item,
     MapGuide,
+    Synergies,
     ThreatTag,
     TIER_COST_BANDS,
 )
@@ -215,3 +216,24 @@ def load_counterpicks() -> Counterpicks:
 def get_counterpicks() -> Counterpicks:
     """Cached counterpicks accessor — loads (and validates) at most once."""
     return load_counterpicks()
+
+
+# --- Синергии (экран «Синергии») -------------------------------------------
+
+
+def load_synergies() -> Synergies:
+    """Read and validate data/synergies.json.
+
+    Датасет самодостаточен: имена и портреты героев уже внутри, поэтому
+    экран работает даже если /api/heroes недоступен.
+    """
+    payload = _read_json(_data_root() / "synergies.json")
+    if not isinstance(payload, dict):
+        raise ValueError("synergies.json: ожидался объект с полем duos.")
+    return _parse_single(Synergies, payload, _data_root() / "synergies.json", "synergies")
+
+
+@lru_cache(maxsize=1)
+def get_synergies() -> Synergies:
+    """Cached synergies accessor — loads (and validates) at most once."""
+    return load_synergies()

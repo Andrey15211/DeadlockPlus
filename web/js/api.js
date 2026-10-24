@@ -286,6 +286,10 @@ export const fetchAssetsStatus = () => getJson('/assets/status');
 // с ревалидацией по ETag: второй заход на экран не тянет его заново.
 export const fetchCounterpicks = () => getJsonWithCache('/counterpicks', 'counterpicks');
 
+// --- синергии (экран «Синергии») ---
+// ~450 КБ статичного датасета, ревалидация по ETag — как у контрпиков.
+export const fetchSynergies = () => getJsonWithCache('/synergies', 'synergies');
+
 // --- утилиты UI ---
 export function toast(message, isError = false) {
   const el = document.getElementById('toast');

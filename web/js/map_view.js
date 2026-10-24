@@ -69,18 +69,20 @@ function markerTooltip(marker, timelineByTime, lanesById) {
   const place = `${marker.label}${laneName ? ` — ${laneName}` : ''}`;
   switch (marker.layer) {
     case 'camps': {
-      const ev = timelineByTime['3:00'];
-      return `${place}: спавн в 3:00` + (ev ? `. ${ev.description}` : '');
+      const ev = timelineByTime['2:00'];
+      return `${place}: лёгкие — 2:00, средние — 5:00, тяжёлые — 8:00` +
+        (ev ? `. ${ev.description}` : '');
     }
     case 'urn': {
       const ev = timelineByTime['10:00'];
-      return `${place}: открывается в 10:00` + (ev ? `. ${ev.description}` : '');
+      return `${place}: спавн в 10:00, далее каждые 5 минут` + (ev ? `. ${ev.description}` : '');
     }
     case 'towers':
-      return `${place} — оборонительный объект линии: снос открывает доступ к глубинным лагерям и базе.`;
+      return `${place} — оборонительный объект линии: снос Шагохода открывает Flex-слот. ` +
+        'Стражи теряют сопротивление урону в 12:00, Шагоходы — в 18:00.';
     case 'midboss': {
-      const ev = timelineByTime['12:00'];
-      return `${place} — пробуждение в 12:00, взрослая фаза в 15:00` +
+      const ev = timelineByTime['0:00'];
+      return `${place} — Мидбосс стоит на карте с 0:00, респавн 7/6/5 минут после убийства` +
         (ev ? `. ${ev.description}` : '');
     }
     default:

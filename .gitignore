@@ -37,6 +37,9 @@ env/
 .scratch/
 tmp/
 *.log
+*.err
+*.out
+docs/_run.*
 
 # OS / IDE
 Thumbs.db

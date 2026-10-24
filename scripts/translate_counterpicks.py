@@ -40,7 +40,7 @@ CACHE_JSON = OUT_DIR / "translation_cache.json"
 REVIEW_JSON = OUT_DIR / "review_needed.json"
 
 BASE_URL = "http://127.0.0.1:8089/v1"
-MODEL = "glm-5.3-flash"
+MODEL = "deepseek-v4.1-flash"
 BATCH_SIZE = 24
 MAX_ATTEMPTS = 4
 MAX_REPAIRS = 2

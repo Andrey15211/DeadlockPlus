@@ -1305,26 +1305,32 @@
     "name": "Медсестра Хэрроу",
     "name_en": "Nurse Harrow",
     "roles": [
-      "support"
+      "support",
+      "duelist"
     ],
     "stats": {
-      "hp": 780,
+      "hp": 730,
       "bullet_shield": 2,
       "spirit_shield": 2,
       "weapon_damage": 32,
       "fire_rate": 2.0,
       "spirit_power": 8,
       "stamina": 3,
-      "move_speed": 7.2
+      "move_speed": 6.8
     },
-    "threat_tags": [],
-    "signature": "",
+    "threat_tags": [
+      "heal",
+      "spirit_caster",
+      "cc_chain"
+    ],
+    "signature": "Медсестра-стрелок на стыке лечения и урона: Leech Therapy вешает пиявок и срезает длительность вражеских баффов, Healing Needles лечат союзников, Lurking Terrors пугают и отключают рывки, Wretched Vapors глушат входящий урон с отложенным взрывом.",
     "difficulty": 2,
     "portrait": "assets/heroes/nurse.webp",
-    "winrate": null,
-    "pickrate": null,
-    "in_development": true,
-    "api_id": 87
+    "winrate": 0.5098,
+    "pickrate": 0.0038,
+    "in_development": false,
+    "api_id": 87,
+    "meta_updated_at": "2026-10-22"
   },
   {
     "id": "baba",

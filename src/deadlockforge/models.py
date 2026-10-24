@@ -378,6 +378,12 @@ class LaneComparison(BaseModel):
         default=0,
         validation_alias=AliasChoices("opponent_net_worth", "net_worth", "souls"),
     )
+    opponent_hero_id: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "opponent_hero_id", "opponent_slug", "enemy_hero_id", "hero_id"
+        ),
+    )
     verdict: str = Field(
         default="",
         validation_alias=AliasChoices("verdict", "summary", "conclusion", "result"),
@@ -452,8 +458,7 @@ class MatchReview(BaseModel):
 
 class AIConfig(BaseModel):
     provider: str = "openai"                # deepseek | openai | anthropic | router
-    model_name: str = "glm-5.3-flash"       # V2.0 М4: flash при thinking disabled
-                                            # и max_tokens=8000 (LLM_MAX_TOKENS)
+    model_name: str = "deepseek-v4.1-flash" # Актуальная рабочая модель роутера (Zexkora)
     api_key: str = ""
     base_url: Optional[str] = None
     enable_thinking: bool = True
@@ -465,10 +470,10 @@ class AIConfig(BaseModel):
 
 # TZ A3: параметры AI задаются кодом/дефолтами; UI принимает только api_key.
 # Точка входа «зашитого ключа» — env DEADLOCKFORGE_AI_KEY, перекрывающий БД.
-# V2.0: дефолтная модель — glm-5.3 (роутер OpenAI-совместимый), см. ТЗ §8.
+# V2.0: дефолтная модель — deepseek-v4.1-flash (роутер OpenAI-совместимый), каталог из 20 моделей.
 AI_CONFIG_DEFAULTS: dict[str, object] = {
     "provider": "openai",
-    "model_name": "glm-5.3-flash",
+    "model_name": "deepseek-v4.1-flash",
     "base_url": None,
     "enable_thinking": True,
     "reasoning_effort": "low",
@@ -478,9 +483,9 @@ AI_CONFIG_DEFAULTS: dict[str, object] = {
 
 
 PROVIDER_DEFAULT_MODELS: dict[str, str] = {
-    "openai": "glm-5.3-flash",
-    "anthropic": "claude-3-7-sonnet-latest",
-    "deepseek": "deepseek-chat",
+    "openai": "deepseek-v4.1-flash",
+    "anthropic": "claude-4.8",
+    "deepseek": "deepseek-v4.1-flash",
 }
 
 
@@ -546,11 +551,10 @@ def effective_ai_config(db_config: dict) -> AIConfig:
         base_url = "http://127.0.0.1:8089/v1"
     model_name = (db_config or {}).get("model_name") or default_model
     model_name = str(model_name)
-    # Легаси-имена gemini-моделей в БД — остатки старых настроек; на роутере
-    # их нет, резолвим в рабочую glm-5.3-flash (thinking disabled
-    # автоматически в OpenAIClient, замер 63.5с валидный отчёт).
-    if model_name.startswith("gemini-"):
-        model_name = "glm-5.3-flash"
+    # Легаси-имена gemini/glm-моделей в БД — остатки старых настроек; на роутере
+    # их нет (выведены из эксплуатации), резолвим в рабочую deepseek-v4.1-flash.
+    if model_name.startswith("gemini-") or "glm-5.3" in model_name.lower():
+        model_name = "deepseek-v4.1-flash"
 
     reasoning_effort = (db_config or {}).get("reasoning_effort") or AI_CONFIG_DEFAULTS.get("reasoning_effort", "low")
 
@@ -735,3 +739,46 @@ class Counterpicks(BaseModel):
     groups: list[CounterGroup] = Field(default_factory=list)
     heroes: list[CounterHero] = Field(default_factory=list)
     items: list[CounterItemGuide] = Field(default_factory=list)
+
+
+# --- Синергии (экран «Синергии») -------------------------------------------
+
+
+class SynergyHero(BaseModel):
+    """Герой в дуо: локальный id, русское имя и портрет из heroes.json."""
+
+    id: str
+    name: str
+    name_en: str = ""
+    portrait: str = ""
+
+
+class SynergyDuo(BaseModel):
+    """Связка двух героев на одной линии по данным Mobalytics.
+
+    Метрики в тех же единицах, что в таблице сайта: проценты — числа
+    (62.4 = 62.4%), CS/NW — за минуту, KDA — отношение.
+    """
+
+    rank: int = Field(ge=1)
+    tier: Literal["S", "A", "B", "C"]
+    hero1: SynergyHero
+    hero2: SynergyHero
+    winrate: float = Field(ge=0, le=100)
+    wrf: float
+    pickrate: float = Field(ge=0, le=100)
+    cs_per_min: float = Field(ge=0)
+    denies: float = Field(ge=0)
+    nw_per_min: float = Field(ge=0)
+    kda: float = Field(ge=0)
+
+
+class Synergies(BaseModel):
+    """Корень датасета «Синергии»."""
+
+    version: int = 1
+    source: str = ""
+    collected_at: str = ""
+    tier_rules: dict[str, float] = Field(default_factory=dict)
+    methodology: list[str] = Field(default_factory=list)
+    duos: list[SynergyDuo] = Field(default_factory=list)

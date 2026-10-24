@@ -145,6 +145,32 @@ function renderHeroGuide(hero) {
   const helper = hero.helper || {};
   const sits = helper.sits || [];
 
+  // Свежий герой может уже быть в игре, но без гайда на источнике
+  // (Медсестра Хэрроу). Пустые панели не рисуем — честно говорим об этом.
+  if (!(hero.top || []).length && !problems.length) {
+    return `
+  <div class="cp-guide">
+    <header class="cp-guide-head">
+      ${portrait(hero, 'cp-guide-portrait')}
+      <div class="cp-guide-titles">
+        <span class="cp-eyebrow">Как играть против</span>
+        <h2 class="cp-guide-name">${esc(hero.name)}</h2>
+        <div class="cp-guide-tags">
+          ${(hero.roles || []).map((r) => `<span class="cp-tag">${esc(r)}</span>`).join('')}
+          ${(hero.threats || []).map((t) => `<span class="cp-tag cp-tag-danger">${esc(t.label)}</span>`).join('')}
+        </div>
+        <p class="cp-guide-intro">${rich(hero.intro)}</p>
+      </div>
+      <button type="button" class="btn-ghost cp-guide-close" id="cp-guide-close">Закрыть</button>
+    </header>
+    <section class="cp-panel">
+      <p class="cp-empty">Разбор по предметам для этого героя ещё не собран: гайда нет
+        на источнике. Карточка героя уже доступна — его можно выбрать противником
+        в разборе состава.</p>
+    </section>
+  </div>`;
+  }
+
   return `
   <div class="cp-guide">
     <header class="cp-guide-head">

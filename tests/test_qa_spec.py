@@ -42,8 +42,23 @@ def test_spec_hero_roster_at_least_40(catalog):
     """Ростер расширен до полного (40+ release + Hero Labs pre-release)."""
     assert len(catalog.heroes) >= 40
     assert len(catalog.by_id) == len(catalog.heroes)  # нет дубликатов id
-    # минимально 4 героя Hero Labs / pre-release для экрана тир-листа
-    assert sum(1 for h in catalog.heroes if h.in_development) >= 4
+    # Hero Labs / pre-release герои не выводятся в тир-листе и драфте
+    assert sum(1 for h in catalog.heroes if h.in_development) >= 3
+    # ...но вышедшие в релиз герои видны везде и обязаны иметь портрет
+    released = [h for h in catalog.heroes if not h.in_development]
+    assert len(released) >= 41
+    assert all(h.portrait for h in released)
+
+
+def test_released_heroes_have_portraits_on_disk(catalog):
+    """Портрет из датасета обязан существовать в web/ — иначе UI рисует буквы."""
+    web_dir = PROJECT_ROOT / "web"
+    missing = [
+        (h.id, h.portrait)
+        for h in catalog.heroes
+        if not h.in_development and not (web_dir / h.portrait).is_file()
+    ]
+    assert not missing, f"нет файлов портретов: {missing}"
 
 
 def test_spec_item_catalog_at_least_48(catalog):
@@ -280,4 +295,21 @@ def test_item_catalog_visual_style_consistency(catalog):
     # Все проверки собраны в один список — один assert в конце,
     # полный отчёт обо всех битых иконках сразу.
     assert not failures, "; ".join(failures)
+
+
+def test_app_icon_has_all_windows_frames():
+    """Иконка exe/ярлыка обязана содержать 16..256.
+
+    Одноразмерный .ico (например, только 256) Windows сам масштабирует
+    билинейно — в панели задач и меню «Пуск» значок выходит мыльным.
+    """
+    ico = PROJECT_ROOT / "web" / "assets" / "icons" / "deadlockforge.ico"
+    assert ico.is_file(), f"нет иконки: {ico}"
+
+    from PIL import Image
+
+    sizes = Image.open(ico).info.get("sizes", set())
+    missing = {(16, 16), (32, 32), (48, 48), (256, 256)} - set(sizes)
+    assert not missing, f"в {ico.name} нет кадров {sorted(missing)}: {sorted(sizes)}"
+
 
