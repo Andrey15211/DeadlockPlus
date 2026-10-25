@@ -194,11 +194,6 @@ function removeHero(side, idx) {
   setError('');
   renderAll();
 }
-  teamOf(side)[idx] = null;
-  if (targetSlot === idx && activeSide === side) targetSlot = null;
-  setError('');
-  renderAll();
-}
 
 // --- сетка и поиск героев --------------------------------------------------------
 

@@ -37,15 +37,23 @@ function esc(s) {
 
 // Дата свежести меты: максимум meta_updated_at по видимым героям,
 // отформатированный «дд.мм.гггг». Пусто, если поле нигде не задано.
-function renderMetaDate() {
+export function renderMetaDate(customText = null, isLiveUpdate = false) {
   const node = document.getElementById('tier-meta-date');
   if (!node) return;
+  if (customText) {
+    node.innerHTML = customText;
+    if (isLiveUpdate) {
+      node.classList.add('meta-date-flash');
+      setTimeout(() => node.classList.remove('meta-date-flash'), 2500);
+    }
+    return;
+  }
   const dates = heroes
     .map((h) => h.meta_updated_at)
     .filter(Boolean)
     .sort();
   if (!dates.length) {
-    node.textContent = 'мета: дата неизвестна (запусти scripts/refresh_meta.py)';
+    node.textContent = 'мета: дата неизвестна';
     return;
   }
   const iso = dates[dates.length - 1];

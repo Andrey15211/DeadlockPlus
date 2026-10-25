@@ -660,28 +660,53 @@ def _to_review(normalized, report, account_id: int | None, hero_slug: str | None
 
 def create_app() -> FastAPI:
     """Build the FastAPI application with all /api/* routes and static SPA."""
-    app = FastAPI(title="DeadlockForge", version="1.1.0")
+    app = FastAPI(title="DeadlockForge", version="1.2.0")
 
     # --- Catalog & engine -------------------------------------------------
 
     # Pre-serialized catalog cache to eliminate repeated Pydantic model_dump overhead
     import hashlib
-    catalog = dataset_mod.get_catalog()
-    _cached_heroes_json = json.dumps(
-        [h.model_dump(mode="json") for h in catalog.heroes],
-        ensure_ascii=False,
-    )
-    _cached_items_json = json.dumps(
-        [i.model_dump(mode="json") for i in catalog.items],
-        ensure_ascii=False,
-    )
-    _cached_map_json = json.dumps(
-        catalog.map_guide.model_dump(mode="json"),
-        ensure_ascii=False,
-    )
-    _heroes_etag = f'"{hashlib.md5(_cached_heroes_json.encode("utf-8")).hexdigest()}"'
-    _items_etag = f'"{hashlib.md5(_cached_items_json.encode("utf-8")).hexdigest()}"'
-    _map_etag = f'"{hashlib.md5(_cached_map_json.encode("utf-8")).hexdigest()}"'
+    _catalog_cache = {
+        "heroes_json": None,
+        "heroes_etag": None,
+        "items_json": None,
+        "items_etag": None,
+        "map_json": None,
+        "map_etag": None,
+    }
+
+    def _get_heroes_payload() -> tuple[str, str]:
+        if _catalog_cache["heroes_json"] is None:
+            cat = dataset_mod.get_catalog()
+            content = json.dumps(
+                [h.model_dump(mode="json") for h in cat.heroes],
+                ensure_ascii=False,
+            )
+            _catalog_cache["heroes_json"] = content
+            _catalog_cache["heroes_etag"] = f'"{hashlib.md5(content.encode("utf-8")).hexdigest()}"'
+        return _catalog_cache["heroes_json"], _catalog_cache["heroes_etag"]  # type: ignore[return-value]
+
+    def _get_items_payload() -> tuple[str, str]:
+        if _catalog_cache["items_json"] is None:
+            cat = dataset_mod.get_catalog()
+            content = json.dumps(
+                [i.model_dump(mode="json") for i in cat.items],
+                ensure_ascii=False,
+            )
+            _catalog_cache["items_json"] = content
+            _catalog_cache["items_etag"] = f'"{hashlib.md5(content.encode("utf-8")).hexdigest()}"'
+        return _catalog_cache["items_json"], _catalog_cache["items_etag"]  # type: ignore[return-value]
+
+    def _get_map_payload() -> tuple[str, str]:
+        if _catalog_cache["map_json"] is None:
+            cat = dataset_mod.get_catalog()
+            content = json.dumps(
+                cat.map_guide.model_dump(mode="json"),
+                ensure_ascii=False,
+            )
+            _catalog_cache["map_json"] = content
+            _catalog_cache["map_etag"] = f'"{hashlib.md5(content.encode("utf-8")).hexdigest()}"'
+        return _catalog_cache["map_json"], _catalog_cache["map_etag"]  # type: ignore[return-value]
 
     def _catalog_response(req: Request, content: str, etag: str) -> Response:
         # no-cache не запрещает кэш, а требует ревалидацию по ETag: иначе
@@ -697,15 +722,18 @@ def create_app() -> FastAPI:
 
     @app.get("/api/heroes", response_model=list[Hero])
     def heroes(request: Request) -> Response:
-        return _catalog_response(request, _cached_heroes_json, _heroes_etag)
+        content, etag = _get_heroes_payload()
+        return _catalog_response(request, content, etag)
 
     @app.get("/api/items", response_model=list[Item])
     def items(request: Request) -> Response:
-        return _catalog_response(request, _cached_items_json, _items_etag)
+        content, etag = _get_items_payload()
+        return _catalog_response(request, content, etag)
 
     @app.get("/api/map", response_model=MapGuide)
     def map_guide(request: Request) -> Response:
-        return _catalog_response(request, _cached_map_json, _map_etag)
+        content, etag = _get_map_payload()
+        return _catalog_response(request, content, etag)
 
     # --- Контрпики (экран 7) ---------------------------------------------
     # Датасет грузится лениво: отсутствие counterpicks.json не должно мешать
@@ -1982,6 +2010,25 @@ def create_app() -> FastAPI:
         if not target.is_file():
             raise HTTPException(status_code=404, detail="Asset not found.")
         return FileResponse(target, headers=_assets_cache)
+
+    # =========================================================================
+    # Актуализация тир-листа / статистики героев (deadlock-api)
+    # =========================================================================
+
+    @app.get("/api/meta/status")
+    def meta_status():
+        from ..engine.meta_updater import meta_updater
+        return meta_updater.get_status()
+
+    @app.post("/api/meta/refresh")
+    def meta_refresh(force: bool = False):
+        from ..engine.meta_updater import meta_updater
+        res = meta_updater.check_and_update(force=force)
+        if res.get("updated"):
+            # Сброс кэша каталога в роутах
+            _catalog_cache["heroes_json"] = None
+            _catalog_cache["heroes_etag"] = None
+        return res
 
     # =========================================================================
     # Встроенное автообновление (GitHub Releases)

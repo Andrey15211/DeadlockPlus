@@ -17,7 +17,7 @@ import {
   $, el, renderSlotBoard, renderCatalog, updateCatalogEquipped, renderStats,
   renderBuildList, initTooltip, showToast, setInlineError, ROLE_LABEL,
 } from './ui.js';
-import { initTierList } from './tierlist.js';
+import { initTierList, renderMetaDate } from './tierlist.js';
 import { initDrafter } from './drafter.js';
 import { initDeepMatch } from './deep_match.js';
 import { initCounterpicks } from './counterpicks.js';
@@ -145,6 +145,49 @@ async function boot() {
       console.warn('Background sync error:', e);
     }
   }
+
+  // 4. Фоновая проверка актуальности меты (раз в 24 часа)
+  scheduleDailyMetaRefresh();
+}
+
+/**
+ * Автоматический фоновый опрос и обновление тир-листа (раз в 24 часа).
+ * Если статистика обновилась по факту, надпись справа обновляется с эффектом вспышки,
+ * а тир-лист и драфтер мягко перезагружаются с новыми винрейтами.
+ */
+function scheduleDailyMetaRefresh() {
+  const checkMeta = async () => {
+    try {
+      const resp = await fetch('/api/meta/refresh', { method: 'POST' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+
+      if (data.updated && data.changes_count > 0) {
+        // Данные на бэкенде реально изменились — запрашиваем обновлённых героев
+        const freshHeroes = await fetchHeroes();
+        if (Array.isArray(freshHeroes) && freshHeroes.length > 0) {
+          state.heroes = freshHeroes;
+          state.heroById = new Map(state.heroes.map((h) => [h.id, h]));
+
+          // Мягко обновляем тир-лист и компоненты
+          initTierList(state.heroes);
+          initDrafter(state.heroes);
+          applyCatalogFilters();
+
+          const [y, m, d] = (data.last_updated_at || new Date().toISOString().slice(0, 10)).split('-');
+          renderMetaDate(`мета: ${d}.${m}.${y} <span style="color:#34d399; font-size:11px;">(обновлено!)</span>`, true);
+          showToast(`⚡ Статистика тир-листа обновлена (${data.changes_count} героев)`);
+        }
+      }
+    } catch (err) {
+      console.warn('Daily meta check warning:', err);
+    }
+  };
+
+  // Проверяем через 2 секунды после старта (чтобы не тормозить отрисовку),
+  // затем циклично раз в сутки (24 часа)
+  setTimeout(checkMeta, 2000);
+  setInterval(checkMeta, 24 * 60 * 60 * 1000);
 }
 
 // --- фоновое видео -------------------------------------------------------------

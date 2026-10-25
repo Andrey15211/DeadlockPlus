@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Primary repository and version
 DEFAULT_REPO = "Andrey15211/DeadlockPlus"
-CURRENT_VERSION = "1.1.0"
+CURRENT_VERSION = "1.2.0"
 
 # Rate limit prevention: cache successful/failed check for 15 minutes unless forced
 CACHE_TTL_SECONDS = 900

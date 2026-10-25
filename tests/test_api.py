@@ -810,7 +810,8 @@ def test_updater_api_endpoints(monkeypatch):
     r_ver = _client.get("/api/updater/version")
     assert r_ver.status_code == 200
     data_ver = r_ver.json()
-    assert data_ver["version"] == "1.0.0"
+    from deadlockforge.updater import CURRENT_VERSION
+    assert data_ver["version"] == CURRENT_VERSION
     assert data_ver["app_name"] == "Deadlock Plus"
 
     # 2. /api/updater/check (mocking check_for_updates)
