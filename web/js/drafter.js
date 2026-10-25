@@ -1,7 +1,7 @@
 // drafter.js — экран 3: пик-ассистент 6v6 (Red Flags, синергии, контр-пики).
 // Импорт-безопасен: DOM трогается только внутри initDrafter.
 
-import { postDraftAnalyze, postDraftParseScreenshot, postDraftBuilds, fetchItems } from './api.js';
+import { postDraftAnalyze, postDraftParseScreenshot, postDraftBuilds, fetchItems, fetchCounterpicks } from './api.js';
 import { TAG_LABEL, ROLE_LABEL } from './ui.js';
 
 const LANES = [
@@ -15,12 +15,15 @@ let heroes = [];
 let heroById = new Map();
 let myTeam = new Array(TEAM_SIZE).fill(null);
 let enemyTeam = new Array(TEAM_SIZE).fill(null);
+let myPlayerHeroId = null; // Герой, за которого играет пользователь
 let activeSide = 'my'; // куда кликают герои: 'my' | 'enemy'
 let targetSlot = null; // если кликнули в конкретный слот
 let searchQuery = '';
 let selectedRole = '';
 let itemById = null;   // Map<id, item> — лениво грузится перед первым анализом
 let itemsPromise = null;
+let cpData = null;     // Данные из data/counterpicks.json
+let cpPromise = null;
 
 let dom = {}; // кэш DOM-ссылок, заполняется в initDrafter
 
@@ -42,9 +45,19 @@ function isMirror() {
   return dom.mirror && dom.mirror.checked;
 }
 
+// Автоматически синхронизируем myPlayerHeroId с составом myTeam
+function syncPlayerHero() {
+  const myHeroes = myTeam.filter(Boolean);
+  if (!myPlayerHeroId || !myHeroes.includes(myPlayerHeroId)) {
+    myPlayerHeroId = myHeroes.length ? myHeroes[0] : null;
+  }
+}
+
 // --- слоты 6v6 (3 колонки линий: Йорк, Бродвей, Гринвич) ------------------------
 
 function renderSlots() {
+  syncPlayerHero();
+
   for (const [side, container] of [['my', dom.mySlots], ['enemy', dom.enemySlots]]) {
     if (!container) continue;
     container.replaceChildren();
@@ -72,9 +85,11 @@ function renderSlots() {
         const heroId = teamOf(side)[idx];
         const slot = document.createElement('div');
         const isTarget = activeSide === side && targetSlot === idx;
+        const isMe = side === 'my' && heroId && heroId === myPlayerHeroId;
 
         slot.className = 'draft-slot'
           + (heroId ? ` filled ${side}-filled` : ' empty')
+          + (isMe ? ' is-me' : '')
           + (side === activeSide ? ' active-side-slot' : '')
           + (isTarget ? ' slot-targeted' : '');
         slot.style.setProperty('--lane-color', lane.color);
@@ -83,7 +98,9 @@ function renderSlots() {
 
         const hero = heroId ? heroById.get(heroId) : null;
         if (hero) {
-          slot.title = `${hero.name} (${lane.name}) — клик для удаления`;
+          slot.title = side === 'my'
+            ? `${hero.name} (${lane.name})${isMe ? ' — ВЫ (ваш герой)' : ' — клик чтобы выбрать себя'}`
+            : `${hero.name} (${lane.name}) — клик для удаления`;
           let avatarHtml = '';
           if (hero.portrait) {
             avatarHtml = `<img class="ds-avatar" src="${esc(hero.portrait)}" alt="${esc(hero.name)}" loading="lazy">`;
@@ -96,7 +113,9 @@ function renderSlots() {
             <div class="ds-info">
               <span class="ds-name">${esc(hero.name)}</span>
               <span class="ds-lane-tag" style="color:${lane.color}">${esc(lane.name)}</span>
+              ${side === 'my' && !isMe ? `<button type="button" class="ds-set-me-btn" title="Сделать моим героем">Сделать моим</button>` : ''}
             </div>
+            ${isMe ? `<span class="ds-me-star" title="Ваш персонаж">★ ВЫ</span>` : ''}
             <button type="button" class="ds-clear" title="Убрать героя">✕</button>
           `;
 
@@ -107,7 +126,34 @@ function renderSlots() {
               removeHero(side, idx);
             });
           }
-          slot.addEventListener('click', () => removeHero(side, idx));
+
+          const setMeBtn = slot.querySelector('.ds-set-me-btn');
+          if (setMeBtn) {
+            setMeBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              myPlayerHeroId = heroId;
+              renderAll();
+              if (dom.result && !dom.result.classList.contains('hidden')) {
+                analyze();
+              }
+            });
+          }
+
+          slot.addEventListener('click', () => {
+            if (side === 'my') {
+              if (myPlayerHeroId !== heroId) {
+                myPlayerHeroId = heroId;
+                renderAll();
+                if (dom.result && !dom.result.classList.contains('hidden')) {
+                  analyze();
+                }
+              } else {
+                removeHero(side, idx);
+              }
+            } else {
+              removeHero(side, idx);
+            }
+          });
         } else {
           slot.title = `Клик — выбрать героя (${lane.name}, слот ${offset + 1})`;
           slot.innerHTML = `
@@ -138,6 +184,16 @@ function renderSlots() {
 }
 
 function removeHero(side, idx) {
+  const removedId = teamOf(side)[idx];
+  teamOf(side)[idx] = null;
+  if (side === 'my' && myPlayerHeroId === removedId) {
+    const remaining = myTeam.filter(Boolean);
+    myPlayerHeroId = remaining.length ? remaining[0] : null;
+  }
+  if (targetSlot === idx && activeSide === side) targetSlot = null;
+  setError('');
+  renderAll();
+}
   teamOf(side)[idx] = null;
   if (targetSlot === idx && activeSide === side) targetSlot = null;
   setError('');
@@ -332,8 +388,21 @@ async function ensureItems() {
   }
 }
 
+async function ensureCounterpicksData() {
+  if (cpData) return cpData;
+  if (!cpPromise) cpPromise = fetchCounterpicks();
+  try {
+    cpData = await cpPromise;
+    return cpData;
+  } catch {
+    cpPromise = null;
+    return null;
+  }
+}
+
 async function analyze() {
   setError('');
+  syncPlayerHero();
   const my = myTeam.filter(Boolean);
   const enemy = enemyTeam.filter(Boolean);
   if (enemy.length === 0) {
@@ -343,9 +412,13 @@ async function analyze() {
   dom.analyzeBtn.disabled = true;
   dom.analyzeBtn.textContent = 'Анализирую…';
   try {
-    const analysis = await postDraftAnalyze(my, enemy, isMirror());
-    await ensureItems();
-    renderResults(analysis);
+    const [analysis, cp] = await Promise.all([
+      postDraftAnalyze(my, enemy, isMirror()),
+      ensureCounterpicksData(),
+      ensureItems(),
+    ]);
+
+    renderResults(analysis, cp);
     dom.result.classList.remove('hidden');
   } catch (e) {
     setError(`Анализ не удался: ${e.message}`);
@@ -356,6 +429,7 @@ async function analyze() {
 }
 
 function setCards(container, htmlParts, emptyText) {
+  if (!container) return;
   container.innerHTML = htmlParts.length
     ? htmlParts.join('')
     : `<p class="section-hint">${esc(emptyText)}</p>`;
@@ -395,7 +469,318 @@ function formatReason(reason) {
   return unique.join('; ');
 }
 
-function renderResults(a) {
+// Вспомогательная функция для рендера бейджа героя с портретом
+function heroPillHtml(heroId, isMy = false) {
+  const h = heroById.get(heroId);
+  const name = h ? h.name : heroId;
+  const portrait = h && h.portrait ? `<img src="${esc(h.portrait)}" alt="${esc(name)}">` : '';
+  const cls = isMy ? 'dmp-my-pill' : 'dmp-hero-pill';
+  return `<span class="${cls}">${portrait}${esc(name)}</span>`;
+}
+
+function renderPlayerHeroBar() {
+  if (!dom.playerHeroBar) return;
+  syncPlayerHero();
+
+  if (!myPlayerHeroId) {
+    dom.playerHeroBar.innerHTML = `
+      <div class="dph-info">
+        <span class="dph-label">Персонаж не выбран</span>
+        <div class="dph-name">Выберите героя в слотах «Ваша команда»</div>
+        <span class="dph-tag">Контрмеры и сборка адаптируются под выбранного героя</span>
+      </div>
+    `;
+    return;
+  }
+
+  const h = heroById.get(myPlayerHeroId);
+  const name = h ? h.name : myPlayerHeroId;
+  const avatar = h && h.portrait
+    ? `<img class="dph-avatar" src="${esc(h.portrait)}" alt="${esc(name)}">`
+    : `<div class="dph-avatar ds-avatar-fallback">${esc(name.slice(0, 2))}</div>`;
+
+  const roles = (h && h.roles ? h.roles.map((r) => ROLE_LABEL[r] || r) : []).join(' · ');
+  const tags = (h && h.threat_tags ? h.threat_tags.map((t) => TAG_LABEL[t] || t) : []);
+
+  dom.playerHeroBar.innerHTML = `
+    ${avatar}
+    <div class="dph-info">
+      <span class="dph-label">Ваш персонаж в этом матче</span>
+      <div class="dph-name">${esc(name)} ${roles ? `<span style="font-size:14px; color:var(--text-dim); font-weight:normal;">(${esc(roles)})</span>` : ''}</div>
+      <div class="dph-tags">
+        <span class="dph-tag" style="color:var(--amber); font-weight:700;">★ Все предметы и тактика рассчитаны под вас</span>
+        ${tags.map((t) => `<span class="dph-tag">${esc(t)}</span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderMacroPlan(cp) {
+  if (!dom.macroPlan) return;
+  const my = myTeam.filter(Boolean);
+  const enemy = enemyTeam.filter(Boolean);
+
+  if (enemy.length === 0) {
+    dom.macroPlan.innerHTML = '';
+    return;
+  }
+
+  const cpHeroesMap = new Map((cp?.heroes || []).map((h) => [h.id, h]));
+
+  // 1. Кого давить сразу (Early priority / не дать разогнаться)
+  // Это гиперкерри врага с тегами bullet_dps, stealth, burst или ролями carry/duelist
+  const rushTargets = enemy.filter((hid) => {
+    const h = heroById.get(hid);
+    const tags = h?.threat_tags || [];
+    const roles = h?.roles || [];
+    return roles.includes('carry') || tags.includes('bullet_dps') || tags.includes('stealth')
+      || (roles.includes('duelist') && tags.includes('burst'));
+  });
+
+  // 2. Сила по стадиям (Early / Mid / Late)
+  const earlyThreats = enemy.filter((hid) => {
+    const h = heroById.get(hid);
+    const tags = h?.threat_tags || [];
+    return tags.includes('tank') || tags.includes('heal') || tags.includes('cc_chain');
+  });
+
+  const lateThreats = enemy.filter((hid) => {
+    const h = heroById.get(hid);
+    const roles = h?.roles || [];
+    const tags = h?.threat_tags || [];
+    return roles.includes('carry') || tags.includes('bullet_dps') || tags.includes('uninterruptible_ult');
+  });
+
+  // 3. Темп и синергия нашей команды
+  const myCarries = my.filter((hid) => (heroById.get(hid)?.roles || []).includes('carry'));
+  const mySupports = my.filter((hid) => {
+    const r = heroById.get(hid)?.roles || [];
+    return r.includes('support') || r.includes('controller');
+  });
+  const myFrontline = my.filter((hid) => {
+    const r = heroById.get(hid)?.roles || [];
+    const t = heroById.get(hid)?.threat_tags || [];
+    return r.includes('initiator') || t.includes('tank');
+  });
+
+  let teamTempoText = '';
+  if (myCarries.length >= 2) {
+    teamTempoText = `У вашей команды <strong>жадный лейт-пик</strong> (${myCarries.map((id) => heroName(id)).join(', ')}). Не форсируйте хаотичные драки в начале 0–10 мин, защищайте вышки и давайте керри пространство для фарма.`;
+  } else if (myFrontline.length >= 2) {
+    teamTempoText = `У вашей команды <strong>агрессивный темповый пик</strong> с плотным фронтлайном (${myFrontline.map((id) => heroName(id)).join(', ')}). Навязывайте драки на таймингах 10–20 мин, захватывайте урны и сносите внешние стражи, не затягивая в глубокий лейт.`;
+  } else {
+    teamTempoText = `<strong>Сбалансированный темп</strong>: поддерживайте контроль над мид-боссом и урнами, играйте вокруг откатов ключевых ультимейтов.`;
+  }
+
+  // Кому помогать
+  let supportText = '';
+  if (myCarries.length > 0) {
+    supportText = `Особое внимание уделите ${myCarries.map((id) => heroPillHtml(id, true)).join(' ')}: если враг начнёт их фокусить или гангать линии, немедленно стягивайтесь на помощь, чтобы они не отстали по душам.`;
+  } else if (myFrontline.length > 0) {
+    supportText = `Помогайте вашим инициаторам ${myFrontline.map((id) => heroPillHtml(id, true)).join(' ')}: не оставляйте их одних после врыва, вливайте фокус в законтроленную цель.`;
+  } else {
+    supportText = `Играйте парами, координируйте ганги через линии и обменивайтесь ресурсами.`;
+  }
+
+  // Общий стиль игры против вражеского сетапа
+  const enemyHealers = enemy.filter((hid) => (heroById.get(hid)?.threat_tags || []).includes('heal'));
+  const enemyCC = enemy.filter((hid) => (heroById.get(hid)?.threat_tags || []).includes('cc_chain'));
+  const enemySpirit = enemy.filter((hid) => (heroById.get(hid)?.threat_tags || []).includes('spirit_caster'));
+
+  let enemyStyleAdvice = [];
+  if (enemyHealers.length >= 2) {
+    enemyStyleAdvice.push(`Враги делают ставку на изнурение и хил (${enemyHealers.map((id) => heroName(id)).join(', ')}). <strong>Обязателен анти-хил</strong> на 8–12 минутах, иначе затяжные стычки вы проиграете.`);
+  }
+  if (enemyCC.length >= 2) {
+    enemyStyleAdvice.push(`У врага цепочки жёсткого контроля (${enemyCC.map((id) => heroName(id)).join(', ')}). Не кучкуйтесь под ультимейты и заранее готовьте очищение или Неудержимость.`);
+  }
+  if (enemySpirit.length >= 2) {
+    enemyStyleAdvice.push(`Высокий прокаст магии (${enemySpirit.map((id) => heroName(id)).join(', ')}). Инвестируйте в спирит-щиты и Разрушитель чар.`);
+  }
+  if (!enemyStyleAdvice.length) {
+    enemyStyleAdvice.push('Стандартная позиционка: разменивайтесь по выносливости, используйте укрытия от прямого обстрела и следите за гангами через каналы.');
+  }
+
+  dom.macroPlan.innerHTML = `
+    <!-- Карточка 1: Кого давить сразу -->
+    <div class="dmp-card focus-rush">
+      <div class="dmp-title">🎯 Кого давить сразу (Не дать разогнаться)</div>
+      <div class="dmp-body">
+        ${rushTargets.length
+          ? `Главные угрозы сноубола и лейта: ${rushTargets.map((id) => heroPillHtml(id)).join(' ')}.<br>
+             <strong>Что делать:</strong> Навязывайте агрессию на линии с первых минут, забирайте их крипов и зовите напарников на ганг до того, как они наберут 10k+ душ и купят ключевые артефакты.`
+          : `У врага нет ярко выраженных гиперкерри-одиночек — держите равное давление по всем линиям и не отдавайте соло-киллы.`
+        }
+      </div>
+    </div>
+
+    <!-- Карточка 2: Пики силы врага (Power Spikes) -->
+    <div class="dmp-card focus-spikes">
+      <div class="dmp-title">⚡ Пики силы вражеского драфта</div>
+      <div class="dmp-body">
+        <strong>Ранняя игра (0–10 мин):</strong> ${earlyThreats.length ? earlyThreats.map((id) => heroName(id)).join(', ') : 'Низкая агрессия'} — опасны за счёт стартовой плотности, хуков или сустейна.<br>
+        <strong>Лейтгейм (20+ мин):</strong> ${lateThreats.length ? lateThreats.map((id) => heroName(id)).join(', ') : 'Умеренный скейл'} — способны стирать команду за секунды при полной сборке.
+      </div>
+    </div>
+
+    <!-- Карточка 3: Темп вашей команды и помощь союзникам -->
+    <div class="dmp-card focus-tempo">
+      <div class="dmp-title">⏳ Темп вашей команды и фокус помощи</div>
+      <div class="dmp-body">
+        ${teamTempoText}<br><br>
+        <strong>Кому помогать:</strong> ${supportText}
+      </div>
+    </div>
+
+    <!-- Карточка 4: Стиль игры против драфта врага -->
+    <div class="dmp-card focus-team">
+      <div class="dmp-title">🛡 Стиль игры против сетапа врага</div>
+      <div class="dmp-body">
+        ${enemyStyleAdvice.join('<br><br>')}
+      </div>
+    </div>
+  `;
+}
+
+function renderCounterMeasures(cp) {
+  if (!dom.counterMeasures) return;
+  const enemy = enemyTeam.filter(Boolean);
+  if (enemy.length === 0 || !cp || !cp.heroes || !cp.items) {
+    dom.counterMeasures.innerHTML = '';
+    return;
+  }
+
+  syncPlayerHero();
+  const playerHero = myPlayerHeroId ? heroById.get(myPlayerHeroId) : null;
+  const isSpiritHero = playerHero?.threat_tags?.includes('spirit_caster');
+  const isBulletHero = playerHero?.threat_tags?.includes('bullet_dps') || playerHero?.roles?.includes('carry');
+
+  const cpHeroesMap = new Map(cp.heroes.map((h) => [h.id, h]));
+  const cpItemsMap = new Map(cp.items.map((i) => [i.id, i]));
+
+  // Собираем все контрпредметы вражеских героев по стадиям
+  // stage -> Map<itemId, { item, targets: [{heroId, label, why, when}] }>
+  const stagesData = {
+    early: new Map(),
+    mid: new Map(),
+    late: new Map(),
+  };
+
+  const STAGE_ORDER = ['early', 'mid', 'late'];
+
+  enemy.forEach((enemyId) => {
+    const cpHero = cpHeroesMap.get(enemyId);
+    if (!cpHero || !cpHero.stages) return;
+
+    const heroProblems = cpHero.problems || [];
+    const heroWhy = cpHero.why || {};
+
+    STAGE_ORDER.forEach((stageKey) => {
+      const stageItems = cpHero.stages[stageKey] || [];
+      stageItems.forEach((entry) => {
+        const itemId = entry.item_id;
+        const cpItem = cpItemsMap.get(itemId);
+        if (!cpItem) return;
+
+        // Фильтрация под профиль урона игрока
+        if (itemId === 'toxic-bullets' && isSpiritHero && !isBulletHero) return; // спириту не нужны пули
+        if (itemId === 'healbane' && isBulletHero && !isSpiritHero) return; // чистому пулевику лучше toxic-bullets
+
+        if (!stagesData[stageKey].has(itemId)) {
+          stagesData[stageKey].set(itemId, {
+            item: cpItem,
+            targets: [],
+          });
+        }
+
+        const prob = heroProblems.find((p) => p.item_id === itemId);
+        const whyText = heroWhy[itemId] || prob?.how || cpItem.short || '';
+        const whenText = prob?.when || cpItem.when || '';
+
+        stagesData[stageKey].get(itemId).targets.push({
+          heroId: enemyId,
+          label: entry.label || prob?.label || 'Контрмера',
+          why: whyText,
+          when: whenText,
+        });
+      });
+    });
+  });
+
+  const stageTitles = {
+    early: { title: 'Ранняя игра и линия (0–10 минут)', badge: 'Что купить первым на линию' },
+    mid: { title: 'Середина игры и тимфайты (10–20 минут)', badge: 'Ключевые контр-артефакты' },
+    late: { title: 'Поздняя игра (20+ минут)', badge: 'Финальное закрытие угроз врага' },
+  };
+
+  const blocksHtml = STAGE_ORDER.map((stageKey) => {
+    const itemsMap = stagesData[stageKey];
+    if (itemsMap.size === 0) return '';
+
+    const itemsList = Array.from(itemsMap.values());
+    // Сортируем: сначала предметы, закрывающие сразу нескольких врагов, затем по стоимости
+    itemsList.sort((a, b) => {
+      if (b.targets.length !== a.targets.length) return b.targets.length - a.targets.length;
+      return (a.item.cost || 0) - (b.item.cost || 0);
+    });
+
+    const itemsHtml = itemsList.slice(0, 6).map(({ item, targets }) => {
+      const imageSrc = item.image || (itemById.get(item.id)?.image) || '';
+      const imgTag = imageSrc ? `<img class="dcm-item-icon" src="${esc(imageSrc)}" alt="${esc(item.name)}">` : '';
+      const uniqueTargets = [...new Map(targets.map((t) => [t.heroId, t])).values()];
+      const firstWhy = targets.find((t) => t.why)?.why || item.short || '';
+      const firstWhen = targets.find((t) => t.when)?.when || '';
+
+      return `
+        <div class="dcm-item-card">
+          <div class="dcm-item-head">
+            ${imgTag}
+            <div class="dcm-item-meta">
+              <span class="dcm-item-name">${esc(item.name)}</span>
+              <span class="dcm-item-tier">Tier ${esc(item.tier)} · ${esc(item.cost)} душ</span>
+            </div>
+          </div>
+          <div class="dcm-targets-row">
+            <span class="dcm-targets-label">Против кого:</span>
+            ${uniqueTargets.map((t) => {
+              const h = heroById.get(t.heroId);
+              const p = h?.portrait ? `<img src="${esc(h.portrait)}" alt="${esc(h.name)}">` : '';
+              return `<span class="dcm-target-pill">${p}${esc(h?.name || t.heroId)}</span>`;
+            }).join(' ')}
+          </div>
+          ${firstWhy ? `<div class="dcm-item-why">💡 ${esc(firstWhy)}</div>` : ''}
+          ${firstWhen ? `<div class="dcm-item-when">${esc(firstWhen)}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="dcm-stage-block">
+        <div class="dcm-stage-header">
+          <div class="dcm-stage-title">📦 ${esc(stageTitles[stageKey].title)}</div>
+          <span class="dcm-stage-badge">${esc(stageTitles[stageKey].badge)}</span>
+        </div>
+        <div class="dcm-items-grid">
+          ${itemsHtml}
+        </div>
+      </div>
+    `;
+  }).filter(Boolean).join('');
+
+  dom.counterMeasures.innerHTML = `
+    <h2 class="section-title good" style="font-size: 19px; margin-bottom: 12px;">🛡 Контрмеры и закуп по стадиям матча</h2>
+    <p class="section-hint" style="font-size: 14.5px; margin-bottom: 16px;">
+      Прямые контрпредметы из базы знаний Deadlock против вражеского пика с учётом вашего персонажа.
+    </p>
+    ${blocksHtml || '<p class="section-hint">Контр-предметы не требуются.</p>'}
+  `;
+}
+
+function renderResults(a, cp) {
+  renderPlayerHeroBar();
+  renderMacroPlan(cp);
+  renderCounterMeasures(cp);
+
   // red_flags: [{severity, title, detail, fix}]
   setCards(
     dom.redFlags,
@@ -419,22 +804,6 @@ function renderResults(a) {
     'Заметных синергий в вашей команде нет.',
   );
 
-  // counter_picks: [{hero_id, name, reason}]
-  setCards(
-    dom.counters,
-    (a.counter_picks || []).map((c) => {
-      const name = heroById.has(c.hero_id)
-        ? heroName(c.hero_id)
-        : (c.name || c.hero_id);
-      return `
-        <div class="counter-card">
-          <div class="cc-name">${esc(name)}</div>
-          <div class="cc-reason">${esc(formatReason(c.reason))}</div>
-        </div>`;
-    }),
-    'Контр-пики не подобраны — добавь больше героев врага.',
-  );
-
   // threat_summary: [{tag, score, contributors: [hero_id]}]
   setCards(
     dom.threats,
@@ -444,22 +813,6 @@ function renderResults(a) {
         <div class="tc-detail">Герои врага: ${(t.contributors || []).map((id) => esc(heroName(id))).join(', ')}</div>
       </div>`),
     'Явных угроз у врага не обнаружено.',
-  );
-
-  // recommended_items: [{item_id, name_en, name}]
-  setCards(
-    dom.items,
-    (a.recommended_items || []).map((r) => {
-      const item = itemById && itemById.get(r.item_id);
-      // TZ v1.4 F3: чистое русское имя без английского дубля (англ. только если нет локала).
-      const name = item ? item.name : (r.name || r.name_en);
-      const extra = item ? ` · Tier ${item.tier} · ${item.cost} душ` : '';
-      return `
-        <div class="reco-card">
-          <div class="rc-name">${esc(name)}<span>${esc(extra)}</span></div>
-        </div>`;
-    }),
-    'Рекомендаций по предметам нет.',
   );
 }
 
@@ -642,6 +995,7 @@ function renderDraftBuilds(plan) {
 }
 
 async function buildForMe() {
+  syncPlayerHero();
   const my = myTeam.filter(Boolean);
   const enemy = enemyTeam.filter(Boolean);
   setError('');
@@ -658,10 +1012,15 @@ async function buildForMe() {
     dom.buildsBtn.textContent = 'Собираю…';
   }
   try {
-    // Сборка строится под первого героя вашей команды (в матче вы пикаете себя).
-    const plan = await postDraftBuilds(my[0], enemy, { role: selectedRole || null });
-    await ensureItems();
-    renderResults(plan);
+    // Сборка строится под выбранного игроком персонажа
+    const targetHero = myPlayerHeroId || my[0];
+    const [plan, cp] = await Promise.all([
+      postDraftBuilds(targetHero, enemy, { role: selectedRole || null }),
+      ensureCounterpicksData(),
+      ensureItems(),
+    ]);
+
+    renderResults(plan, cp);
     renderDraftBuilds(plan);
     dom.result.classList.remove('hidden');
   } catch (e) {
@@ -734,9 +1093,11 @@ export function initDrafter(heroesData) {
     mirror: document.getElementById('mirror-toggle'),
     error: document.getElementById('draft-error'),
     result: document.getElementById('draft-result'),
+    playerHeroBar: document.getElementById('draft-player-hero-bar'),
+    macroPlan: document.getElementById('draft-macro-plan'),
+    counterMeasures: document.getElementById('draft-counter-measures'),
     redFlags: document.getElementById('red-flags'),
     synergy: document.getElementById('synergy-block'),
-    counters: document.getElementById('counter-picks'),
     threats: document.getElementById('draft-threats'),
     items: document.getElementById('draft-items'),
     screenshotInput: document.getElementById('draft-screenshot'),
