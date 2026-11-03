@@ -22,6 +22,11 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 
+# Рантайм ИИ-модуля: сгенерированные картинки и снимки shared memory.
+# Код сюда не пишет — каталоги создаёт внешний мост, в репозитории им не место.
+src/deadlockforge/ai/dsh-image-gen/
+src/deadlockforge/ai/runtime/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -568,16 +568,21 @@
       <!-- Ранг стиля — акцентная позиция: первое, что видит игрок в отчёте -->
       <div class="panel dmc-rank-panel">
         <div class="dmc-grade-block" id="dmc-grade-block">
-          <div class="dmc-gauge-wrapper">
-            <svg class="dmc-gauge-svg" viewBox="0 0 120 120" aria-hidden="true">
-              <circle class="dmc-gauge-track" cx="60" cy="60" r="50"></circle>
-              <circle class="dmc-gauge-fill" id="dmc-gauge-fill" cx="60" cy="60" r="50"></circle>
-            </svg>
-            <div class="grade-badge" id="grade-badge">C</div>
+          <div class="style-meter" id="style-meter" data-rank="C">
+            <div class="sm-word">
+              <span class="grade-badge sm-letter" id="grade-badge">C</span><span class="sm-tail" id="sm-tail">razy!</span>
+            </div>
+            <div class="sm-bar"><span class="sm-fill" id="sm-fill"></span></div>
+            <div class="sm-foot">
+              <span class="sm-label">STYLE RANK</span>
+              <span class="sm-count" id="sm-count">0 / 10</span>
+            </div>
           </div>
           <div class="dmc-rank-meta">
             <span class="dmc-rank-badge-title" id="dmc-rank-title">STYLE RANK</span>
             <span class="dmc-rank-desc" id="dmc-rank-desc">Оценка тактики</span>
+            <button id="dmc-sound-toggle" class="dmc-sound-toggle" type="button"
+                    aria-pressed="true" title="Выключить музыку разбора">🔊 Музыка</button>
           </div>
         </div>
       </div>

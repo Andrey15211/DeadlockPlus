@@ -470,20 +470,50 @@ function renderMistake(km) {
     <div class="km-correct">${esc(km.correct_play ?? '')}</div>`;
 }
 
-// DMC5 Style Titles
+// DMC5 Style Titles: слово набрано как в DMC — гигантская первая буква и
+// курсивный хвост (C + razy! = «Crazy!»). Поэтому каждое слово обязано
+// начинаться с буквы своего ранга.
 const DMC_RANK_NAMES = {
-  'C': { title: 'DULL', desc: 'Базовый уровень' },
-  'B': { title: 'BRUTAL', desc: 'Хороший темп' },
-  'A': { title: 'ANARCHIC', desc: 'Отличная игра' },
-  'S': { title: 'SAVAGE!', desc: 'Доминирование' },
-  'S+': { title: "SMOKIN' SEXY STYLE!!", desc: 'Мастерство' },
+  'C': { title: 'Crazy!', desc: 'Базовый уровень, много потерь' },
+  'B': { title: 'Badass!', desc: 'Хороший темп' },
+  'A': { title: 'Apocalyptic!', desc: 'Отличная игра' },
+  'S': { title: 'Savage!', desc: 'Доминирование' },
+  'S+': { title: "Smokin' Sexy Style!!", desc: 'Мастерство' },
 };
+
+// Шкала 0..10: каждый ранг добавляет два деления
+const DMC_RANK_VALUE = { 'C': 2, 'B': 4, 'A': 6, 'S': 8, 'S+': 10 };
 
 // Ранги-«боги»: финальный удар + пламенное свечение
 const GOD_RANKS = new Set(['S', 'S+']);
 
+// Музыка разбора: Web Audio, без файлов. Тумблер живёт в localStorage.
+const DMC_SOUND_KEY = 'df_dmc_sound';
+let dmcSoundOn = true;
+try { dmcSoundOn = localStorage.getItem(DMC_SOUND_KEY) !== 'off'; } catch { /* приватный режим */ }
+let dmcSoundBound = false;
+
 function gradeGradeFor(g) {
   return GRADE_ORDER.includes(g) ? g : (GRADE_STYLES[g] ? g : 'C');
+}
+
+function bindDmcSoundToggle() {
+  if (dmcSoundBound) return;
+  const btn = document.getElementById('dmc-sound-toggle');
+  if (!btn) return;
+  dmcSoundBound = true;
+  const sync = () => {
+    btn.setAttribute('aria-pressed', dmcSoundOn ? 'true' : 'false');
+    btn.textContent = dmcSoundOn ? '🔊 Музыка' : '🔇 Музыка';
+    btn.title = dmcSoundOn ? 'Выключить музыку разбора' : 'Включить музыку разбора';
+  };
+  sync();
+  btn.addEventListener('click', () => {
+    dmcSoundOn = !dmcSoundOn;
+    try { localStorage.setItem(DMC_SOUND_KEY, dmcSoundOn ? 'on' : 'off'); } catch { /* приватный режим */ }
+    sync();
+    if (dmcSoundOn) playRankTickSound(2, 5);
+  });
 }
 
 // ---------- V2.0 М2: процедурный звук Style Rank (Web Audio, без файлов) ----------
@@ -510,6 +540,7 @@ function getDmcAudioCtx() {
 // step — индекс ступени (0-based), maxSteps — число ступеней до целевого ранга.
 function playRankTickSound(step, maxSteps) {
   try {
+    if (!dmcSoundOn) return;
     const ctx = getDmcAudioCtx();
     if (!ctx) return;
     const total = Math.max(1, Number(maxSteps) || 1);
@@ -536,6 +567,7 @@ function playRankTickSound(step, maxSteps) {
 // Сокрушительный басовый спад в момент финального удара.
 function playImpactSound(isGodRank) {
   try {
+    if (!dmcSoundOn) return;
     const ctx = getDmcAudioCtx();
     if (!ctx) return;
     const now = ctx.currentTime;
@@ -556,45 +588,136 @@ function playImpactSound(isGodRank) {
   }
 }
 
+// Короткая боевая фраза под набор ранга: 16-е по минорной пентатонике,
+// бас на каждую долю, шумовой райзер к удару и финальный аккорд.
+function playStyleSting(durationSec) {
+  try {
+    if (!dmcSoundOn) return;
+    const ctx = getDmcAudioCtx();
+    if (!ctx) return;
+    const dur = Math.max(0.8, Number(durationSec) || 1.6);
+    const t0 = ctx.currentTime + 0.03;
+
+    const master = ctx.createGain();
+    master.gain.value = 0.5;
+    master.connect(ctx.destination);
+
+    const voice = (t, freq, len, type, peak, cutoff) => {
+      const osc = ctx.createOscillator();
+      const lp = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      lp.type = 'lowpass';
+      lp.frequency.value = cutoff;
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+      osc.connect(lp).connect(g).connect(master);
+      osc.start(t);
+      osc.stop(t + len + 0.03);
+    };
+
+    // Мелодия: 16-е, к финалу выше и громче
+    const scale = [0, 7, 12, 15, 19, 24, 19, 15];
+    const total = 16;
+    const step = (dur * 0.86) / total;
+    for (let i = 0; i < total; i += 1) {
+      const semis = scale[i % scale.length] + (i >= total - 4 ? 12 : 0);
+      voice(t0 + i * step, 220 * Math.pow(2, semis / 12), step * 1.6,
+        'square', 0.05 + 0.02 * (i / total), 2600);
+    }
+
+    // Бас на каждую долю
+    for (let i = 0; i < total; i += 4) {
+      voice(t0 + i * step, 55, step * 2.4, 'sine', 0.11, 420);
+    }
+
+    // Шумовой райзер за 0.45 c до удара
+    const frames = Math.floor(ctx.sampleRate * 0.45);
+    const riser = ctx.createBuffer(1, frames, ctx.sampleRate);
+    const buf = riser.getChannelData(0);
+    for (let i = 0; i < frames; i += 1) {
+      buf[i] = (Math.random() * 2 - 1) * (i / frames);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = riser;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(500, t0 + dur - 0.45);
+    bp.frequency.exponentialRampToValueAtTime(6500, t0 + dur - 0.05);
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.0001, t0 + dur - 0.45);
+    ng.gain.exponentialRampToValueAtTime(0.08, t0 + dur - 0.08);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    noise.connect(bp).connect(ng).connect(master);
+    noise.start(t0 + dur - 0.45);
+    noise.stop(t0 + dur);
+
+    // Финальный аккорд
+    [220, 261.63, 329.63, 440].forEach((freq, i) => {
+      voice(t0 + dur, freq, 1.1 + i * 0.05, 'sawtooth', 0.045, 1800);
+    });
+  } catch {
+    // звук не критичен для анимации
+  }
+}
+
 // ---------- V2.0 М2: анимация оценки в стиле DMC5 ----------
 
 const GRADE_STEP_MS = 220;            // интервал ступеней C -> B -> ... (200-240ms)
 const GRADE_START_DELAY_MS = 250;     // пауза до старта счётчика: отчёт уже перед глазами
-const GAUGE_CIRCUMFERENCE = 314.16;   // 2 * PI * 50 — длина круговой шкалы
 
-// Ступенчатое нарастание ранга: буква C -> B -> ... -> targetGrade, динамическое
-// заполнение дуги dmc-gauge-fill, финальный «Style Slam» с ударной волной,
-// для S/S+ — пламенное свечение. Токен gradeAnimToken гасит устаревшие таймеры.
+// «Crazy!» -> «razy!»: хвост слова визуально продолжает гигантскую букву
+function dmcWordTail(gKey, word) {
+  const text = String(word || '');
+  return text.charAt(0).toUpperCase() === gKey.charAt(0) ? text.slice(1) : text;
+}
+
+function restartCssAnim(el, cls) {
+  el.classList.remove(cls);
+  void el.offsetWidth;                // force reflow — иначе анимация не перезапустится
+  el.classList.add(cls);
+}
+
+// Ступенчатое нарастание ранга: буква C -> ... -> targetGrade, полоса и счётчик
+// идут синхронно, финальный «Style Slam» с ударной волной, для S/S+ — пламенное
+// свечение. Токен gradeAnimToken гасит устаревшие таймеры при повторном рендере.
 function animateDmcGrade(targetGrade) {
-  const badge = document.getElementById('grade-badge');
-  if (!badge) return;
+  const letterEl = document.getElementById('grade-badge');
+  const meter = document.getElementById('style-meter');
+  if (!letterEl || !meter) return;
+  bindDmcSoundToggle();
 
-  const gaugeFill = document.getElementById('dmc-gauge-fill');
+  const tailEl = document.getElementById('sm-tail');
+  const fillEl = document.getElementById('sm-fill');
+  const countEl = document.getElementById('sm-count');
   const titleEl = document.getElementById('dmc-rank-title');
   const descEl = document.getElementById('dmc-rank-desc');
 
   const target = gradeGradeFor(targetGrade);
   const targetIdx = Math.max(0, GRADE_ORDER.indexOf(target));
   const steps = targetIdx + 1;
+  const finalValue = DMC_RANK_VALUE[target] || 2;
   const token = ++gradeAnimToken;
 
-  function applyGradeAppearance(gKey, isFinal) {
+  // Стартовое состояние: пустая полоса и нулевой счётчик
+  if (fillEl) fillEl.style.width = '0%';
+  if (countEl) countEl.textContent = '0 / 10';
+
+  function applyRank(gKey, value, isFinal) {
     const st = GRADE_STYLES[gKey] || GRADE_STYLES.C;
     const meta = DMC_RANK_NAMES[gKey] || DMC_RANK_NAMES.C;
-    badge.textContent = gKey;
     const cls = `grade-${gKey.toLowerCase().replace('+', '-plus')}`;
-    badge.className = `grade-badge ${cls}`;
-    badge.style.setProperty('--dmc-badge-color', st.color);
-    badge.style.color = st.color;
-    badge.style.borderColor = st.color;
-    badge.style.boxShadow = `0 0 24px ${st.color}55, inset 0 0 12px ${st.color}22`;
-
-    if (gaugeFill) {
-      gaugeFill.style.setProperty('--dmc-gauge-color', st.color);
-      gaugeFill.style.stroke = st.color;
-    }
+    meter.style.setProperty('--sm-color', st.color);
+    meter.dataset.rank = gKey;
+    letterEl.textContent = gKey.charAt(0);
+    letterEl.className = `grade-badge sm-letter ${cls}`;
+    if (tailEl) tailEl.textContent = dmcWordTail(gKey, meta.title);
+    if (fillEl) fillEl.style.width = `${(value / 10) * 100}%`;
+    if (countEl) countEl.textContent = `${value} / 10`;
     if (titleEl) {
-      titleEl.textContent = meta.title;
+      titleEl.textContent = `STYLE RANK ${gKey}`;
       titleEl.style.color = st.color;
       titleEl.style.textShadow = `0 0 12px ${st.color}88`;
     }
@@ -603,34 +726,23 @@ function animateDmcGrade(targetGrade) {
     }
   }
 
-  // Доля заполнения круговой шкалы для ступени idx: (idx + 1) / steps
-  function fillGauge(idx) {
-    if (!gaugeFill) return;
-    const fraction = (idx + 1) / steps;
-    const offset = GAUGE_CIRCUMFERENCE * (1 - fraction);
-    gaugeFill.style.transition =
-      `stroke-dashoffset ${GRADE_STEP_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
-    gaugeFill.style.strokeDashoffset = String(offset);
-  }
-
   function triggerFinalImpact(st) {
-    badge.classList.remove('dmc-letter-impact', 'dmc-final-impact',
-      'dmc-letter-switch', 'dmc-flame-pulse');
-    void badge.offsetWidth;                       // перезапуск анимаций
-    badge.style.setProperty('--gold-color', st.color);
-    badge.classList.add('dmc-letter-impact');
-    if (GOD_RANKS.has(target)) badge.classList.add('dmc-flame-pulse');
+    letterEl.classList.remove('dmc-letter-impact', 'dmc-flame-pulse');
+    void letterEl.offsetWidth;                      // перезапуск анимаций
+    letterEl.style.setProperty('--gold-color', st.color);
+    letterEl.classList.add('dmc-letter-impact');
+    if (GOD_RANKS.has(target)) letterEl.classList.add('dmc-flame-pulse');
 
     // Радиальная вспышка вокруг буквы
-    badge.querySelector('.grade-flash')?.remove();
+    letterEl.querySelector('.grade-flash')?.remove();
     const flash = document.createElement('div');
     flash.className = 'grade-flash';
     flash.style.setProperty('--g-color', st.color);
-    badge.appendChild(flash);
+    letterEl.appendChild(flash);
     window.setTimeout(() => flash.remove(), 560);
 
     // Ударная волна от плашки ранга
-    const host = badge.parentNode;
+    const host = letterEl.parentNode;
     host?.querySelector('.stamp-shockwave')?.remove();
     const wave = document.createElement('div');
     wave.className = 'stamp-shockwave dmc-shockwave';
@@ -639,7 +751,7 @@ function animateDmcGrade(targetGrade) {
     host?.appendChild(wave);
     window.setTimeout(() => wave.remove(), 700);
 
-    spawnRankSparks(badge, st.color);
+    spawnRankSparks(letterEl, st.color);
     playImpactSound(GOD_RANKS.has(target));
   }
 
@@ -647,33 +759,19 @@ function animateDmcGrade(targetGrade) {
     if (gradeAnimToken !== token) return;
     const gKey = GRADE_ORDER[idx];
     const isFinal = idx === targetIdx;
-    applyGradeAppearance(gKey, isFinal);
-
-    if (gaugeFill) {
-      if (idx === 0) {                            // старт с пустой шкалы
-        gaugeFill.style.transition = 'none';
-        gaugeFill.style.strokeDashoffset = String(GAUGE_CIRCUMFERENCE);
-        void gaugeFill.offsetWidth;               // force reflow
-      }
-      fillGauge(idx);
-    }
+    const value = Math.max(2, Math.round((finalValue * (idx + 1)) / steps));
+    applyRank(gKey, value, isFinal);
 
     // Щелчок нарастающей частоты на каждой смене буквы
     playRankTickSound(idx, steps);
+    restartCssAnim(letterEl, 'dmc-letter-switch');
 
     if (isFinal) {
-      // Поп буквы до удара + сам удар через паузу
-      badge.classList.remove('dmc-letter-switch');
-      void badge.offsetWidth;
-      badge.classList.add('dmc-letter-switch');
       window.setTimeout(() => {
         if (gradeAnimToken !== token) return;
         triggerFinalImpact(GRADE_STYLES[gKey] || GRADE_STYLES.C);
       }, GRADE_STEP_MS);
     } else {
-      badge.classList.remove('dmc-letter-switch');
-      void badge.offsetWidth;
-      badge.classList.add('dmc-letter-switch');
       window.setTimeout(() => {
         if (gradeAnimToken !== token) return;
         runStep(idx + 1);
@@ -683,7 +781,9 @@ function animateDmcGrade(targetGrade) {
 
   // V2.1: стартовая пауза — отчёт уже зафиксирован скроллом перед глазами
   window.setTimeout(() => {
-    if (gradeAnimToken === token) runStep(0);
+    if (gradeAnimToken !== token) return;
+    playStyleSting((steps * GRADE_STEP_MS + GRADE_STEP_MS) / 1000);
+    runStep(0);
   }, GRADE_START_DELAY_MS);
 }
 
@@ -2024,3 +2124,9 @@ export function initDeepMatch() {
     }
   }).catch(() => { /* сеть/дб недоступны — не критично */ });
 }
+
+
+
+
+
+

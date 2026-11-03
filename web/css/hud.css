@@ -3633,14 +3633,14 @@ aside.lab-side, .lab-side {
   color: #EF4444; border-color: #EF4444; background: rgba(239,68,68,.12);
 }
 
-/* ---------- DMC5-шкала оценки матча (гейдж C→S+) ---------- */
+/* ---------- Style meter в стиле DMC5 (ранг + шкала C→S+) ---------- */
 
 .dmc-grade-block {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 26px;
   margin: 14px 0 16px;
-  padding: 16px 20px;
+  padding: 18px 22px;
   background: linear-gradient(135deg, rgba(22, 29, 44, 0.75) 0%, rgba(10, 14, 22, 0.9) 100%);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
@@ -3656,64 +3656,162 @@ aside.lab-side, .lab-side {
   background: linear-gradient(90deg, transparent, rgba(229, 169, 60, 0.45), transparent);
 }
 
-.dmc-gauge-wrapper {
-  position: relative;
-  width: 96px;
-  height: 96px;
+/* Шкала: гигантская буква ранга + курсивный хвост слова, под ними полоса и счётчик */
+.style-meter {
+  --sm-color: #E5A93C;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: 7px;
 }
 
-.dmc-gauge-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-  overflow: visible;
-  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.6));
+.sm-word {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  white-space: nowrap;
+  /* Без filter: drop-shadow — фильтр на контейнере с анимированным потомком
+     заставляет Chromium растеризовать слой и рисует прямоугольный ореол
+     вокруг слова. Свет дают text-shadow буквы и хвоста. */
 }
 
-.dmc-gauge-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 6;
-}
-
-.dmc-gauge-fill {
-  fill: none;
-  stroke: var(--amber);
-  stroke-width: 7;
-  stroke-linecap: round;
-  stroke-dasharray: 314.16;
-  stroke-dashoffset: 314.16;
-  filter: drop-shadow(0 0 6px var(--dmc-gauge-color, #E5A93C));
-  transition: stroke-dashoffset 0.24s cubic-bezier(0.2, 0.8, 0.2, 1), stroke 0.2s ease, filter 0.2s ease;
-}
-
-.dmc-grade-block .grade-badge {
+/* Круглый .grade-badge переопределяется в букву ранга */
+.dmc-grade-block .grade-badge.sm-letter {
   position: relative;
   z-index: 2;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  font-family: var(--font-display);
-  font-size: 38px;
-  font-weight: 900;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: Georgia, "Times New Roman", "PT Serif", serif;
+  font-size: 86px;
   font-style: italic;
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -3px;
+  color: #F7F4EC;
+  text-shadow: 0 0 24px var(--sm-color), 0 3px 0 rgba(8, 11, 18, 0.55),
+               0 6px 18px rgba(0, 0, 0, 0.9);
+  transform-origin: 60% 85%;
+  user-select: none;
+  animation: none; /* переопределяем базовый штамп .grade-badge */
+  /* Буква — это глиф, а не плашка: прямоугольное свечение рамки не нужно,
+     свет дают text-shadow и drop-shadow по контуру. !important гасит
+     box-shadow из keyframes dmc-letter-impact/dmc-flame-pulse. */
+  box-shadow: none !important;
+}
+
+.dmc-grade-block .grade-badge.sm-letter .grade-flash {
+  inset: -10px;
+  border-radius: 50%;
+}
+
+/* Ранги S/S+ «горят»: у буквы это пульсация text-shadow, а не плашка
+   (box-shadow в dmc-flame-pulse для глифа не рисуется). */
+@keyframes sm-flame-text {
+  0%, 100% {
+    text-shadow: 0 0 22px var(--sm-color), 0 0 44px var(--sm-color),
+                 0 3px 0 rgba(8, 11, 18, 0.55);
+  }
+  50% {
+    text-shadow: 0 0 34px var(--sm-color), 0 0 72px var(--sm-color),
+                 0 3px 0 rgba(8, 11, 18, 0.55);
+  }
+}
+
+/* Классы ударной волны и вспышки задаёт animateDmcGrade; для буквы
+   «впечатывание» и «пламя» должны идти одновременно. */
+.dmc-grade-block .grade-badge.sm-letter.dmc-letter-impact.dmc-flame-pulse {
+  animation: dmc-letter-impact 620ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both,
+             sm-flame-text 1500ms cubic-bezier(0.4, 0, 0.2, 1) 620ms infinite both !important;
+}
+
+.sm-tail {
+  font-family: Georgia, "Times New Roman", "PT Serif", serif;
+  font-size: 38px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.4px;
+  color: #F7F4EC;
+  text-shadow: 0 0 16px var(--sm-color), 0 2px 0 rgba(8, 11, 18, 0.5),
+               0 4px 12px rgba(0, 0, 0, 0.9);
+  padding: 0 2px 9px 3px;
+  user-select: none;
+}
+
+.sm-bar {
+  position: relative;
+  height: 9px;
+  border-radius: 2px;
+  background: rgba(8, 11, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+
+.sm-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 55%),
+              var(--sm-color);
+  box-shadow: 0 0 14px var(--sm-color);
+  transition: width 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sm-foot {
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  line-height: 1;
-  background: radial-gradient(circle, rgba(22, 29, 44, 0.95) 45%, rgba(10, 14, 22, 0.98) 100%);
-  border: 2px solid var(--dmc-badge-color, var(--amber));
-  color: var(--dmc-badge-color, var(--amber));
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.85);
-  user-select: none;
-  animation: none; /* переопределяем базовый штамп */
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sm-label {
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 2.6px;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.sm-count {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 1.4px;
+  color: rgba(255, 255, 255, 0.62);
+  font-variant-numeric: tabular-nums;
+}
+
+.dmc-sound-toggle {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #8B95A6;
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.dmc-sound-toggle:hover { border-color: rgba(255, 255, 255, 0.2); color: #C6CEDA; }
+.dmc-sound-toggle[aria-pressed="false"] { opacity: 0.55; }
+
+@media (max-width: 760px) {
+  .dmc-grade-block .grade-badge.sm-letter { font-size: 64px; }
+  .sm-tail { font-size: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-fill { transition: none; }
 }
 
 .dmc-rank-meta {
@@ -3721,6 +3819,8 @@ aside.lab-side, .lab-side {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  flex: 0 0 auto;
+  max-width: 250px;
 }
 
 .dmc-rank-badge-title {
