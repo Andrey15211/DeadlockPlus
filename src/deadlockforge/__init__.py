@@ -1,6 +1,6 @@
 """DeadlockForge — local tactical assistant for Valve Deadlock."""
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 from deadlockforge.models import (  # noqa: F401
     Advice,

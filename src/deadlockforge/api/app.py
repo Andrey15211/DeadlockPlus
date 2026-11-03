@@ -660,7 +660,7 @@ def _to_review(normalized, report, account_id: int | None, hero_slug: str | None
 
 def create_app() -> FastAPI:
     """Build the FastAPI application with all /api/* routes and static SPA."""
-    app = FastAPI(title="DeadlockForge", version="1.2.0")
+    app = FastAPI(title="DeadlockForge", version="1.2.1")
 
     # --- Catalog & engine -------------------------------------------------
 
